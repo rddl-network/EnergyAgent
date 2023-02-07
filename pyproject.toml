@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "prosumer-service"
+version = "0.1.0"
+description = ""
+authors = ["Cybnon <stefan.weber93@googlemail.com>"]
+readme = "README.md"
+packages = [{include = "app-business-logic"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.89.1"
+uvicorn = "^0.20.0"
+sqlalchemy = "^2.0.1"
+psycopg2 = "^2.9.5"
+sqlalchemy-utils = "^0.39.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
