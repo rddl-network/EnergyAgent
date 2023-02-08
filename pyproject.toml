@@ -10,9 +10,9 @@ packages = [{include = "app-business-logic"}]
 python = "^3.9"
 fastapi = "^0.89.1"
 uvicorn = "^0.20.0"
-sqlalchemy = "^2.0.1"
-psycopg2 = "^2.9.5"
+sqlalchemy = "^1.4.46"
 sqlalchemy-utils = "^0.39.0"
+psycopg2 = "^2.9.5"
 
 
 [build-system]
