@@ -1,4 +1,5 @@
-import datetime
+from datetime import datetime
+
 from pydantic import Field, BaseModel
 from database.schema import DaoTimeSeriesData
 

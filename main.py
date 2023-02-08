@@ -18,5 +18,5 @@ while True:
         time.sleep(5)
 
 
-app.include_router(routers.time_series_data.router)
-app.include_router(routers.machine.router)
+app.include_router(routers.time_series_data_router)
+app.include_router(routers.machine_router)
