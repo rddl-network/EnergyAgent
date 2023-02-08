@@ -1,6 +1,8 @@
 import time
 
 from fastapi import FastAPI
+
+import routers.time_series_data
 from dependencies import ensure_database
 
 app = FastAPI()
@@ -16,16 +18,5 @@ while True:
         time.sleep(5)
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
-
-
-@app.post("/hello/")
-async def post_hello(name: str):
-    return {"message": f"heast oida {name}"}
+app.include_router(routers.time_series_data.router)
+app.include_router(routers.machine.router)

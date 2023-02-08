@@ -1,14 +1,12 @@
 import os
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database
 
 
 class Config:
     def __init__(self):
-        self.api_prefix = os.getenv('API_PREFIX') or ''
-        self.db_type = os.environ.get('DATABASE_TYPE', 'mongodb')
         self.db_user = os.getenv('DB_USER') or 'postgres'
         self.db_password = os.getenv('DB_PASSWORD') or 'password'
         self.db_host = os.environ.get("DB_HOST") or 'localhost:5432'
