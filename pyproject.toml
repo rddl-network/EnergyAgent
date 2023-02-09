@@ -13,6 +13,8 @@ uvicorn = "^0.20.0"
 sqlalchemy = "^1.4.46"
 sqlalchemy-utils = "^0.39.0"
 psycopg2 = "^2.9.5"
+pytest = "^7.2.1"
+pytest-mock = "^3.10.0"
 
 
 [build-system]
