@@ -9,7 +9,6 @@ class DaoMachine(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     type = Column(String)
-    data = relationship("DaoTimeSeriesData", back_populates="machine")
 
 
 class DaoTimeSeriesData(Base):

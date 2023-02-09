@@ -4,6 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database
 
+from database.schema import Base
+
 
 class Config:
     def __init__(self):
@@ -24,6 +26,8 @@ def ensure_database():
     engine = create_engine(config.db_url)
     if not database_exists(engine.url):
         create_database(engine.url)
+        Base.metadata.drop_all(engine)
+        Base.metadata.create_all(engine)
 
 
 def get_db():
