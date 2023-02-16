@@ -1,11 +1,13 @@
+from datetime import datetime
 from typing import List
 
-from fastapi import Depends, APIRouter
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from database.time_series_data import save_time_series_data, fetch_time_series_data_by_machine_id_in_range
-from dependencies import get_db
-from models.time_series_data import TimeSeriesDataCreate, TimeSeriesData
+from app.database.time_series_data import (
+    fetch_time_series_data_by_machine_id_in_range, save_time_series_data)
+from app.dependencies import get_db
+from app.models.time_series_data import TimeSeriesData, TimeSeriesDataCreate
 
 router = APIRouter(
     prefix="/time-series-data",
@@ -36,8 +38,8 @@ def add_time_series_data(
 def get_time_series_data_by_machine_id_in_range(
         db: Session = Depends(get_db),
         machine_id: int = 0,
-        start: int = 0,
-        end: int = 0,
+        start: datetime = datetime.now(),
+        end: datetime = datetime.now(),
 ):
     """
     Description

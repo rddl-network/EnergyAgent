@@ -1,14 +1,15 @@
 FROM python:3.9-slim
 
-WORKDIR /app
+COPY app  /app
 
 COPY poetry.lock pyproject.toml ./
 
-RUN pip install poetry && poetry config virtualenvs.create false && poetry install --no-dev
-
-COPY . .
+RUN pip install poetry && poetry config virtualenvs.create false && poetry install --no-dev --no-root
 
 ENV DATABASE_URL=timescale://postgres:postgres@timescale:5432/postgres
 ENV DATABASE_TYPE=sql
 
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "--port", "8000"]
+EXPOSE 8080:8080
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--timeout-keep-alive", "240", "--log-level=debug"]
+

@@ -3,12 +3,13 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from database.schema import DaoTimeSeriesData
-from models.time_series_data import TimeSeriesDataCreate
+from app.database.schema import DaoTimeSeriesData
+from app.models.time_series_data import TimeSeriesDataCreate
 
 
 def save_time_series_data(session: Session, data: TimeSeriesDataCreate) -> DaoTimeSeriesData:
-    data = DaoTimeSeriesData(timestamp=data.timestamp, kwh=data.kwh, machine_id=data.machine_id)
+    data = DaoTimeSeriesData(timestamp=data.timestamp, absolute_energy=data.absolute_energy, unit=data.unit,
+                             machine_id=data.machine_id, cid=data.cid if data.cid else None)
     session.add(data)
     session.commit()
     return data

@@ -2,8 +2,8 @@ import time
 
 from fastapi import FastAPI
 
-import routers.time_series_data
-from dependencies import ensure_database
+from app.dependencies import ensure_database
+from app.routers import machine_router, time_series_data_router
 
 app = FastAPI()
 
@@ -18,5 +18,5 @@ while True:
         time.sleep(5)
 
 
-app.include_router(routers.time_series_data_router)
-app.include_router(routers.machine_router)
+app.include_router(time_series_data_router)
+app.include_router(machine_router)

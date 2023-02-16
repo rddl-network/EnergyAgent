@@ -2,16 +2,16 @@ import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy_utils import database_exists, create_database
+from sqlalchemy_utils import create_database, database_exists
 
-from database.schema import Base
+from app.database.schema import Base
 
 
 class Config:
     def __init__(self):
         self.db_user = os.getenv('DB_USER') or 'postgres'
         self.db_password = os.getenv('DB_PASSWORD') or 'password'
-        self.db_host = os.environ.get("DB_HOST") or 'localhost:5432'
+        self.db_host = os.environ.get("DB_HOST") or 'timescaledb:5432'
         self.db_name = os.environ.get("DB_NAME") or 'energy'
 
         # build the database url

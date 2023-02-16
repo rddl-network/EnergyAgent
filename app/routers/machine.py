@@ -3,9 +3,10 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from database.machine import save_machine, fetch_machine_by_id, fetch_machines
-from dependencies import get_db
-from models.machine import MachineCreate, Machine
+from app.database.machine import (fetch_machine_by_id, fetch_machines,
+                                  save_machine)
+from app.dependencies import get_db
+from app.models.machine import Machine, MachineCreate
 
 router = APIRouter(
     prefix="/machine",
