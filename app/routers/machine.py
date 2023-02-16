@@ -1,11 +1,12 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from database.machine import save_machine, fetch_machine_by_id, fetch_machines
-from dependencies import get_db
-from models.machine import MachineCreate, Machine
+from app.database.machine import (fetch_machine_by_id, fetch_machines,
+                                  save_machine)
+from app.dependencies import get_db
+from app.models.machine import Machine, MachineCreate
 
 router = APIRouter(
     prefix="/machine",
@@ -33,7 +34,10 @@ def get_machine_by_id(db: Session = Depends(get_db), machine_id: int = 0) -> Mac
     - Return a machine by id.
     """
     dao_machine = fetch_machine_by_id(db, machine_id)
+    if not dao_machine:
+        raise HTTPException(status_code=404, detail='Machine not found.')
     return Machine.from_dao(dao_machine)
+
 
 
 @router.post("/", response_model=Machine, summary="Add a new machine")

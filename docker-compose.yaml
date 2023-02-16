@@ -1,0 +1,59 @@
+version: "3.8"
+services:
+  timescaledb:
+    image: timescale/timescaledb-ha:pg14-latest
+    container_name: timescaledb
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+
+  phppgadmin:
+    container_name: phppgadmin
+    image: neimheadh/phppgadmin:latest
+    ports:
+      - "80:80"
+    environment:
+      POSTGRES_HOST: timescaledb
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASS: password
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/DockerFile
+    profiles: ["app"]
+    container_name: app-business-logic
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: password
+
+    ports:
+      - '8080:8080'
+    depends_on:
+      - timescaledb
+    volumes:
+      - ./app:/app
+    command: sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8080 --timeout-keep-alive 240 --reload"
+
+  test:
+    build:
+      context: .
+      dockerfile: docker/DockerFile_test
+    profiles: [ "test" ]
+    container_name: app-business-logic-tests
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: password
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./app:/app
+      - ./tests:/tests
+    command: sh -c "pytest /tests -k 'test' -vv --cache-clear --show-capture=no -r chars"
+
+    depends_on:
+      - timescaledb
