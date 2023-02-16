@@ -30,9 +30,6 @@ def handle_date(date_string: str):
 
 
 def generate_public_key():
-    # key = RSA.generate(2048)
-    # public_key = key.publickey().export_key()
-    # return public_key.decode()
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=256))
 
 

@@ -8,10 +8,11 @@ from app.models.machine import MachineCreate
 
 
 def save_machine(session: Session, machine: MachineCreate) -> DaoMachine:
-    machine = fetch_machine_by_machine_id(session, machine.machine_id)
-    if machine:
+    temp_machine = fetch_machine_by_machine_id(session, machine.machine_id)
+    if temp_machine:
         raise HTTPException(status_code=400, detail='Machine_id (public-key) exist.')
-    machine = DaoMachine(machine_id=machine.machine_id, machine_type=machine.machine_type)
+    machine = DaoMachine(machine_id=machine.machine_id, machine_type=machine.machine_type,
+                         cid=machine.cid if machine.cid else None)
     session.add(machine)
     session.commit()
     return machine

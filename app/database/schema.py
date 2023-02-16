@@ -10,6 +10,7 @@ class DaoMachine(Base):
     id = Column(Integer, primary_key=True)
     machine_id = Column(String, unique=True, nullable=False, comment="the public key of the machine")
     machine_type = Column(String, nullable=False)
+    cid = Column(String, nullable=True)
 
 
 class DaoTimeSeriesData(Base):

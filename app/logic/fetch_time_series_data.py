@@ -12,8 +12,8 @@ def fetch_and_store_time_series_data_every_n_minutes_from_hardware(machine_id: i
     #TODO: Replace dummy data with real data from hardware
     while True:
         data = [
-            TimeSeriesData(timestamp=datetime.now(), unin='kwh', absolute_energy=1.0),
-            TimeSeriesData(timestamp=datetime.now(), unin='kwh', absolute_energy=2.0),
+            TimeSeriesData(timestamp=datetime.now(), unit='kwh', absolute_energy=1.0),
+            TimeSeriesData(timestamp=datetime.now(), unit='kwh', absolute_energy=2.0),
         ]
         store_time_series_data(machine_id, data)
         time.sleep(n * 60)
