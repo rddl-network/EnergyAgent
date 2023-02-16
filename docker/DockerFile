@@ -1,15 +1,26 @@
-FROM python:3.9-slim
+FROM python:3.10-alpine
 
-COPY app  /app
+RUN apk update && apk upgrade
 
+Run apk add -U \
+    build-base \
+    curl \
+    eudev-dev \
+    git \
+    libffi-dev \
+    libusb-dev \
+    openssh \
+    openssl-dev \
+    protobuf-dev \
+    udev
+
+COPY .  .
 COPY poetry.lock pyproject.toml ./
 
-RUN pip install poetry && poetry config virtualenvs.create false && poetry install --no-dev --no-root
-
-ENV DATABASE_URL=timescale://postgres:postgres@timescale:5432/postgres
-ENV DATABASE_TYPE=sql
+RUN pip install poetry
+RUN poetry config virtualenvs.create false
+RUN poetry install --no-root
 
 EXPOSE 8080:8080
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--timeout-keep-alive", "240", "--log-level=debug"]
-
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "prosumer-service"
+name = "business-logic"
 version = "0.1.0"
 description = ""
 authors = ["Cybnon <stefan.weber93@googlemail.com>"]
