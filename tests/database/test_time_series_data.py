@@ -12,7 +12,7 @@ def test_save_time_series_data(mocker):
     data = TimeSeriesDataCreate(timestamp=datetime.now(), absolute_energy=0, unit='kWh', machine_id=0)
     dao_data = save_time_series_data(session, data)
     assert isinstance(dao_data, DaoTimeSeriesData)
-    assert dao_data.timestamp == data.timestamp
+    assert dao_data.created_at == data.timestamp
     assert dao_data.unit == 'kWh'
     assert dao_data.absolute_energy == '0'
     assert dao_data.machine_id == data.machine_id

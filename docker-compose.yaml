@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   timescaledb:
-    image: timescale/timescaledb-ha:pg14-latest
+    image: timescale/timescaledb:latest-pg15
     container_name: timescaledb
     restart: always
     ports:
@@ -9,17 +9,6 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-
-  phppgadmin:
-    container_name: phppgadmin
-    image: neimheadh/phppgadmin:latest
-    ports:
-      - "80:80"
-    environment:
-      POSTGRES_HOST: timescaledb
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: postgres
-      POSTGRES_PASS: password
 
   app:
     build:
@@ -30,6 +19,9 @@ services:
     environment:
       DB_USER: postgres
       DB_PASSWORD: password
+      DB_HOST: timescaledb
+      DB_PORT: 5432
+      DB_NAME: energy
 
     ports:
       - '8080:8080'

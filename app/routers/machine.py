@@ -22,8 +22,7 @@ def get_machines(db: Session = Depends(get_db)) -> List[Machine]:
     -----------
     - Return all machines.
     """
-    dao_machines = fetch_machines(db)
-    return [Machine.from_dao(dao_machine) for dao_machine in dao_machines]
+    return fetch_machines(db)
 
 
 @router.get("/{machine_id}", response_model=Machine, summary="Return a machine by id")
@@ -36,8 +35,7 @@ def get_machine_by_id(db: Session = Depends(get_db), machine_id: int = 0) -> Mac
     dao_machine = fetch_machine_by_id(db, machine_id)
     if not dao_machine:
         raise HTTPException(status_code=404, detail='Machine not found.')
-    return Machine.from_dao(dao_machine)
-
+    return dao_machine
 
 
 @router.post("/", response_model=Machine, summary="Add a new machine")
@@ -50,5 +48,4 @@ def add_machine(
     -----------
     - Add a new machine.
     """
-    dao_machine = save_machine(db, machine)
-    return Machine.from_dao(dao_machine)
+    return save_machine(db, machine)
