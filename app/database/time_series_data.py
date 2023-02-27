@@ -6,8 +6,8 @@ from fastapi import HTTPException
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.database.machine import fetch_machine_by_id
-from app.database.schema import DaoTimeSeriesData
+from ..database.machine import fetch_machine_by_id
+from ..database.schema import DaoTimeSeriesData
 
 
 def save_time_series_data(session: Session, machine_id: int, absolute_energy: Decimal, unit: str, create_at: datetime,

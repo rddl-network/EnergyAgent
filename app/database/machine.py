@@ -3,8 +3,8 @@ from typing import List
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.database.schema import DaoMachine
-from app.models.machine import MachineCreate
+from .schema import DaoMachine
+from ..models.machine import MachineCreate
 
 
 def save_machine(session: Session, machine: MachineCreate) -> DaoMachine:
