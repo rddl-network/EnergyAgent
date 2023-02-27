@@ -1,0 +1,14 @@
+[flake8]
+ignore = F811, E711
+exclude =
+    .git,
+    __pycache__,
+    docs/source/conf.py,
+    app/dblayer/__init__.py,
+    old,
+    build,
+    dist,
+    venv,
+    .venv,
+max-line-length = 130
+max-complexity = 20

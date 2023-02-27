@@ -4,10 +4,13 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.database.time_series_data import (
-    fetch_time_series_data_by_machine_id_in_range, save_time_series_data)
+from app.database.time_series_data import \
+    fetch_time_series_data_by_machine_id_in_range
 from app.dependencies import get_db
-from app.models.time_series_data import TimeSeriesData, TimeSeriesDataCreate
+from app.helper.enums import Resolution
+from app.logic import time_series_data as time_series_data_logic
+from app.models.time_series_data import (AggregatedTimeSeriesData,
+                                         TimeSeriesData, TimeSeriesDataCreate)
 
 router = APIRouter(
     prefix="/time-series-data",
@@ -19,19 +22,15 @@ router = APIRouter(
 @router.post("/", response_model=TimeSeriesData, summary="Add a new time-series-data")
 def add_time_series_data(
         db: Session = Depends(get_db),
-        time_series_data: TimeSeriesDataCreate = None,
+        data: TimeSeriesDataCreate = None,
 ):
     """
     Description
     -----------
     - Add a new time-series-data.
-
-    Pre-conditions
-    -----------
-    - The **master-key** must be created before.
     """
-    dao_time_series = save_time_series_data(db, time_series_data)
-    return TimeSeriesData.from_dao(dao_time_series)
+    return time_series_data_logic.save_time_series_data(db, data.machine_id, data.absolute_energy, data.unit,
+                                                        data.created_at, data.cid if data.cid else None)
 
 
 @router.get("/range", response_model=List[TimeSeriesData], summary="Return all time-series-data in a range")
@@ -45,10 +44,29 @@ def get_time_series_data_by_machine_id_in_range(
     Description
     -----------
     - Return all time-series-data in a range for a specific machine.
-
-    Pre-conditions
-    -----------
-    - The **master-key** must be created before.
     """
-    dao_time_series = fetch_time_series_data_by_machine_id_in_range(db, machine_id, start, end)
-    return [TimeSeriesData.from_dao(dao_time_series) for dao_time_series in dao_time_series]
+    return fetch_time_series_data_by_machine_id_in_range(db, machine_id, start, end)
+
+
+@router.get("/machine_aggregated_data", response_model=List[AggregatedTimeSeriesData])
+def get_machine_aggregated_time_series_data(
+        machine_id: int,
+        start_date: datetime,
+        end_date: datetime,
+        resolution: Resolution = Resolution.fifteen_minutes.value,
+        db: Session = Depends(get_db),
+):
+    data = time_series_data_logic.fetch_machine_aggregated_time_series_data(db, machine_id, start_date, end_date,
+                                                                            resolution.value)
+    return sorted(data, key=lambda d: d.time_slot)
+
+
+@router.get("/all_aggregated_data", response_model=List[AggregatedTimeSeriesData])
+def get_machine_aggregated_time_series_data(
+        start_date: datetime,
+        end_date: datetime,
+        resolution: Resolution = Resolution.fifteen_minutes.value,
+        db: Session = Depends(get_db),
+):
+    data = time_series_data_logic.fetch_all_aggregated_time_series_data(db, start_date, end_date, resolution.value)
+    return sorted(data, key=lambda d: (d.machine_id, d.time_slot))

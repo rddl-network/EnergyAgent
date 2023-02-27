@@ -6,16 +6,14 @@ To run:
 docker exec -it app-business-logic python -m app.mock_scripts.generate_time_series_data start_date end_date time_delta num_machine
 
 example:
-docker exec -it app-business-logic python -m app.mock_scripts.generate_time_series_data "2023, 1, 1, 0, 0, 0" "2024, 1, 1, 0, 0, 0"  15 10
+docker exec -it app-business-logic python -m app.mock_scripts.generate_time_series_data "2023, 1, 1, 0, 0, 0" "2024, 1, 1, 0, 0, 0"  15 10 # noqa
 """
 
 import argparse
-import os
 import random
 import string
-import sys
 import time
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 from app.database.schema import DaoMachine, DaoTimeSeriesData
 from app.dependencies import get_db
@@ -100,7 +98,7 @@ def generate_time_series_data():
             while current_date < end_date:
                 last_value += generate_value(current_date)
                 time_series_data.append(
-                    {'timestamp': current_date, 'absolute_energy': last_value, 'unit': 'kWh', 'machine_id': machine.id})
+                    {'created_at': current_date, 'absolute_energy': last_value, 'unit': 'kWh', 'machine_id': machine.id})
                 current_date += timedelta(minutes=time_delta)
                 if len(time_series_data) >= batch_size:
                     db.execute(DaoTimeSeriesData.__table__.insert().values(time_series_data))
