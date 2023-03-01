@@ -1,5 +1,15 @@
 version: "3.8"
 services:
+  timescaledb:
+    extends:
+      file: ./my-power-base.yaml
+      service: app
+  app:
+    extends:
+      file: ./my-power-base.yaml
+      service: timescaledb
+    depends_on:
+      - timescaledb
   test:
     build:
       context: .
@@ -15,16 +25,5 @@ services:
       - ./app:/app
       - ./tests:/tests
     command: sh -c "pytest /tests -k 'test' -vv --cache-clear --show-capture=no -r chars"
-
-    depends_on:
-      - timescaledb
-  timescaledb:
-    extends:
-      file: ../my-power-base.yaml
-      service: app
-  app:
-    extends:
-      file: ../my-power-base.yaml
-      service: timescaledb
-    depends_on:
-      - timescaledb
+#    depends_on:
+#      - timescaledb

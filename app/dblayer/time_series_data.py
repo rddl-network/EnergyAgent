@@ -6,12 +6,23 @@ from fastapi import HTTPException
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from ..database.machine import fetch_machine_by_id
-from ..database.schema import DaoTimeSeriesData
+from app.dblayer.machine import fetch_machine_by_id
+from app.dblayer.tables import DaoTimeSeriesData
 
 
 def save_time_series_data(session: Session, machine_id: int, absolute_energy: Decimal, unit: str, create_at: datetime,
                           cid: Optional[str] = None) -> DaoTimeSeriesData:
+    """
+     Saves time-series data for a machine with the given machine_id.
+
+     :param session: A database session object.
+     :param machine_id: The id of machine for which the time-series data is being saved.
+     :param absolute_energy: The absolute energy value of the time-series data.
+     :param unit: The unit of measurement.
+     :param create_at: The timestamp of the time-series data.
+     :param cid: The cid of the time-series data.
+     :return: The saved DaoTimeSeriesData object.
+     """
     machine = fetch_machine_by_id(session, machine_id)
     if not machine:
         raise HTTPException(status_code=404, detail='Machine not found.')
@@ -30,20 +41,18 @@ def fetch_time_series_data_by_machine_id(session: Session, machine_id: int) -> L
     return session.query(DaoTimeSeriesData).filter_by(machine_id=machine_id).all()
 
 
-def fetch_time_series_data_by_machine_id_in_range(
-        session: Session,
-        machine_id: int,
-        start: datetime,
-        end: datetime) -> List[DaoTimeSeriesData]:
-    machine = fetch_machine_by_id(session, machine_id)
-    if not machine:
-        raise HTTPException(status_code=404, detail='Machine not found.')
-    return session.query(DaoTimeSeriesData).filter_by(machine_id=machine_id).filter(
-        DaoTimeSeriesData.created_at.between(start, end)).all()
-
-
 def fetch_machine_aggregated_time_series_data(session: Session, machine_id: int, start_date: datetime,
-                                              end_date: datetime, resolution: str):
+                                              end_date: datetime, resolution: str) -> List[dict]:
+    """
+    Retrieves aggregated time-series data for a machine for defined period.
+
+    :param session: A database session object.
+    :param machine_id: The id of machine for which the time-series data is being saved.
+    :param start_date: The start date of the time period for which the data is being retrieved.
+    :param end_date: The end date of the time period for which the data is being retrieved.
+    :param resolution: The resolution.
+    :return: A list of dictionaries representing the retrieved time-series data.
+    """
     stmt = text("""
         SELECT COALESCE(main_query.machine_id, :machine_id) AS machine_id,
             generate_serires_query.time_slot,
@@ -57,7 +66,7 @@ def fetch_machine_aggregated_time_series_data(session: Session, machine_id: int,
                 energy_value
             FROM (
                 SELECT machine_id,
-	                time_bucket(:resolution, created_at) AS time_slot,
+                    time_bucket(:resolution, created_at) AS time_slot,
                     MAX(absolute_energy) -
                         COALESCE(
                         LAG(MAX(absolute_energy) FILTER (WHERE absolute_energy IS NOT NULL), 1)
@@ -81,7 +90,17 @@ def fetch_machine_aggregated_time_series_data(session: Session, machine_id: int,
     return session.execute(stmt).all()
 
 
-def fetch_all_aggregated_time_series_data(session: Session, start_date: datetime, end_date: datetime, resolution: str):
+def fetch_all_aggregated_time_series_data(session: Session, start_date: datetime, end_date: datetime,
+                                          resolution: str) -> List[dict]:
+    """
+      Retrieves aggregated time-series data for all machines for defined period.
+
+      :param session: A database session object.
+      :param start_date: The start date of the time period for which the data is being retrieved.
+      :param end_date: The end date of the time period for which the data is being retrieved.
+      :param resolution: The resolution.
+      :return: A list of dictionaries representing the retrieved time-series data.
+      """
     stmt = text("""
         SELECT generate_serires_query.machine_id AS machine_id,
             generate_serires_query.time_slot,

@@ -2,6 +2,7 @@ version: "3.8"
 services:
   timescaledb:
     image: timescale/timescaledb-ha:pg14-latest
+    profiles: [ "app" ]
     container_name: timescaledb
     restart: always
     ports:
