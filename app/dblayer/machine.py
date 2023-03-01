@@ -5,14 +5,14 @@ from sqlalchemy.orm import Session
 from app.dblayer.tables import DaoMachine
 
 
-def save_machine(session: Session, machine_id, machine_type, cid: Optional[str] = None) -> DaoMachine:
+async def save_machine(session: Session, machine_id, machine_type, cid: Optional[str] = None) -> DaoMachine:
     machine = DaoMachine(machine_id=machine_id, machine_type=machine_type, cid=cid if cid else None)
     session.add(machine)
     session.commit()
     return machine
 
 
-def fetch_machines(session: Session) -> List[DaoMachine]:
+async def fetch_machines(session: Session) -> List[DaoMachine]:
     """
     Retrieves all existed machines.
 
@@ -22,7 +22,7 @@ def fetch_machines(session: Session) -> List[DaoMachine]:
     return session.query(DaoMachine).all()
 
 
-def fetch_machine_by_id(session: Session, id: int) -> DaoMachine:
+async def fetch_machine_by_id(session: Session, id: int) -> DaoMachine:
     """
     Retrieves a machine by its id.
 
@@ -33,7 +33,7 @@ def fetch_machine_by_id(session: Session, id: int) -> DaoMachine:
     return session.query(DaoMachine).filter_by(id=id).first()
 
 
-def fetch_machine_by_machine_id(session: Session, machine_id: str) -> DaoMachine:
+async def fetch_machine_by_machine_id(session: Session, machine_id: str) -> DaoMachine:
     """
     Retrieves a machine by its public key.
 

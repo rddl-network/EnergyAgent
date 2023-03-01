@@ -15,31 +15,31 @@ router = APIRouter(
 
 
 @router.get("/", response_model=List[Machine], summary="Return all machines")
-def get_machines(db: Session = Depends(get_db)) -> List[Machine]:
+async def get_machines(db: Session = Depends(get_db)) -> List[Machine]:
     """
     Description
     -----------
     - Return all machines.
     """
-    return machine_controller.fetch_machines(db)
+    return await machine_controller.fetch_machines(db)
 
 
 @router.get("/{machine_id}", response_model=Machine, summary="Return a machine by its public-key (machine_id)")
-def get_machine_by_machine_id(machine_id: str, db: Session = Depends(get_db)) -> Machine:
+async def get_machine_by_machine_id(machine_id: str, db: Session = Depends(get_db)) -> Machine:
     """
     Description
     -----------
     - Return a machine by its public-key (machine_id).
     """
-    return machine_controller.fetch_machine_by_machine_id(db, machine_id)
+    return await machine_controller.fetch_machine_by_machine_id(db, machine_id)
 
 
 @router.post("/", response_model=Machine, summary="Add a new machine")
-def add_machine(machine: MachineCreate = None, db: Session = Depends(get_db)) -> Machine:
+async def add_machine(machine: MachineCreate = None, db: Session = Depends(get_db)) -> Machine:
     """
     Description
     -----------
     - Add a new machine.
     """
-    return machine_controller.save_machine(db, machine.machine_id, machine.machine_type,
-                                           machine.cid if machine.cid else None)
+    return await machine_controller.save_machine(db, machine.machine_id, machine.machine_type,
+                                                 machine.cid if machine.cid else None)

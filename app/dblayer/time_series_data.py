@@ -2,16 +2,14 @@ import datetime
 from decimal import Decimal
 from typing import List, Optional
 
-from fastapi import HTTPException
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.dblayer.machine import fetch_machine_by_id
 from app.dblayer.tables import DaoTimeSeriesData
 
 
-def save_time_series_data(session: Session, machine_id: int, absolute_energy: Decimal, unit: str, create_at: datetime,
-                          cid: Optional[str] = None) -> DaoTimeSeriesData:
+async def save_time_series_data(session: Session, machine_id: int, absolute_energy: Decimal, unit: str,
+                                create_at: datetime, cid: Optional[str] = None) -> DaoTimeSeriesData:
     """
      Saves time-series data for a machine with the given machine_id.
 
@@ -23,9 +21,6 @@ def save_time_series_data(session: Session, machine_id: int, absolute_energy: De
      :param cid: The cid of the time-series data.
      :return: The saved DaoTimeSeriesData object.
      """
-    machine = fetch_machine_by_id(session, machine_id)
-    if not machine:
-        raise HTTPException(status_code=404, detail='Machine not found.')
     data = DaoTimeSeriesData(created_at=create_at, absolute_energy=absolute_energy, unit=unit,
                              machine_id=machine_id, cid=cid if cid else None)
     session.add(data)
@@ -33,16 +28,30 @@ def save_time_series_data(session: Session, machine_id: int, absolute_energy: De
     return data
 
 
-def fetch_time_series_data_by_id(session: Session, id: int) -> DaoTimeSeriesData:
+async def fetch_time_series_data_by_id(session: Session, id: int) -> DaoTimeSeriesData:
+    """
+    Retrieves time-series data by its id.
+
+    :param session: A database session object.
+    :param id: The id of time-series data .
+    :return: time-series data.
+    """
     return session.query(DaoTimeSeriesData).filter_by(id=id).first().data
 
 
-def fetch_time_series_data_by_machine_id(session: Session, machine_id: int) -> List[DaoTimeSeriesData]:
+async def fetch_time_series_data_by_machine_id(session: Session, machine_id: int) -> List[DaoTimeSeriesData]:
+    """
+    Retrieves list of time-series data by machine_id.
+
+    :param session: A database session object.
+    :param machine_id: machine_id of time_series data.
+    :return: list of time-series data.
+    """
     return session.query(DaoTimeSeriesData).filter_by(machine_id=machine_id).all()
 
 
-def fetch_machine_aggregated_time_series_data(session: Session, machine_id: int, start_date: datetime,
-                                              end_date: datetime, resolution: str) -> List[dict]:
+async def fetch_machine_aggregated_time_series_data(session: Session, machine_id: int, start_date: datetime,
+                                                    end_date: datetime, resolution: str) -> List[dict]:
     """
     Retrieves aggregated time-series data for a machine for defined period.
 
@@ -87,11 +96,19 @@ def fetch_machine_aggregated_time_series_data(session: Session, machine_id: int,
         machine_id=machine_id,
         resolution=resolution
     )
-    return session.execute(stmt).all()
+    x = session.execute(stmt).all()
+    print('x' * 100)
+    print(type(x))
+    print(x)
+    for y in x:
+        print('y' * 10)
+        print(type(y))
+        print(y)
+    return x
 
 
-def fetch_all_aggregated_time_series_data(session: Session, start_date: datetime, end_date: datetime,
-                                          resolution: str) -> List[dict]:
+async def fetch_all_aggregated_time_series_data(session: Session, start_date: datetime, end_date: datetime,
+                                                resolution: str) -> List[dict]:
     """
       Retrieves aggregated time-series data for all machines for defined period.
 

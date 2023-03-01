@@ -24,6 +24,6 @@ services:
     volumes:
       - ./app:/app
       - ./tests:/tests
-    command: sh -c "pytest /tests -k 'test' -vv --cache-clear --show-capture=no -r chars"
+    command: sh -c "pytest /tests -k 'test' -vv "
 #    depends_on:
 #      - timescaledb

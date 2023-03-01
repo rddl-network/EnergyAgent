@@ -10,8 +10,8 @@ from app.dblayer import tables
 from app.dblayer import time_series_data as time_series_data_db
 
 
-def save_time_series_data(session: Session, machine_id: int, absolute_energy: Decimal, unit: str, create_at: datetime,
-                          cid: Optional[str] = None) -> tables.DaoTimeSeriesData:
+async def save_time_series_data(session: Session, machine_id: int, absolute_energy: Decimal, unit: str,
+                                create_at: datetime, cid: Optional[str] = None) -> tables.DaoTimeSeriesData:
     """
      Saves time-series data for a machine with the given machine_id.
 
@@ -24,14 +24,14 @@ def save_time_series_data(session: Session, machine_id: int, absolute_energy: De
      :return: The saved DaoTimeSeriesData object.
      :raises HTTPException: If no machine with the given ID is found in the database.
      """
-    dao_machine = machine_db.fetch_machine_by_id(session, machine_id)
+    dao_machine = await machine_db.fetch_machine_by_id(session, machine_id)
     if not dao_machine:
         raise HTTPException(status_code=404, detail='Machine not found.')
-    return time_series_data_db.save_time_series_data(session, machine_id, absolute_energy, unit, create_at, cid)
+    return await time_series_data_db.save_time_series_data(session, machine_id, absolute_energy, unit, create_at, cid)
 
 
-def fetch_machine_aggregated_time_series_data(session: Session, machine_id: int, start_date: datetime,
-                                              end_date: datetime, resolution: str) -> List[dict]:
+async def fetch_machine_aggregated_time_series_data(session: Session, machine_id: int, start_date: datetime,
+                                                    end_date: datetime, resolution: str) -> List[dict]:
     """
     Retrieves aggregated time-series data for a machine for defined period.
 
@@ -43,15 +43,15 @@ def fetch_machine_aggregated_time_series_data(session: Session, machine_id: int,
     :return: A list of dictionaries representing the retrieved time-series data.
     :raises HTTPException: If no machine with the given ID is found in the database.
     """
-    dao_machine = machine_db.fetch_machine_by_id(session, machine_id)
+    dao_machine = await machine_db.fetch_machine_by_id(session, machine_id)
     if not dao_machine:
         raise HTTPException(status_code=404, detail='Machine not found.')
-    return time_series_data_db.fetch_machine_aggregated_time_series_data(session, machine_id, start_date, end_date,
-                                                                         resolution)
+    return await time_series_data_db.fetch_machine_aggregated_time_series_data(session, machine_id, start_date,
+                                                                               end_date, resolution)
 
 
-def fetch_all_aggregated_time_series_data(session: Session, start_date: datetime, end_date: datetime,
-                                          resolution: str) -> List[dict]:
+async def fetch_all_aggregated_time_series_data(session: Session, start_date: datetime, end_date: datetime,
+                                                resolution: str) -> List[dict]:
     """
     Retrieves aggregated time-series data for all machines for defined period.
 
@@ -61,4 +61,4 @@ def fetch_all_aggregated_time_series_data(session: Session, start_date: datetime
     :param resolution: The resolution.
     :return: A list of dictionaries representing the retrieved time-series data.
     """
-    return time_series_data_db.fetch_all_aggregated_time_series_data(session, start_date, end_date, resolution)
+    return await time_series_data_db.fetch_all_aggregated_time_series_data(session, start_date, end_date, resolution)
