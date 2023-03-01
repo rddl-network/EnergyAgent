@@ -5,9 +5,9 @@ from typing import List, Optional
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.dblayer import machine as machine_db
-from app.dblayer import tables
-from app.dblayer import time_series_data as time_series_data_db
+from ..dblayer import machine as machine_db
+from ..dblayer import tables
+from ..dblayer import time_series_data as time_series_data_db
 
 
 async def save_time_series_data(session: Session, machine_id: int, absolute_energy: Decimal, unit: str,

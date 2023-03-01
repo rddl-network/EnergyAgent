@@ -5,7 +5,7 @@ from typing import List, Optional
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.dblayer.tables import DaoTimeSeriesData
+from ..dblayer.tables import DaoTimeSeriesData
 
 
 async def save_time_series_data(session: Session, machine_id: int, absolute_energy: Decimal, unit: str,

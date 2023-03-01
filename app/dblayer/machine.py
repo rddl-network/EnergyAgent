@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
-from app.dblayer.tables import DaoMachine
+from ..dblayer.tables import DaoMachine
 
 
 async def save_machine(session: Session, machine_id, machine_type, cid: Optional[str] = None) -> DaoMachine:
