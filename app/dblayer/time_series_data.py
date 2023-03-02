@@ -96,15 +96,7 @@ async def fetch_machine_aggregated_time_series_data(session: Session, machine_id
         machine_id=machine_id,
         resolution=resolution
     )
-    x = session.execute(stmt).all()
-    print('x' * 100)
-    print(type(x))
-    print(x)
-    for y in x:
-        print('y' * 10)
-        print(type(y))
-        print(y)
-    return x
+    return session.execute(stmt).all()
 
 
 async def fetch_all_aggregated_time_series_data(session: Session, start_date: datetime, end_date: datetime,
