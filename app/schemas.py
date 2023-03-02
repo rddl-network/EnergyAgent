@@ -5,6 +5,19 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
+class MachineCreate(BaseModel):
+    machine_id: str = Field(title="The public-key of the machine")
+    machine_type: str = Field(title="The type of a machine", example="Machine Type 1")
+    cid: Optional[str] = Field(title="The CID of the machine")
+
+
+class Machine(MachineCreate):
+    id: int = Field(title="The unique identifier of a machine", example=1)
+
+    class Config:
+        orm_mode = True
+
+
 class TimeSeriesDataCreate(BaseModel):
     created_at: datetime = Field(title="The timestamp of a time series data", example="2021-01-01 00:00:00")
     cid: Optional[str] = Field(title="The CID of the data")

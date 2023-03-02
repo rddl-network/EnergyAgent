@@ -1,44 +1,41 @@
 from datetime import datetime
 
-from app.database.schema import DaoTimeSeriesData
-from app.database.time_series_data import (
-    fetch_time_series_data_by_id, fetch_time_series_data_by_machine_id,
-    fetch_time_series_data_by_machine_id_in_range, save_time_series_data)
-from app.models.time_series_data import TimeSeriesDataCreate
+import pytest
+
+from app.dblayer import time_series_data as time_series_data_db
+from app.dblayer.tables import DaoTimeSeriesData
+
+pytest_plugins = ('pytest_asyncio',)
 
 
-def test_save_time_series_data(mocker):
+@pytest.mark.asyncio
+async def test_save_time_series_data(mocker):
     session = mocker.MagicMock()
-    data = TimeSeriesDataCreate(timestamp=datetime.now(), absolute_energy=0, unit='kWh', machine_id=0)
-    dao_data = save_time_series_data(session, data)
+    create_at = datetime.now()
+    dao_data = await time_series_data_db.save_time_series_data(session, machine_id=1, absolute_energy=0, unit='kWh',
+                                                               create_at=create_at, cid='cid 1')
     assert isinstance(dao_data, DaoTimeSeriesData)
-    assert dao_data.created_at == data.timestamp
+    assert dao_data.created_at == create_at
     assert dao_data.unit == 'kWh'
-    assert dao_data.absolute_energy == '0'
-    assert dao_data.machine_id == data.machine_id
+    assert dao_data.absolute_energy == 0
+    assert dao_data.machine_id == 1
+    assert dao_data.cid == 'cid 1'
 
 
-def test_fetch_time_series_data_by_id(mocker):
+@pytest.mark.asyncio
+async def test_fetch_time_series_data_by_id(mocker):
     session = mocker.MagicMock()
     session.query.return_value.filter_by.return_value.first.return_value.data = DaoTimeSeriesData(
-        timestamp=datetime.now(), absolute_energy=0, unit='kWh', machine_id=0)
-    dao_data = fetch_time_series_data_by_id(session, 0)
+        created_at=datetime.now(), absolute_energy=0, unit='kWh', machine_id=1)
+    dao_data = await time_series_data_db.fetch_time_series_data_by_id(session, 1)
     assert isinstance(dao_data, DaoTimeSeriesData)
 
 
-def test_fetch_time_series_data_by_machine_id(mocker):
+@pytest.mark.asyncio
+async def test_fetch_time_series_data_by_machine_id(mocker):
     session = mocker.MagicMock()
     session.query.return_value.filter_by.return_value.all.return_value = [
-        DaoTimeSeriesData(timestamp=datetime.now(), absolute_energy=0, unit='kWh', machine_id=0)]
+        DaoTimeSeriesData(created_at=datetime.now(), absolute_energy=0, unit='kWh', machine_id=1)]
 
-    dao_data = fetch_time_series_data_by_machine_id(session, 0)
-    assert isinstance(dao_data[0], DaoTimeSeriesData)
-
-
-def test_fetch_time_series_data_by_machine_id_in_range(mocker):
-    session = mocker.MagicMock()
-    session.query.return_value.filter_by.return_value.filter.return_value.all.return_value = [
-        DaoTimeSeriesData(timestamp=datetime.now(), absolute_energy=0, unit='kWh', machine_id=0)]
-
-    dao_data = fetch_time_series_data_by_machine_id_in_range(session, 0, datetime.now(), datetime.now())
+    dao_data = await time_series_data_db.fetch_time_series_data_by_machine_id(session, 0)
     assert isinstance(dao_data[0], DaoTimeSeriesData)

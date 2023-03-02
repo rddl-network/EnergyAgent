@@ -15,7 +15,7 @@ import string
 import time
 from datetime import datetime, timedelta
 
-from app.database.schema import DaoMachine, DaoTimeSeriesData
+from app.dblayer.tables import DaoMachine, DaoTimeSeriesData
 from app.dependencies import get_db
 
 
