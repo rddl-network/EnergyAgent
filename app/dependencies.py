@@ -9,14 +9,14 @@ from app.dblayer.tables import Base
 
 class Config:
     def __init__(self):
-        self.db_user = os.getenv('DB_USER') or 'postgres'
-        self.db_password = os.getenv('DB_PASSWORD') or 'password'
-        self.db_host = os.environ.get("DB_HOST") or 'timescaledb'
-        self.db_port = os.environ.get("DB_PORT") or '5432'
-        self.db_name = os.environ.get("DB_NAME") or 'energy'
+        self.db_user = os.getenv("DB_USER") or "postgres"
+        self.db_password = os.getenv("DB_PASSWORD") or "password"
+        self.db_host = os.environ.get("DB_HOST") or "timescaledb"
+        self.db_port = os.environ.get("DB_PORT") or "5432"
+        self.db_name = os.environ.get("DB_NAME") or "energy"
 
         # build the database url
-        self.db_url = f'postgresql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}'
+        self.db_url = f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
 
 config = Config()
