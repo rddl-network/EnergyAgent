@@ -14,7 +14,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[Thing], summary="Return all things")
+@router.get("", response_model=List[Thing], summary="Return all things")
 async def get_things(db: Session = Depends(get_db)) -> List[Thing]:
     """
     Description
@@ -34,7 +34,7 @@ async def get_thing_by_thing_id(thing_id: str, db: Session = Depends(get_db)) ->
     return await thing_controller.fetch_thing_by_thing_id(db, thing_id)
 
 
-@router.post("/", response_model=Thing, summary="Add a new thing")
+@router.post("", response_model=Thing, summary="Add a new thing")
 async def add_thing(thing: ThingCreate = None, db: Session = Depends(get_db)) -> Thing:
     """
     Description
