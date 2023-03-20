@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 
 from app.dblayer import time_series_data as time_series_data_db
-from app.dblayer.tables import TimeSeriesData
+from submodules.app_mypower_model.dblayer.tables import TimeSeriesData
 
 pytest_plugins = ("pytest_asyncio",)
 

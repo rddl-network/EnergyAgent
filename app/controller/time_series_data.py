@@ -5,7 +5,7 @@ from typing import List, Optional
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from ..dblayer import tables
+from submodules.app_mypower_model.dblayer import tables
 from ..dblayer import thing as thing_db
 from ..dblayer import time_series_data as time_series_data_db
 

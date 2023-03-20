@@ -15,8 +15,8 @@ import string
 import time
 from datetime import datetime, timedelta
 
-from app.dblayer.tables import Thing, TimeSeriesData
 from app.dependencies import get_db
+from submodules.app_mypower_model.dblayer.tables import Thing, TimeSeriesData
 
 
 def handle_date(date_string: str):
