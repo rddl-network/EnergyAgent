@@ -16,7 +16,7 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=TimeSeriesData, summary="Add a new time-series-data for a thing")
+@router.post("", response_model=TimeSeriesData, summary="Add a new time-series-data for a thing")
 async def add_time_series_data(data: TimeSeriesDataCreate, db: Session = Depends(get_db)):
     """
     Description
