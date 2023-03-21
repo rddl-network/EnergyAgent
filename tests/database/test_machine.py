@@ -1,7 +1,7 @@
 import pytest
 
 from app.dblayer import thing as thing_db
-from app.dblayer.tables import Thing
+from submodules.app_mypower_model.dblayer.tables import Thing
 
 pytest_plugins = ("pytest_asyncio",)
 

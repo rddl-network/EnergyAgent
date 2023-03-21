@@ -5,7 +5,7 @@ from typing import List, Optional
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from ..dblayer.tables import TimeSeriesData
+from submodules.app_mypower_model.dblayer.tables import TimeSeriesData
 
 
 async def save_time_series_data(
@@ -28,7 +28,11 @@ async def save_time_series_data(
     :return: The saved DaoTimeSeriesData object.
     """
     data = TimeSeriesData(
-        created_at=create_at, absolute_energy=absolute_energy, unit=unit, thing_id=thing_id, cid=cid if cid else None
+        created_at=create_at,
+        absolute_energy=absolute_energy,
+        unit=unit,
+        thing_id=thing_id,
+        cid=cid if cid else None,
     )
     session.add(data)
     session.commit()
