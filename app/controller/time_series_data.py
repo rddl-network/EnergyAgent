@@ -6,8 +6,8 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from submodules.app_mypower_model.dblayer import tables
-from ..dblayer import thing as thing_db
-from ..dblayer import time_series_data as time_series_data_db
+from submodules.app_mypower_model.dblayer import thing as thing_db
+from submodules.app_mypower_model.dblayer import time_series_data as time_series_data_db
 
 
 async def save_time_series_data(

@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from submodules.app_mypower_model.dblayer import tables
-from ..dblayer import thing as thing_db
+from submodules.app_mypower_model.dblayer import thing as thing_db
 
 
 async def save_thing(session: Session, thing_id: str, thing_type: str, cid: Optional[str] = None) -> tables.Thing:
