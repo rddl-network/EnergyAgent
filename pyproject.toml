@@ -17,6 +17,7 @@ pytest = "^7.2.1"
 pytest-mock = "^3.10.0"
 pytest-asyncio = "^0.20.3"
 black = "^23.1.0"
+loguru = "^0.6.0"
 
 
 [build-system]
