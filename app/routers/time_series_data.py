@@ -4,9 +4,9 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.controller import time_series_data as time_series_data_controller
+from submodules.app_mypower_model.controller import time_series_data as time_series_data_controller
 from app.dependencies import get_db
-from app.helper.enums import Resolution
+from submodules.app_mypower_model.helper.enums import Resolution
 from app.schemas import AggregatedTimeSeriesData, TimeSeriesData, TimeSeriesDataCreate
 
 router = APIRouter(

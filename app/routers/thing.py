@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.controller import thing as thing_controller
+from submodules.app_mypower_model.controller import thing as thing_controller
 from app.dependencies import get_db
 from app.schemas import Thing, ThingCreate
 
