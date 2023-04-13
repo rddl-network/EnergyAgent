@@ -18,6 +18,10 @@ pytest-mock = "^3.10.0"
 pytest-asyncio = "^0.20.3"
 black = "^23.1.0"
 loguru = "^0.6.0"
+grpcio = "^1.53.0"
+grpcio-tools = "^1.53.0"
+ecdsa = "^0.18.0"
+pycryptodome = "^3.17"
 
 
 [build-system]

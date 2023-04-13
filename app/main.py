@@ -2,7 +2,8 @@ import time
 
 from fastapi import FastAPI
 
-from app.dependencies import ensure_database
+from app.dependencies import ensure_database, config
+from app.energy_meter_interaction.energy_fetcher import DataFetcher
 from app.routers import thing_router, time_series_data_router
 
 app = FastAPI()
@@ -20,3 +21,6 @@ while True:
 
 app.include_router(thing_router)
 app.include_router(time_series_data_router)
+
+data_fetcher = DataFetcher(config.data_fetcher_interval)
+data_fetcher.start()
