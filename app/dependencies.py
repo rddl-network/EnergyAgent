@@ -22,6 +22,7 @@ class Config:
         self.verify_signature = bool(os.environ.get("VERIFY_SIGNATURE")) or False
         self.interval = int(os.environ.get("INTERVAL") or "15")
         self.thing_id = (os.environ.get("THING_ID") or "st-energy-meter")
+        self.pubkey = (os.environ.get("PUBKEY") or "st-energy-meter")
 
         # build the database url
         self.db_url = f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"

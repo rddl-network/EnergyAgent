@@ -6,14 +6,13 @@ from typing import Optional
 import grpc
 from decimal import Decimal
 
-from app.dependencies import config, get_db, db_context
+from app.dependencies import config, db_context
 from app.energy_meter_interaction.energy_decrypter import extract_data, decode_packet
 from app.energy_meter_interaction.energy_meter_data import MeterData
 from app.proto.MeterConnectorProto import meter_connector_pb2_grpc, meter_connector_pb2
 from app.schemas import Thing
 
-from submodules.app_mypower_model.controller import time_series_data as time_series_data_controller
-from submodules.app_mypower_model.dblayer import save_thing, fetch_thing_by_thing_id, save_time_series_data
+from submodules.app_mypower_model.dblayer import fetch_thing_by_public_key, save_metric
 
 import sys
 import logging
@@ -26,18 +25,6 @@ class DataFetcher:
         self.logger = logging.getLogger(__name__)
 
     async def fetch_data(self):
-        with db_context() as db:
-            if config.thing_id:
-                self.logger.info("fetching thing %s", config.thing_id)
-                fetched_thing = await fetch_thing_by_thing_id(db, config.thing_id)
-                if not fetched_thing:
-                    self.logger.info("thing does not exists")
-                    saved_thing = await save_thing(db, config.thing_id, "engergy-meter", None)
-                    self.thing_id = saved_thing.id
-                else:
-                    self.logger.info("thing exists")
-                    self.thing_id = fetched_thing.id
-
         self.logger.info("thing_id: %s", self.thing_id)
         self.logger.info("start fetching")
         try:
@@ -55,9 +42,12 @@ class DataFetcher:
         except Exception as e:
             self.logger.exception("DataFetcher thread failed with exception: %s", str(e))
 
-    async def save_time_series_data(self, data: MeterData):
+    @staticmethod
+    async def save_time_series_data(data: MeterData):
         with db_context() as db:
-            absolute_energy = data.energy_delivered - data.energy_consumed
-            return await save_time_series_data(
-                db, self.thing_id, Decimal(absolute_energy), "kwh", data.timestamp, None
-            )
+            if data.energy_delivered != 0:
+                return await save_metric(
+                    db, config.pubkey, data.timestamp, Decimal(data.energy_delivered), "absolute_energy")
+
+            return await save_metric(
+                db, config.pubkey, data.timestamp, Decimal(data.energy_consumed), "absolute_energy_out")
