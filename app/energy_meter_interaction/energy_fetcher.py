@@ -25,7 +25,18 @@ class DataFetcher:
         self.logger = logging.getLogger(__name__)
 
     async def fetch_data(self):
-        self.logger.info("thing_id: %s", self.thing_id)
+        # with db_context() as db:
+            # if config.thing_id:
+            #     self.logger.info("fetching thing %s", config.thing_id)
+            #     fetched_thing = await fetch_thing_by_public_key(db, config.thing_id)
+            #     if not fetched_thing:
+            #         self.logger.info("thing does not exists")
+            #         saved_thing = await save_thing(db, config.thing_id, "engergy-meter", None)
+            #         self.thing_id = saved_thing.id
+            #     else:
+            #         self.logger.info("thing ex ists")
+            #         self.thing_id = fetched_thing.id
+
         self.logger.info("start fetching")
         try:
             while not self.stopped:
@@ -47,9 +58,7 @@ class DataFetcher:
         with db_context() as db:
             if data.energy_delivered != 0:
                 return await save_metric(
-                    db, config.pubkey, data.timestamp, Decimal(data.energy_delivered), "absolute_energy"
-                )
+                    db, config.pubkey, data.timestamp, Decimal(data.energy_delivered), "absolute_energy")
 
             return await save_metric(
-                db, config.pubkey, data.timestamp, Decimal(data.energy_consumed), "absolute_energy_out"
-            )
+                db, config.pubkey, data.timestamp, Decimal(data.energy_consumed), "absolute_energy_out")

@@ -40,8 +40,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(thing_router)
-app.include_router(time_series_data_router)
+# app.include_router(thing_router)
+# app.include_router(time_series_data_router)
 
 logging.basicConfig(filename="output.log", level=logging.DEBUG)
 

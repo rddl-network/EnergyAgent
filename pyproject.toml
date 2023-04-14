@@ -22,6 +22,7 @@ grpcio = "^1.53.0"
 grpcio-tools = "^1.53.0"
 ecdsa = "^0.18.0"
 pycryptodome = "^3.17"
+typer = "^0.7.0"
 
 
 [build-system]
