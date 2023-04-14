@@ -43,4 +43,6 @@ async def add_thing(thing: ThingCreate = None) -> Thing:
     - Add a new thing.
     """
     with db_context() as db:
-        return await thing_controller.save_thing(db, thing.thing_id, thing.thing_type, thing.cid if thing.cid else None)
+        return await thing_controller.save_thing(
+            db, thing.thing_id, thing.thing_type, thing.cid if thing.cid else None
+        )

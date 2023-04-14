@@ -47,7 +47,9 @@ class DataFetcher:
         with db_context() as db:
             if data.energy_delivered != 0:
                 return await save_metric(
-                    db, config.pubkey, data.timestamp, Decimal(data.energy_delivered), "absolute_energy")
+                    db, config.pubkey, data.timestamp, Decimal(data.energy_delivered), "absolute_energy"
+                )
 
             return await save_metric(
-                db, config.pubkey, data.timestamp, Decimal(data.energy_consumed), "absolute_energy_out")
+                db, config.pubkey, data.timestamp, Decimal(data.energy_consumed), "absolute_energy_out"
+            )
