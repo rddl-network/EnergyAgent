@@ -1,16 +1,18 @@
+import asyncio
 import threading
 import time
 from typing import Optional
 
 import grpc
-from pydantic.types import Decimal
+from decimal import Decimal
 
 from app.dependencies import config, get_db
 from app.energy_meter_interaction.energy_decrypter import extract_data, decode_packet
 from app.energy_meter_interaction.energy_meter_data import MeterData
 from app.proto.MeterConnectorProto import meter_connector_pb2_grpc, meter_connector_pb2
+from app.schemas import Thing
 
-from submodules.app_mypower_model.controller import time_series_data as time_series_data_controller
+from submodules.app_mypower_model.dblayer import save_thing, fetch_thing_by_thing_id, save_time_series_data
 
 
 class DataFetcher:
@@ -21,9 +23,16 @@ class DataFetcher:
         self.stopped = False
         self.thing_id = None
 
-    def fetch_data(self):
+    async def fetch_data(self):
         if self.thing_id is None:
-            raise Exception("Thing ID not set")
+            thing: Thing
+            db = get_db()
+            fetched_thing = await fetch_thing_by_thing_id(db, config.thing_id)
+            if fetched_thing:
+                saved_thing = await save_thing(db, config.thing_id, "engergy-meter", None)
+                self.thing_id = saved_thing.id
+            else:
+                self.thing_id = fetched_thing.id
 
         while not self.stopped:
             channel = grpc.insecure_channel(config.grpc_endpoint)
@@ -34,18 +43,18 @@ class DataFetcher:
             self.data = extract_data(decode_packet(bytearray.fromhex(self.data_hex)))
             print("data_hex: ", self.data_hex)
             print("data: ", self.data)
-            self.save_time_series_data()
-            time.sleep(self.interval)
+            await self.save_time_series_data()
+            await asyncio.sleep(self.interval)
 
-    def save_time_series_data(self):
+    async def save_time_series_data(self):
         db = get_db()
-        return await time_series_data_controller.save_time_series_data(
-            db, self.thing_id, self.data.energy_delivered, "kwh", self.data.timestamp, None
+        return await save_time_series_data(
+            db, self.thing_id, Decimal(self.data.energy_delivered), "kwh", self.data.timestamp, None
         )
 
     def start(self):
-        t = threading.Thread(target=self.fetch_data)
-        t.start()
+        loop = asyncio.get_running_loop()
+        asyncio.run_coroutine_threadsafe(self.fetch_data(), loop=loop)
 
     def stop(self):
         self.stopped = True

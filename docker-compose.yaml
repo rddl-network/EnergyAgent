@@ -3,11 +3,11 @@ services:
   timescaledb:
     extends:
       file: ./my-power-base.yaml
-      service: app
+      service: timescaledb
   app:
     extends:
       file: ./my-power-base.yaml
-      service: timescaledb
+      service: app
     depends_on:
       - timescaledb
   test:

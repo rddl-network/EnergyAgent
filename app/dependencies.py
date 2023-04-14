@@ -14,12 +14,13 @@ class Config:
         self.db_host = os.environ.get("DB_HOST") or "timescaledb"
         self.db_port = os.environ.get("DB_PORT") or "5432"
         self.db_name = os.environ.get("DB_NAME") or "energy"
-        self.grpc_host = os.environ.get("GRPC_HOST") or "192.168.68.56"
+        self.grpc_host = os.environ.get("GRPC_HOST") or "192.168.68.68"
         self.grpc_port = os.environ.get("GRPC_PORT") or "50051"
         self.device_type = os.environ.get("DEVICE_TYPE") or "WN"
         self.selection = os.environ.get("SELECTION") or "mock"
-        self.verify_signature = bool(os.environ.get("VERIFY_SIGNATURE")) or True
-        self.data_fetcher_interval = int(os.environ.get("DATA_FETCHER_INTERVAL") or "5")
+        self.verify_signature = bool(os.environ.get("VERIFY_SIGNATURE")) or False
+        self.data_fetcher_interval = int(os.environ.get("DATA_FETCHER_INTERVAL") or "15")
+        self.thing_id = (os.environ.get("THING_ID") or "st-energy-meter")
 
         # build the database url
         self.db_url = f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
