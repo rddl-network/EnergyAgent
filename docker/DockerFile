@@ -1,8 +1,8 @@
-FROM python:3.10-alpine
+FROM python:3.9-alpine
 
 RUN apk update && apk upgrade
 
-Run apk add -U \
+RUN apk add -U \
     build-base \
     curl \
     eudev-dev \
@@ -12,12 +12,18 @@ Run apk add -U \
     openssh \
     openssl-dev \
     protobuf-dev \
-    udev
+    udev \
+    gcc \
+    musl-dev \
+    python3-dev \
+    libffi-dev \
+    cargo \
+    pkgconfig
 
 COPY . .
 COPY poetry.lock pyproject.toml ./
 
-RUN pip install poetry
+RUN pip install --only-binary cryptography poetry
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-root --only main
 
