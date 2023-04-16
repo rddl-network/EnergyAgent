@@ -1,4 +1,5 @@
 version: "3.8"
+
 services:
   timescaledb:
     image: timescale/timescaledb-ha:pg14-latest
@@ -24,4 +25,11 @@ services:
       - '8080:8080'
     volumes:
       - ./app:/app
-    command: sh -c "ls -al && python -m main"
+    command: python -m main
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    external:
+      name: builder-space_default
