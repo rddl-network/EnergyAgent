@@ -8,24 +8,22 @@ packages = [{include = "app-business-logic"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-fastapi = "^0.92.0"
-uvicorn = "^0.20.0"
 sqlalchemy = "^1.4.46"
 sqlalchemy-utils = "^0.39.0"
 psycopg2-binary = "^2.9.5"
-pytest = "^7.2.1"
-pytest-mock = "^3.10.0"
-pytest-asyncio = "^0.20.3"
-black = "^23.1.0"
 loguru = "^0.6.0"
 grpcio = "^1.53.0"
 grpcio-tools = "^1.53.0"
 ecdsa = "^0.18.0"
 pycryptodome = "^3.17"
-typer = "^0.7.0"
+pydantic = "^1.10.7"
 
+[tool.poetry.dev-dependencies]
+pytest = "^7.2.1"
+pytest-mock = "^3.10.0"
+pytest-asyncio = "^0.20.3"
+black = "^23.1.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
