@@ -1,0 +1,23 @@
+FROM python:3.9-alpine
+
+RUN apk update && apk upgrade
+
+RUN apk add --no-cache \
+    build-base \
+    gcc \
+    musl-dev \
+    openssl-dev \
+    libffi-dev \
+    protobuf-dev \
+    cargo \
+    postgresql-dev \
+    pkgconfig
+
+COPY . .
+COPY requirements.txt ./
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+EXPOSE 8080:8080
+
+CMD ["python", "-m", "main"]

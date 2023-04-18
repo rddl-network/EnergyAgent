@@ -15,7 +15,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/DockerFile
+      dockerfile: docker/DockerFile_Pip
     profiles: [ "app" ]
     container_name: app-business-logic
     environment:
