@@ -1,23 +1,29 @@
-FROM python:3.9-alpine
+FROM python:3.9
 
-RUN apk update && apk upgrade
-
-RUN apk add --no-cache \
-    build-base \
-    gcc \
-    musl-dev \
-    openssl-dev \
+# Update and install necessary packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    git \
     libffi-dev \
-    protobuf-dev \
+    libusb-1.0-0-dev \
+    openssh-client \
+    libssl-dev \
+    protobuf-compiler \
+    libudev-dev \
+    gcc \
+    libffi-dev \
+    pkg-config \
     cargo \
-    postgresql-dev \
-    pkgconfig
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 
 COPY . .
-COPY requirements.txt ./
-
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 8080:8080
 
 CMD ["python", "-m", "main"]
+

@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 
-@dataclass(slots=True)
+@dataclass
 class MeterData:
     device_type: str
     energy_consumed: float
