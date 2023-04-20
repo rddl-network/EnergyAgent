@@ -2,7 +2,7 @@ FROM python:3.9-alpine
 
 RUN apk update && apk upgrade
 
-RUN apk add -U \
+RUN apk add --no-cache \
     build-base \
     curl \
     eudev-dev \
@@ -18,14 +18,13 @@ RUN apk add -U \
     python3-dev \
     libffi-dev \
     cargo \
+    postgresql-dev \
     pkgconfig
 
 COPY . .
-COPY poetry.lock pyproject.toml ./
+COPY requirements.txt ./
 
-RUN pip install --only-binary cryptography poetry
-RUN poetry config virtualenvs.create false
-RUN poetry install --no-root --only main
+RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 8080:8080
 

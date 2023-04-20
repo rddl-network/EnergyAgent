@@ -1,0 +1,29 @@
+FROM python:3.9
+
+# Update and install necessary packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    git \
+    libffi-dev \
+    libusb-1.0-0-dev \
+    openssh-client \
+    libssl-dev \
+    protobuf-compiler \
+    libudev-dev \
+    gcc \
+    libffi-dev \
+    pkg-config \
+    cargo \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+
+COPY . .
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+
+CMD ["python", "-m", "main"]
+

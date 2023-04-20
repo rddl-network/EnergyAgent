@@ -1,4 +1,5 @@
 version: "3.8"
+
 services:
   timescaledb:
     image: timescale/timescaledb-ha:pg14-latest
@@ -14,7 +15,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/DockerFile
+      dockerfile: docker/DockerFile_Pip
     profiles: [ "app" ]
     container_name: app-business-logic
     environment:
@@ -24,4 +25,11 @@ services:
       - '8080:8080'
     volumes:
       - ./app:/app
-    command: sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8080 --timeout-keep-alive 240 --reload"
+    command: python -m main
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    external:
+      name: builder-space_default
