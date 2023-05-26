@@ -14,6 +14,9 @@ class Config:
         self.pubkey = os.environ.get("PUBKEY") or "st-energy-meter"
         self.rabbitmq_host = os.environ.get("RABBITMQ_HOST") or "rabbitmq"
         self.queue_name = os.environ.get("QUEUE_NAME") or "metrics"
+        self.rabbitmq_port = os.environ.get("RABBITMQ_PORT") or "5672"
+        self.rabbitmq_password = os.environ.get("RABBITMQ_PASSWORD") or ""
+        self.rabbitmq_username = os.environ.get("RABBITMQ_USERNAME") or ""
 
         # build the database url
         self.grpc_endpoint = f"{self.grpc_host}:{self.grpc_port}"

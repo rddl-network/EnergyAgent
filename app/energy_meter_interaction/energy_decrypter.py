@@ -152,6 +152,7 @@ def show_data(s):
 
 
 def extract_data(s: bytes) -> Union[MeterData, None]:
+    print("encrypted data: ", s)
     if config.device == "WN":
         energy_consumed = bytes_to_int(s[35:39]) / 1000.000  # +A Wh
         energy_delivered = bytes_to_int(s[40:44]) / 1000.000  # -A Wh

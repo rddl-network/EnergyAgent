@@ -3,6 +3,7 @@ import grpc
 import json
 import pika
 from decimal import Decimal
+from pika.credentials import PlainCredentials
 
 from app.dependencies import config
 from app.energy_meter_interaction.energy_decrypter import extract_data, decode_packet
@@ -22,13 +23,16 @@ class DataFetcher:
         self.logger.info("start fetching")
         try:
             while not self.stopped:
+                print("grpc_endpoint: %s", config.grpc_endpoint)
                 channel = grpc.insecure_channel(config.grpc_endpoint)
                 stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
                 request = meter_connector_pb2.SMDataRequest()
                 response = stub.readMeter(request)
                 data_hex = response.message
+                print("data_hex: %s", data_hex)
+                decoded_packet = decode_packet(bytearray.fromhex(data_hex))
+                print("data_hex: %s", decoded_packet)
                 data = extract_data(decode_packet(bytearray.fromhex(data_hex)))
-                self.logger.info("data_hex: %s", data_hex)
                 self.logger.info("data: %s", data)
                 await self.post_to_rabbitmq(data)
                 await asyncio.sleep(config.interval)
@@ -37,7 +41,12 @@ class DataFetcher:
 
     @staticmethod
     async def post_to_rabbitmq(data: MeterData):
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host=config.rabbitmq_host))
+        credentials = PlainCredentials(config.rabbitmq_user, config.rabbitmq_password)
+        parameters = pika.ConnectionParameters(
+            host=config.rabbitmq_host, port=config.rabbitmq_port, credentials=credentials
+        )
+
+        connection = pika.BlockingConnection(parameters)
         channel = connection.channel()
 
         channel.queue_declare(queue=config.queue_name)

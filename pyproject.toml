@@ -8,9 +8,6 @@ packages = [{include = "app-business-logic"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-sqlalchemy = "^1.4.46"
-sqlalchemy-utils = "^0.39.0"
-psycopg2-binary = "^2.9.5"
 loguru = "^0.6.0"
 grpcio = "^1.53.0"
 grpcio-tools = "^1.53.0"

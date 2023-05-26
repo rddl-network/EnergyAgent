@@ -10,3 +10,13 @@ def test_decode_packet():
     test = extract_data(dec)
     print("test: ", test)
     assert dec != None
+
+
+def test_decode_packet_v2():
+    print("test_decode_packet_v2")
+    data_hex_str = "68fafa6853ff000167db085341475905e990f381f820000e7f1fbf17df7e9997ce84e6df6889180d2322b46259b6f6013ccf09f201f42122ac6a925080fcd711d03db8a67c9bc414b19531d6452346c159d16b0a9d04afeed300411ce66cf7f013a1d1c371003468c8f977948c4c55f69dbd7bbcfcec77059ca62d7377710b0fd20ceeb3b534521c9bcec5e0805226655a4d58dc590fcf5739297ae31b93a98b982d4454547132761a32bfb2e0ef6d864145a55b1ec671da5835188ffcf29a8908efe9e3fa4b46252b9278283dd01dca2d9aadeea3cfbae512219916a19ec3df2221f134be9ea4d9eff1a9aea44574fda7b9b5cb712b59f39d9b2c315e9f3f166814146853ff110167a3d8d8985d50946a5240cc21d36ad8f516"
+    dec = decode_packet(bytearray.fromhex(data_hex_str))
+    show_data(dec) if (dec) else "CRC error"
+    test = extract_data(dec)
+    print("test: ", test)
+    assert dec != None
