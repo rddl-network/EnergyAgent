@@ -34,6 +34,9 @@ class DataFetcher:
                 print("data_hex: %s", decoded_packet)
                 data = extract_data(decode_packet(bytearray.fromhex(data_hex)))
                 self.logger.info("data: %s", data)
+                if data is None:
+                    self.logger.error("data is None")
+                    raise Exception("data is None")
                 await self.post_to_rabbitmq(data)
                 await asyncio.sleep(config.interval)
         except Exception as e:
@@ -41,9 +44,11 @@ class DataFetcher:
 
     @staticmethod
     async def post_to_rabbitmq(data: MeterData):
-        credentials = PlainCredentials(config.rabbitmq_user, config.rabbitmq_password)
         parameters = pika.ConnectionParameters(
-            host=config.rabbitmq_host, port=config.rabbitmq_port, credentials=credentials
+            host=config.rabbitmq_host,
+            port=config.rabbitmq_port,
+            login=config.rabbitmq_user,
+            password=config.rabbitmq_password,
         )
 
         connection = pika.BlockingConnection(parameters)

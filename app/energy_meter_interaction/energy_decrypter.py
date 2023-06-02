@@ -88,13 +88,15 @@ def verify_crc16(input, skip=0, last=2, cut=0):
 
 
 # DECODE-STUFF BEGIN
-def decode_packet(input):  # expects input to be bytearray.fromhex(hexstring), full packet  "7ea067..7e" # noqa
+def decode_packet(
+    input,
+) -> bytes:  # expects input to be bytearray.fromhex(hexstring), full packet  "7ea067..7e" # noqa
     if verify_crc16(input, 1, 2, 1):
         nonce = bytes(input[14:22] + input[24:28])  # systemTitle+invocation counter
         cipher = AES.new(binascii.unhexlify(key_smart_meter), AES.MODE_CTR, nonce=nonce, initial_value=2)
         return cipher.decrypt(input[28:-3])
     else:
-        return ""
+        return b""
 
 
 # DECODE-STUFF DONE
