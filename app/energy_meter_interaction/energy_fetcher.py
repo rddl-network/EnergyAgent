@@ -1,16 +1,22 @@
 import asyncio
 import grpc
 import json
-import pika
-from decimal import Decimal
+from aio_pika import connect, Message
 from pika.credentials import PlainCredentials
 
 from app.dependencies import config
-from app.energy_meter_interaction.energy_decrypter import extract_data, decode_packet
+from app.energy_meter_interaction.energy_decrypter import (
+    extract_data,
+    decode_packet,
+    decrypt_evn_data,
+    transform_to_metrics,
+)
 from app.energy_meter_interaction.energy_meter_data import MeterData
 from app.proto.MeterConnectorProto import meter_connector_pb2_grpc, meter_connector_pb2
 
 import logging
+
+from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
 
 
 class DataFetcher:
@@ -30,44 +36,46 @@ class DataFetcher:
                 response = stub.readMeter(request)
                 data_hex = response.message
                 print("data_hex: %s", data_hex)
-                decoded_packet = decode_packet(bytearray.fromhex(data_hex))
-                print("data_hex: %s", decoded_packet)
-                data = extract_data(decode_packet(bytearray.fromhex(data_hex)))
-                self.logger.info("data: %s", data)
-                if data is None:
-                    self.logger.error("data is None")
-                    raise Exception("data is None")
-                await self.post_to_rabbitmq(data)
+                metric = await self.decrypt_device(data_hex)
+                await self.post_to_rabbitmq(metric)
                 await asyncio.sleep(config.interval)
         except Exception as e:
             self.logger.exception("DataFetcher thread failed with exception: %s", str(e))
 
+    async def decrypt_device(self, data_hex):
+        if config.device == "EVN":
+            dec = decrypt_evn_data(data_hex)
+            return transform_to_metrics(dec, config.pubkey)
+        else:
+            decoded_packet = decode_packet(bytearray.fromhex(data_hex))
+            print("data_hex: %s", decoded_packet)
+            metric = extract_data(decode_packet(bytearray.fromhex(data_hex)))
+            self.logger.info("data: %s", metric)
+            if metric is None:
+                self.logger.error("data is None")
+                raise Exception("data is None")
+            return metric
+
     @staticmethod
-    async def post_to_rabbitmq(data: MeterData):
-        parameters = pika.ConnectionParameters(
-            host=config.rabbitmq_host,
-            port=config.rabbitmq_port,
-            login=config.rabbitmq_user,
-            password=config.rabbitmq_password,
+    async def post_to_rabbitmq(data: MetricCreate):
+        print("post_to_rabbitmq")
+        metric_dict = data.dict()
+        metric_dict["time_stamp"] = metric_dict["time_stamp"].isoformat()
+        metric_dict["absolute_energy_in"] = float(metric_dict["absolute_energy_in"])
+        metric_dict["absolute_energy_out"] = float(metric_dict["absolute_energy_out"])
+        print(metric_dict)
+
+        message = json.dumps(metric_dict)
+
+        connection = await connect(
+            config.amqp_url,
         )
 
-        connection = pika.BlockingConnection(parameters)
-        channel = connection.channel()
+        async with connection:
+            channel = await connection.channel()
 
-        channel.queue_declare(queue=config.queue_name)
+            queue = await channel.declare_queue(config.queue_name, auto_delete=True)
 
-        if data.energy_delivered != 0:
-            metric_value = Decimal(data.energy_delivered)
-        else:
-            metric_value = Decimal(data.energy_consumed * -1)
+            await channel.default_exchange.publish(Message(body=message.encode()), routing_key=queue.name)
 
-        message = {
-            "pubkey": config.pubkey,
-            "timestamp": data.timestamp,
-            "value": str(metric_value),
-            "type": "absolute_energy",
-        }
-
-        channel.basic_publish(exchange="", routing_key=config.queue_name, body=json.dumps(message))
-
-        connection.close()
+        print(" [x] Sent %r" % message)
