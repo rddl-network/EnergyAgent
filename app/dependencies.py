@@ -18,9 +18,7 @@ class Config:
         self.rabbitmq_port = os.environ.get("RABBITMQ_PORT") or "5672"
         self.rabbitmq_password = os.environ.get("RABBITMQ_PASSWORD") or ""
         self.rabbitmq_username = os.environ.get("RABBITMQ_USERNAME") or ""
-        self.amqp_url = (
-            f"amqp://{self.rabbitmq_username}:{self.rabbitmq_password}@{self.rabbitmq_host}:{self.rabbitmq_port}/",
-        )
+        self.amqp_url = f"amqp://{self.rabbitmq_username}:{self.rabbitmq_password}@{self.rabbitmq_host}:{self.rabbitmq_port}/"
 
         self.evn_key = os.environ.get("EVN_KEY") or "A89AE6C225E45130298B3CC3F4D23463"
 
