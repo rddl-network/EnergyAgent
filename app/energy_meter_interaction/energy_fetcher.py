@@ -64,18 +64,23 @@ class DataFetcher:
         metric_dict["absolute_energy_in"] = float(metric_dict["absolute_energy_in"])
         metric_dict["absolute_energy_out"] = float(metric_dict["absolute_energy_out"])
         print(metric_dict)
+        print(f"Queue name: {config.queue_name}")
+        print(f"AMQP URL: {config.amqp_url}")  # Remember to mask sensitive parts before printing
 
         message = json.dumps(metric_dict)
 
-        connection = await connect(
-            config.amqp_url,
-        )
+        try:
+            connection = await connect(
+                config.amqp_url,
+            )
 
-        async with connection:
-            channel = await connection.channel()
+            async with connection:
+                channel = await connection.channel()
 
-            queue = await channel.declare_queue(config.queue_name, auto_delete=True)
+                queue = await channel.declare_queue(config.queue_name)
 
-            await channel.default_exchange.publish(Message(body=message.encode()), routing_key=queue.name)
+                await channel.default_exchange.publish(Message(body=message.encode()), routing_key=queue.name)
 
-        print(" [x] Sent %r" % message)
+            print(" [x] Sent %r" % message)
+        except Exception as e:
+            print(f"Exception occurred: {e}")
