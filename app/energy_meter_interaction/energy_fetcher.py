@@ -2,7 +2,6 @@ import asyncio
 import grpc
 import json
 from aio_pika import connect, Message
-from pika.credentials import PlainCredentials
 
 from app.dependencies import config
 from app.energy_meter_interaction.energy_decrypter import (
@@ -76,10 +75,10 @@ class DataFetcher:
 
             async with connection:
                 channel = await connection.channel()
-
-                queue = await channel.declare_queue(config.queue_name, auto_delete=True)
-
-                await channel.default_exchange.publish(Message(body=message.encode()), routing_key=queue.name)
+                # print("channel")
+                # queue = await channel.declare_queue(config.queue_name, auto_delete=True)
+                print("declare queue")
+                await channel.default_exchange.publish(Message(body=message.encode()), routing_key=config.queue_name)
 
             print(" [x] Sent %r" % message)
         except Exception as e:
