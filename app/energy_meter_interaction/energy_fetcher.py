@@ -77,7 +77,7 @@ class DataFetcher:
             async with connection:
                 channel = await connection.channel()
 
-                queue = await channel.declare_queue(config.queue_name)
+                queue = await channel.declare_queue(config.queue_name, auto_delete=True)
 
                 await channel.default_exchange.publish(Message(body=message.encode()), routing_key=queue.name)
 
