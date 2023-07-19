@@ -64,7 +64,6 @@ class DataFetcher:
         metric_dict["absolute_energy_out"] = float(metric_dict["absolute_energy_out"])
         print(metric_dict)
         print(f"Queue name: {config.queue_name}")
-        print(f"AMQP URL: {config.amqp_url}")  # Remember to mask sensitive parts before printing
 
         message = json.dumps(metric_dict)
 
@@ -75,9 +74,6 @@ class DataFetcher:
 
             async with connection:
                 channel = await connection.channel()
-                # print("channel")
-                # queue = await channel.declare_queue(config.queue_name, auto_delete=True)
-                print("declare queue")
                 await channel.default_exchange.publish(Message(body=message.encode()), routing_key=config.queue_name)
 
             print(" [x] Sent %r" % message)
