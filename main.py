@@ -1,18 +1,8 @@
 import asyncio
-from app.dependencies import ensure_database
 from app.energy_meter_interaction.energy_fetcher import DataFetcher
 
 
 async def main():
-    while True:
-        try:
-            ensure_database()
-            break
-        except Exception as e:
-            print(e)
-            print("Database seems to be down or initializing. Retrying in 5 seconds...")
-            await asyncio.sleep(5)
-
     data_fetcher = DataFetcher()
     await data_fetcher.fetch_data()
 

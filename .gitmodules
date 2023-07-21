@@ -1,0 +1,3 @@
+[submodule "submoudles/submodules/app_mypower_modul"]
+	path = submoudles/submodules/app_mypower_modul
+	url = git@github.com:RiddleAndCode/app-mypower-model.git

@@ -3,6 +3,7 @@ To decode smart meter data retrieved from the infrared customer interface provid
 Tested with Iskra AM550 (But should work for all smart meters provided by Wiener Netze)
 """
 import binascii
+from decimal import Decimal
 from datetime import datetime
 from typing import Union
 
@@ -10,6 +11,11 @@ from Crypto.Cipher import AES
 
 from app.dependencies import config
 from app.energy_meter_interaction.energy_meter_data import MeterData
+from binascii import unhexlify
+from gurux_dlms.GXDLMSTranslator import GXDLMSTranslator
+import xml.etree.ElementTree as ET
+
+from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
 
 if config.selection == "Matthias":
     key_smart_meter = "62DC84B413AF3E16AA271CE9ED04AC74"  # Matthias
@@ -88,13 +94,15 @@ def verify_crc16(input, skip=0, last=2, cut=0):
 
 
 # DECODE-STUFF BEGIN
-def decode_packet(input):  # expects input to be bytearray.fromhex(hexstring), full packet  "7ea067..7e" # noqa
+def decode_packet(
+    input,
+) -> bytes:  # expects input to be bytearray.fromhex(hexstring), full packet  "7ea067..7e" # noqa
     if verify_crc16(input, 1, 2, 1):
         nonce = bytes(input[14:22] + input[24:28])  # systemTitle+invocation counter
         cipher = AES.new(binascii.unhexlify(key_smart_meter), AES.MODE_CTR, nonce=nonce, initial_value=2)
         return cipher.decrypt(input[28:-3])
     else:
-        return ""
+        return b""
 
 
 # DECODE-STUFF DONE
@@ -152,6 +160,7 @@ def show_data(s):
 
 
 def extract_data(s: bytes) -> Union[MeterData, None]:
+    print("encrypted data: ", s)
     if config.device == "WN":
         energy_consumed = bytes_to_int(s[35:39]) / 1000.000  # +A Wh
         energy_delivered = bytes_to_int(s[40:44]) / 1000.000  # -A Wh
@@ -211,3 +220,110 @@ def extract_data(s: bytes) -> Union[MeterData, None]:
 
     print("Device type not recognized")
     return None
+
+
+OCTET_STRING_VALUES = {
+    "0100010800FF": "WirkenergieP",
+    "0100020800FF": "WirkenergieN",
+    "0100010700FF": "MomentanleistungP",
+    "0100020700FF": "MomentanleistungN",
+    "0100200700FF": "SpannungL1",
+    "0100340700FF": "SpannungL2",
+    "0100480700FF": "SpannungL3",
+    "01001F0700FF": "StromL1",
+    "0100330700FF": "StromL2",
+    "0100470700FF": "StromL3",
+    "01000D0700FF": "Leistungsfaktor",
+}
+
+ENCRYPTION_KEY = unhexlify(config.evn_key)
+MBUS_START_SLICE = slice(0, 8)
+FRAME_LEN_SLICE = slice(2, 4)
+SYSTEM_TITLE_SLICE = slice(22, 38)
+FRAME_COUNTER_SLICE = slice(44, 52)
+
+
+def evn_decrypt(frame, system_title, frame_counter):
+    frame = unhexlify(frame)
+    init_vector = unhexlify(system_title + frame_counter)
+    cipher = AES.new(ENCRYPTION_KEY, AES.MODE_GCM, nonce=init_vector)
+    return cipher.decrypt(frame).hex()
+
+
+def parse_root_items(root) -> list:
+    found_lines, momentan = [], []
+    iterator = iter(root.iter())
+    current_child, next_child = next(iterator), next(iterator, None)
+
+    while next_child is not None:
+        if current_child.tag == "OctetString" and "Value" in current_child.attrib:
+            value = current_child.attrib["Value"]
+            if value in OCTET_STRING_VALUES:
+                next_val = int(next_child.attrib["Value"], 16)
+                if value in {"0100010700FF", "0100020700FF"}:
+                    momentan.append(next_val)
+                found_lines.append({"key": OCTET_STRING_VALUES[value], "value": next_val})
+
+        current_child, next_child = next_child, next(iterator, None)
+
+    return found_lines
+
+
+def decrypt_evn_data(data: str):
+    mbus_start = data[MBUS_START_SLICE]
+    frame_len = int(data[FRAME_LEN_SLICE], 16)
+    system_title = data[SYSTEM_TITLE_SLICE]
+    frame_counter = data[FRAME_COUNTER_SLICE]
+    frame = data[52 : 12 + frame_len * 2]
+    print(
+        "Daten ok"
+        if mbus_start == "686868" and mbus_start[2:4] == mbus_start[4:6]
+        else "wrong M-Bus Start, restarting"
+    )
+
+    apdu = evn_decrypt(frame, system_title, frame_counter)
+    print("apdu: ", apdu)
+    if apdu[0:4] != "0f80":
+        raise ValueError("wrong apdu start")
+
+    root = ET.fromstring(GXDLMSTranslator().pduToXml(apdu))
+    return parse_root_items(root)
+
+
+def decrypt_aes_gcm_landis_and_gyr(data_hex, encryption_key=None, authentication_key=None):
+    cipher_text_str = data_hex[38:276]
+    cipher_text = bytes.fromhex(cipher_text_str)
+
+    system_title = cipher_text[2 : 2 + 8]
+
+    initialization_vector = system_title + cipher_text[14 : 14 + 4]
+    additional_authenticated_data = cipher_text[13 : 13 + 1] + authentication_key
+    cipher = AES.new(encryption_key, AES.MODE_GCM, nonce=initialization_vector)
+
+    cipher.update(additional_authenticated_data)
+    plaintext = cipher.decrypt(cipher_text[18 : len(cipher_text) - 12])
+
+    apdu = plaintext.hex()
+    root = ET.fromstring(GXDLMSTranslator().pduToXml(apdu))
+    return parse_root_items(root)
+
+
+def transform_to_metrics(data_list, public_key) -> MetricCreate:
+    now = datetime.now()
+    metric_data = {
+        "public_key": public_key,
+        "time_stamp": now.utcnow(),
+        "type": "absolute_energy",
+        "unit": "kWh",
+        "absolute_energy_in": Decimal(0),
+        "absolute_energy_out": Decimal(0),
+    }
+
+    for data in data_list:
+        value = Decimal(data.get("value"))
+        if data.get("key") == "WirkenergieP":
+            metric_data["absolute_energy_in"] = value
+        elif data.get("key") == "WirkenergieN":
+            metric_data["absolute_energy_out"] = value
+
+    return MetricCreate(**metric_data)
