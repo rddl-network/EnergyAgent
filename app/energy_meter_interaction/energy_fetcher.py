@@ -8,7 +8,8 @@ from app.energy_meter_interaction.energy_decrypter import (
     extract_data,
     decode_packet,
     decrypt_evn_data,
-    transform_to_metrics, decrypt_aes_gcm_landis_and_gyr,
+    transform_to_metrics,
+    decrypt_aes_gcm_landis_and_gyr,
 )
 from app.energy_meter_interaction.energy_meter_data import MeterData
 from app.proto.MeterConnectorProto import meter_connector_pb2_grpc, meter_connector_pb2

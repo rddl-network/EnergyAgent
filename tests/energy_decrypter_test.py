@@ -18,8 +18,8 @@ def test_decode_packet_EVN():
 def test_decode_packet_LG():
     print("test_decode_packet_v2")
     data_hex_str = "7ea08bceff0313eee1e6e700e0400001000077db084c475a67737c7ee0820103300001669a7654da96c65e4930a6f3719e304f4bebf8d6600508958b6cd46b16e8310b6868527c30ec8197ff9f80e7107ad7db303072428e0c0f59fcbe2dfb07c6edc5e1c4eb0a40dbf3e73ed8a52e65f3799f63a2341b345a940224ecda0ceb215a6c7bac19020d4468ce2a7e"
-    encryption_key = bytes.fromhex('7340BC1501143C498CD677811D771921')
-    authentication_key = bytes.fromhex('DDFC444A5C78B74D46C158DBE711D37A')
+    encryption_key = bytes.fromhex("7340BC1501143C498CD677811D771921")
+    authentication_key = bytes.fromhex("DDFC444A5C78B74D46C158DBE711D37A")
     apdu = decrypt_aes_gcm(data_hex_str, encryption_key, authentication_key)
     root = ET.fromstring(GXDLMSTranslator().pduToXml(apdu))
     dec = parse_root_items(root)
@@ -27,6 +27,3 @@ def test_decode_packet_LG():
     # show_data(dec) if (dec) else "CRC error"
     print(dec)
     assert dec != None
-
-
-

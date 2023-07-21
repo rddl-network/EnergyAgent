@@ -294,14 +294,14 @@ def decrypt_aes_gcm_landis_and_gyr(data_hex, encryption_key=None, authentication
     cipher_text_str = data_hex[38:276]
     cipher_text = bytes.fromhex(cipher_text_str)
 
-    system_title = cipher_text[2:2 + 8]
+    system_title = cipher_text[2 : 2 + 8]
 
-    initialization_vector = system_title + cipher_text[14:14 + 4]
-    additional_authenticated_data = cipher_text[13:13 + 1] + authentication_key
+    initialization_vector = system_title + cipher_text[14 : 14 + 4]
+    additional_authenticated_data = cipher_text[13 : 13 + 1] + authentication_key
     cipher = AES.new(encryption_key, AES.MODE_GCM, nonce=initialization_vector)
 
     cipher.update(additional_authenticated_data)
-    plaintext = cipher.decrypt(cipher_text[18:len(cipher_text) - 12])
+    plaintext = cipher.decrypt(cipher_text[18 : len(cipher_text) - 12])
 
     apdu = plaintext.hex()
     root = ET.fromstring(GXDLMSTranslator().pduToXml(apdu))
