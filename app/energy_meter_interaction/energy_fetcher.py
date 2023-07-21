@@ -8,7 +8,7 @@ from app.energy_meter_interaction.energy_decrypter import (
     extract_data,
     decode_packet,
     decrypt_evn_data,
-    transform_to_metrics,
+    transform_to_metrics, decrypt_aes_gcm_landis_and_gyr,
 )
 from app.energy_meter_interaction.energy_meter_data import MeterData
 from app.proto.MeterConnectorProto import meter_connector_pb2_grpc, meter_connector_pb2
@@ -44,6 +44,9 @@ class DataFetcher:
     async def decrypt_device(self, data_hex):
         if config.device == "EVN":
             dec = decrypt_evn_data(data_hex)
+            return transform_to_metrics(dec, config.pubkey)
+        elif config.device == "LG":
+            dec = decrypt_aes_gcm_landis_and_gyr(data_hex, config.lg_encryption_key, config.lg_authentication_key)
             return transform_to_metrics(dec, config.pubkey)
         else:
             decoded_packet = decode_packet(bytearray.fromhex(data_hex))

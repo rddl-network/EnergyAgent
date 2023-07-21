@@ -22,7 +22,9 @@ class Config:
             f"amqp://{self.rabbitmq_username}:{self.rabbitmq_password}@{self.rabbitmq_host}:{self.rabbitmq_port}/"
         )
 
-        self.evn_key = os.environ.get("EVN_KEY") or "A89AE6C225E45130298B3CC3F4D23463"
+        self.evn_key = os.environ.get("EVN_KEY") or None
+        self.lg_encryption_key = os.environ.get("LG_ENCRYPTION_KEY") or None
+        self.lg_authentication_key = os.environ.get("LG_AUTH_KEY") or None
 
         # build the database url
         self.grpc_endpoint = f"{self.grpc_host}:{self.grpc_port}"
