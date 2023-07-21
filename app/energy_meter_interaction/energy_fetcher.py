@@ -47,7 +47,9 @@ class DataFetcher:
             dec = decrypt_evn_data(data_hex)
             return transform_to_metrics(dec, config.pubkey)
         elif config.device == "LG":
-            dec = decrypt_aes_gcm_landis_and_gyr(data_hex, bytes.fromhex(config.lg_encryption_key), bytes.fromhex(config.lg_authentication_key))
+            dec = decrypt_aes_gcm_landis_and_gyr(
+                data_hex, bytes.fromhex(config.lg_encryption_key), bytes.fromhex(config.lg_authentication_key)
+            )
             return transform_to_metrics(dec, config.pubkey)
         else:
             decoded_packet = decode_packet(bytearray.fromhex(data_hex))
