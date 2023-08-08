@@ -236,7 +236,7 @@ OCTET_STRING_VALUES = {
     "01000D0700FF": "Leistungsfaktor",
 }
 
-ENCRYPTION_KEY = unhexlify(config.evn_key)
+
 MBUS_START_SLICE = slice(0, 8)
 FRAME_LEN_SLICE = slice(2, 4)
 SYSTEM_TITLE_SLICE = slice(22, 38)
@@ -245,8 +245,9 @@ FRAME_COUNTER_SLICE = slice(44, 52)
 
 def evn_decrypt(frame, system_title, frame_counter):
     frame = unhexlify(frame)
+    encryption_key = unhexlify(config.evn_key)
     init_vector = unhexlify(system_title + frame_counter)
-    cipher = AES.new(ENCRYPTION_KEY, AES.MODE_GCM, nonce=init_vector)
+    cipher = AES.new(encryption_key, AES.MODE_GCM, nonce=init_vector)
     return cipher.decrypt(frame).hex()
 
 
@@ -291,6 +292,9 @@ def decrypt_evn_data(data: str):
 
 
 def decrypt_aes_gcm_landis_and_gyr(data_hex, encryption_key=None, authentication_key=None):
+    if len(data_hex) != 282:
+        raise ValueError("The input string must have exactly 282 characters.")
+
     cipher_text_str = data_hex[38:276]
     cipher_text = bytes.fromhex(cipher_text_str)
 
