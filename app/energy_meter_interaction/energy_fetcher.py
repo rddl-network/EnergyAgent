@@ -29,6 +29,7 @@ class DataFetcher:
         self.logger.info("start fetching")
         while not self.stopped:
             try:
+                await asyncio.sleep(config.interval)
                 print("grpc_endpoint: %s", config.grpc_endpoint)
                 channel = grpc.insecure_channel(config.grpc_endpoint)
                 stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
@@ -38,7 +39,6 @@ class DataFetcher:
                 print("data_hex: %s", data_hex)
                 metric = await self.decrypt_device(data_hex)
                 await self.post_to_rabbitmq(metric)
-                await asyncio.sleep(config.interval)
             except Exception as e:
                 self.logger.exception("DataFetcher thread failed with exception: %s", str(e))
                 continue
