@@ -53,4 +53,4 @@ def test_decode_packet_LG_exception():
     try:
         decrypt_aes_gcm_landis_and_gyr(data_hex_str, encryption_key, authentication_key)
     except Exception as e:
-        assert e.args[0] == "The input string must have exactly 282 characters."
+        assert e.args[0] == "Wrong input encrypted data should have 282 characters. Please check your device"
