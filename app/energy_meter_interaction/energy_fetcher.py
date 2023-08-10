@@ -1,8 +1,7 @@
-import asyncio
 import grpc
 import json
-from aio_pika import connect, Message
-
+import pika
+import time
 from app.dependencies import config
 from app.energy_meter_interaction.energy_decrypter import (
     extract_data,
@@ -24,10 +23,10 @@ class DataFetcher:
         self.thing_id = None
         self.logger = logging.getLogger(__name__)
 
-    async def fetch_data(self):
+    def fetch_data(self):
         self.logger.info("start fetching")
         while not self.stopped:
-            await asyncio.sleep(config.interval)
+            time.sleep(config.interval)
             try:
                 print(f"grpc_endpoint: {config.grpc_endpoint}")
                 channel = grpc.insecure_channel(config.grpc_endpoint)
@@ -36,13 +35,13 @@ class DataFetcher:
                 response = stub.readMeter(request)
                 data_hex = response.message
                 print(f"data_hex: {data_hex}")
-                metric = await self.decrypt_device(data_hex)
-                await self.post_to_rabbitmq(metric)
+                metric = self.decrypt_device(data_hex)
+                self.post_to_rabbitmq(metric)
             except Exception as e:
                 self.logger.exception(f"DataFetcher thread failed with exception: {e.args[0]}")
                 continue
 
-    async def decrypt_device(self, data_hex):
+    def decrypt_device(self, data_hex):
         if config.device == "EVN":
             dec = decrypt_evn_data(data_hex)
             return transform_to_metrics(dec, config.pubkey)
@@ -60,7 +59,7 @@ class DataFetcher:
             return metric
 
     @staticmethod
-    async def post_to_rabbitmq(data: MetricCreate):
+    def post_to_rabbitmq(data: MetricCreate):
         print("post_to_rabbitmq")
         metric_dict = data.dict()
         metric_dict["time_stamp"] = metric_dict["time_stamp"].isoformat()
@@ -72,16 +71,16 @@ class DataFetcher:
         message = json.dumps(metric_dict)
 
         try:
-            connection = await connect(
-                config.amqp_url,
+            connection = pika.BlockingConnection(pika.URLParameters(config.amqp_url))
+            channel = connection.channel()
+            channel.basic_publish(
+                exchange='',
+                routing_key=config.queue_name,
+                body=message.encode(),
+                properties=pika.BasicProperties(content_type="application/json")
             )
 
-            async with connection:
-                channel = await connection.channel()
-                await channel.default_exchange.publish(
-                    Message(body=message.encode(), content_type="application/json"), routing_key=config.queue_name
-                )
-
             print(" [x] Sent %r" % message)
+            connection.close()
         except Exception as e:
             print(f"Exception occurred: {e}")
