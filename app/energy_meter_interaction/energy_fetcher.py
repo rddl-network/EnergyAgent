@@ -17,14 +17,15 @@ import logging
 from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
 
 
+logger = logging.getLogger(__name__)
+
+
 class DataFetcher:
     def __init__(self):
         self.stopped = False
-        self.thing_id = None
-        self.logger = logging.getLogger(__name__)
 
     def fetch_data(self):
-        self.logger.info("start fetching")
+        logger.info("start fetching")
         while not self.stopped:
             time.sleep(config.interval)
             try:
@@ -38,10 +39,11 @@ class DataFetcher:
                 metric = self.decrypt_device(data_hex)
                 self.post_to_rabbitmq(metric)
             except Exception as e:
-                self.logger.exception(f"DataFetcher thread failed with exception: {e.args[0]}")
+                logger.exception(f"DataFetcher thread failed with exception: {e.args[0]}")
                 continue
 
-    def decrypt_device(self, data_hex):
+    @staticmethod
+    def decrypt_device(data_hex):
         if config.device == "EVN":
             dec = decrypt_evn_data(data_hex)
             return transform_to_metrics(dec, config.pubkey)
@@ -54,33 +56,31 @@ class DataFetcher:
             decoded_packet = decode_packet(bytearray.fromhex(data_hex))
             metric = extract_data(decoded_packet)
             if metric is None:
-                self.logger.error("data is None")
-                raise Exception("data is None")
+                logger.error("data is None")
+                raise ValueError("data is None")
             return metric
 
     @staticmethod
     def post_to_rabbitmq(data: MetricCreate):
-        print("post_to_rabbitmq")
+        logger.info("Posting to RabbitMQ")
+
         metric_dict = data.dict()
         metric_dict["time_stamp"] = metric_dict["time_stamp"].isoformat()
         metric_dict["absolute_energy_in"] = float(metric_dict["absolute_energy_in"])
         metric_dict["absolute_energy_out"] = float(metric_dict["absolute_energy_out"])
-        print(metric_dict)
-        print(f"Queue name: {config.queue_name}")
+        logger.debug(f"Metric data: {metric_dict}")
 
         message = json.dumps(metric_dict)
 
         try:
-            connection = pika.BlockingConnection(pika.URLParameters(config.amqp_url))
-            channel = connection.channel()
-            channel.basic_publish(
-                exchange='',
-                routing_key=config.queue_name,
-                body=message.encode(),
-                properties=pika.BasicProperties(content_type="application/json")
-            )
-
-            print(" [x] Sent %r" % message)
-            connection.close()
+            with pika.BlockingConnection(pika.URLParameters(config.amqp_url)) as connection:
+                channel = connection.channel()
+                channel.basic_publish(
+                    exchange='',
+                    routing_key=config.queue_name,
+                    body=message.encode(),
+                    properties=pika.BasicProperties(content_type="application/json")
+                )
+                logger.info(f" [x] Sent {message}")
         except Exception as e:
-            print(f"Exception occurred: {e}")
+            logger.error(f"Exception occurred: {e}")
