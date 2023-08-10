@@ -39,7 +39,7 @@ class DataFetcher:
                 metric = await self.decrypt_device(data_hex)
                 await self.post_to_rabbitmq(metric)
             except Exception as e:
-                self.logger.exception(f"DataFetcher thread failed with exception: {e}")
+                self.logger.exception(f"DataFetcher thread failed with exception: {e.args[0]}")
                 continue
 
     async def decrypt_device(self, data_hex):
