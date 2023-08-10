@@ -11,7 +11,6 @@ from app.energy_meter_interaction.energy_decrypter import (
     transform_to_metrics,
     decrypt_aes_gcm_landis_and_gyr,
 )
-from app.energy_meter_interaction.energy_meter_data import MeterData
 from app.proto.MeterConnectorProto import meter_connector_pb2_grpc, meter_connector_pb2
 
 import logging
@@ -28,8 +27,8 @@ class DataFetcher:
     async def fetch_data(self):
         self.logger.info("start fetching")
         while not self.stopped:
+            await asyncio.sleep(config.interval)
             try:
-                await asyncio.sleep(config.interval)
                 print("grpc_endpoint: %s", config.grpc_endpoint)
                 channel = grpc.insecure_channel(config.grpc_endpoint)
                 stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
@@ -54,9 +53,7 @@ class DataFetcher:
             return transform_to_metrics(dec, config.pubkey)
         else:
             decoded_packet = decode_packet(bytearray.fromhex(data_hex))
-            print("data_hex: %s", decoded_packet)
-            metric = extract_data(decode_packet(bytearray.fromhex(data_hex)))
-            self.logger.info("data: %s", metric)
+            metric = extract_data(decoded_packet)
             if metric is None:
                 self.logger.error("data is None")
                 raise Exception("data is None")
