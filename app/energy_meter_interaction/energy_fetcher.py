@@ -2,7 +2,7 @@ import grpc
 import json
 import pika
 import time
-from app.dependencies import config
+from app.dependencies import config, logger
 from app.energy_meter_interaction.energy_decrypter import (
     extract_data,
     decode_packet,
@@ -11,14 +11,10 @@ from app.energy_meter_interaction.energy_decrypter import (
     decrypt_aes_gcm_landis_and_gyr,
 )
 from app.proto.MeterConnectorProto import meter_connector_pb2_grpc, meter_connector_pb2
-
-import logging
-
 from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
 
 
-logger = logging.getLogger(__name__)
-
+SM_READ_ERROR = "ERROR! SM METER READ"
 
 class DataFetcher:
     def __init__(self):
@@ -34,11 +30,14 @@ class DataFetcher:
                 stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
                 request = meter_connector_pb2.SMDataRequest()
                 response = stub.readMeter(request)
+                if response.message == SM_READ_ERROR:
+                    logger.error("No data from Smart Meter")
+                    continue
                 data_hex = response.message
                 print(f"data_hex: {data_hex}")
                 metric = self.decrypt_device(data_hex)
                 self.post_to_rabbitmq(metric)
-            except Exception as e:
+            except ValueError as e:
                 logger.exception(f"DataFetcher thread failed with exception: {e.args[0]}")
                 continue
 

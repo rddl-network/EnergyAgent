@@ -1,3 +1,4 @@
+import logging
 import os
 from contextlib import contextmanager
 
@@ -21,6 +22,7 @@ class Config:
         self.amqp_url = (
             f"amqp://{self.rabbitmq_username}:{self.rabbitmq_password}@{self.rabbitmq_host}:{self.rabbitmq_port}/"
         )
+        self.log_level = os.environ.get("LOG_LEVEL") or "INFO"
 
         self.evn_key = os.environ.get("EVN_KEY") or None
         self.lg_encryption_key = os.environ.get("LG_ENCRYPTION_KEY") or None
@@ -31,3 +33,6 @@ class Config:
 
 
 config = Config()
+
+logging.basicConfig(level=config.log_level, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
