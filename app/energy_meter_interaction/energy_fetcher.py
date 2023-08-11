@@ -72,7 +72,7 @@ class DataFetcher:
         logger.debug(f"Metric data: {metric_dict}")
 
         message = json.dumps(metric_dict)
-
+        logger.debug(f"connect to rabbitmq: {config.amqp_url}")
         try:
             with pika.BlockingConnection(pika.URLParameters(config.amqp_url)) as connection:
                 channel = connection.channel()
