@@ -25,7 +25,7 @@ class DataFetcher:
         while not self.stopped:
             time.sleep(config.interval)
             try:
-                print(f"grpc_endpoint: {config.grpc_endpoint}")
+                logger.info(f"grpc_endpoint: {config.grpc_endpoint}")
                 channel = grpc.insecure_channel(config.grpc_endpoint)
                 stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
                 request = meter_connector_pb2.SMDataRequest()
@@ -34,7 +34,7 @@ class DataFetcher:
                     logger.error("No data from Smart Meter")
                     continue
                 data_hex = response.message
-                print(f"data_hex: {data_hex}")
+                logger.info(f"data_hex: {data_hex}")
                 metric = self.decrypt_device(data_hex)
                 self.post_to_rabbitmq(metric)
             except ValueError as e:
