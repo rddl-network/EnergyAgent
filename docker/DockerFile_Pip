@@ -1,4 +1,5 @@
-FROM python:3.9
+# Use a smaller base image
+FROM python:3.9-slim as builder
 
 # Update and install necessary packages
 RUN apt-get update && \
@@ -16,14 +17,23 @@ RUN apt-get update && \
     libffi-dev \
     pkg-config \
     cargo \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libpq-dev
 
-
+# Copy the application code and the requirements.txt file
 COPY . .
-COPY requirements.txt .
+
+# Install the dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Use a multi-stage build to create a smaller final image
+FROM python:3.9-slim
 
+# Copy the application code and the dependencies from the builder image
+COPY --from=builder /usr/local /usr/local
+COPY --from=builder /app /app
+
+# Set the working directory
+WORKDIR /app
+
+# Run the application
 CMD ["python", "-m", "main"]
-
