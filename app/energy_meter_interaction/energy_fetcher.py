@@ -16,9 +16,11 @@ from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
 
 SM_READ_ERROR = "ERROR! SM METER READ"
 
+
 class DataFetcher:
     def __init__(self):
         self.stopped = False
+        self.rabbitmq_connection = self.connect_to_rabbitmq()
 
     def fetch_data(self):
         logger.info("start fetching")
@@ -61,8 +63,7 @@ class DataFetcher:
                 raise ValueError("data is None")
             return metric
 
-    @staticmethod
-    def post_to_rabbitmq(data: MetricCreate):
+    def post_to_rabbitmq(self, data: MetricCreate):
         logger.info("Posting to RabbitMQ")
 
         metric_dict = data.dict()
@@ -74,14 +75,23 @@ class DataFetcher:
         message = json.dumps(metric_dict)
         logger.debug(f"connect to rabbitmq: {config.amqp_url}")
         try:
-            with pika.BlockingConnection(pika.URLParameters(config.amqp_url)) as connection:
-                channel = connection.channel()
-                channel.basic_publish(
-                    exchange='',
-                    routing_key=config.queue_name,
-                    body=message.encode(),
-                    properties=pika.BasicProperties(content_type="application/json")
-                )
-                logger.info(f" [x] Sent {message}")
+            if not self.rabbitmq_connection or self.rabbitmq_connection.is_closed:
+                self.rabbitmq_connection = self.connect_to_rabbitmq()
+            channel = self.rabbitmq_connection.channel()
+            channel.basic_publish(
+                exchange="",
+                routing_key=config.queue_name,
+                body=message.encode(),
+                properties=pika.BasicProperties(content_type="application/json"),
+            )
+            logger.info(f" [x] Sent {message}")
         except Exception as e:
             logger.error(f"Exception occurred: {e}")
+
+    def connect_to_rabbitmq(self):
+        while True:
+            try:
+                return pika.BlockingConnection(pika.URLParameters(config.amqp_url))
+            except Exception as e:
+                logger.error(f"Exception occurred while connecting to RabbitMQ: {e}")
+                time.sleep(10)  # Wait for a while before retrying the connection

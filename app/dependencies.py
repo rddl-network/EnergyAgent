@@ -34,5 +34,4 @@ class Config:
 
 config = Config()
 
-logging.basicConfig(level=config.log_level, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)

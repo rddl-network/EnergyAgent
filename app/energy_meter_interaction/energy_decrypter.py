@@ -293,7 +293,9 @@ def decrypt_evn_data(data: str):
 
 def decrypt_aes_gcm_landis_and_gyr(data_hex, encryption_key=None, authentication_key=None):
     if len(data_hex) != 282:
-        raise ValueError(f"Wrong input encrypted data should have 282 characters. Please check your device, data_hex {data_hex}")
+        raise ValueError(
+            f"Wrong input encrypted data should have 282 characters. Please check your device, data_hex {data_hex}"
+        )
 
     cipher_text_str = data_hex[38:276]
     cipher_text = bytes.fromhex(cipher_text_str)
