@@ -45,5 +45,8 @@ COPY --from=builder /usr/local/bin/ /usr/local/bin/
 # Copy the application from the builder container
 COPY --from=builder /app/ .
 
+# Ensure main.py is present
+RUN ls -la
+
 # Run the application
 CMD ["python", "-m", "main"]
