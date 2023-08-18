@@ -9,6 +9,7 @@ from app.energy_meter_interaction.energy_decrypter import (
     decrypt_evn_data,
     transform_to_metrics,
     decrypt_aes_gcm_landis_and_gyr,
+    decrypt_sagemcom,
 )
 from app.proto.MeterConnectorProto import meter_connector_pb2_grpc, meter_connector_pb2
 from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
@@ -52,7 +53,12 @@ class DataFetcher:
             return transform_to_metrics(dec, config.pubkey)
         elif config.device == "LG":
             dec = decrypt_aes_gcm_landis_and_gyr(
-                data_hex, bytes.fromhex(config.lg_encryption_key), bytes.fromhex(config.lg_authentication_key)
+                data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
+            )
+            return transform_to_metrics(dec, config.pubkey)
+        elif config.device == "SC":
+            dec = decrypt_sagemcom(
+                data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
             )
             return transform_to_metrics(dec, config.pubkey)
         else:

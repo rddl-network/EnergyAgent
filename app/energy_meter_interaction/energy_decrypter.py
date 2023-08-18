@@ -298,20 +298,62 @@ def decrypt_aes_gcm_landis_and_gyr(data_hex, encryption_key=None, authentication
         )
 
     cipher_text_str = data_hex[38:276]
+    apdu = decrypt_gcm(authentication_key, cipher_text_str, encryption_key)
+    root = ET.fromstring(GXDLMSTranslator().pduToXml(apdu))
+    return parse_root_items(root)
+
+
+def decrypt_sagemcom(data_hex, encryption_key=None, authentication_key=None):
+    apdu = decrypt_gcm(authentication_key, data_hex, encryption_key)
+    obis_dict = parse_dsmr_frame(apdu)
+
+    data_list = [
+        {"key": "WirkenergieP", "value": int(obis_dict["1-0:1.8.0"])},
+        {"key": "WirkenergieN", "value": int(obis_dict["1-0:2.8.0"])},
+    ]
+
+    return data_list
+
+
+def decrypt_gcm(authentication_key, cipher_text_str, encryption_key):
     cipher_text = bytes.fromhex(cipher_text_str)
-
     system_title = cipher_text[2 : 2 + 8]
-
     initialization_vector = system_title + cipher_text[14 : 14 + 4]
     additional_authenticated_data = cipher_text[13 : 13 + 1] + authentication_key
     cipher = AES.new(encryption_key, AES.MODE_GCM, nonce=initialization_vector)
-
     cipher.update(additional_authenticated_data)
     plaintext = cipher.decrypt(cipher_text[18 : len(cipher_text) - 12])
-
     apdu = plaintext.hex()
-    root = ET.fromstring(GXDLMSTranslator().pduToXml(apdu))
-    return parse_root_items(root)
+    return apdu
+
+
+def parse_dsmr_frame(hex_frame):
+    # Decode the hexadecimal string into its string representation
+    decoded_frame = bytes.fromhex(hex_frame).decode("utf-8")
+
+    # Split the decoded frame into lines
+    lines = decoded_frame.split("\r\n")
+
+    # Dictionary to store parsed data
+    data = {}
+
+    for line in lines:
+        # Split the line into OBIS code and value, if possible
+        parts = line.split("(")
+
+        if len(parts) > 1:
+            obis_code = parts[0]
+
+            # Strip any unwanted characters from the value
+            value = parts[1].rstrip(")").split("*")[0]
+
+            data[obis_code] = value
+
+    return data
+
+
+def convert_to_kwh(value):
+    return int(value) // 1000
 
 
 def transform_to_metrics(data_list, public_key) -> MetricCreate:
@@ -328,8 +370,8 @@ def transform_to_metrics(data_list, public_key) -> MetricCreate:
     for data in data_list:
         value = Decimal(data.get("value"))
         if data.get("key") == "WirkenergieP":
-            metric_data["absolute_energy_in"] = value
+            metric_data["absolute_energy_in"] = convert_to_kwh(value)
         elif data.get("key") == "WirkenergieN":
-            metric_data["absolute_energy_out"] = value
+            metric_data["absolute_energy_out"] = convert_to_kwh(value)
 
     return MetricCreate(**metric_data)

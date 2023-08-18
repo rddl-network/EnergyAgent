@@ -25,8 +25,8 @@ class Config:
         self.log_level = os.environ.get("LOG_LEVEL") or "INFO"
 
         self.evn_key = os.environ.get("EVN_KEY") or None
-        self.lg_encryption_key = os.environ.get("LG_ENCRYPTION_KEY") or None
-        self.lg_authentication_key = os.environ.get("LG_AUTH_KEY") or None
+        self.encryption_key = os.environ.get("ENCRYPTION_KEY") or None
+        self.authentication_key = os.environ.get("AUTH_KEY") or None
 
         # build the database url
         self.grpc_endpoint = f"{self.grpc_host}:{self.grpc_port}"
