@@ -40,8 +40,11 @@ class DataFetcher:
                 logger.info(f"data_hex: {data_hex}")
                 metric = self.decrypt_device(data_hex)
                 self.post_to_rabbitmq(metric)
+            except UnicodeDecodeError as e:
+                logger.exception(f"Invalid Frame: {e.args[0]}")
+                continue
             except ValueError as e:
-                logger.exception(f"{e.args[0]}")
+                logger.exception(f"Invalid Frame: {e.args[0]}")
                 continue
             except Exception as e:
                 logger.exception(f"DataFetcher thread failed with exception: {e.args[0]}")
