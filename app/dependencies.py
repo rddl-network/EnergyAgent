@@ -1,6 +1,5 @@
 import logging
 import os
-from contextlib import contextmanager
 
 
 class Config:
@@ -33,5 +32,11 @@ class Config:
 
 
 config = Config()
+
+
+numeric_level = getattr(logging, config.log_level.upper(), None)
+if not isinstance(numeric_level, int):
+    raise ValueError(f'Invalid log level: {config.log_level}')
+logging.basicConfig(level=numeric_level)
 
 logger = logging.getLogger(__name__)
