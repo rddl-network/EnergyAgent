@@ -33,7 +33,7 @@ def test_decode_packet_evn():
 
 # db084c475a67737c7e
 # 7ea08bceff0313eee1e6e700e0400001000077db084c475a67737c7e8e820103300009855416f213a1bea812428a7159e61fa2cf09677c5460537847496035c01beb3e1ed4dc85709ddf31c240f77d1cc04632ddd5d2e2f05a162e543955c0f8696ad8b82d573370c7e7fc67a7ec75505a11ea2e632959135632df0d05969466071fbcf36409476a78f83ca87e
-def test_decode_packet_LG():
+def test_decode_packet_lg():
     print("test_decode_packet_v2")
     data_hex_str = "7ea08bceff0313eee1e6e700e0400001000077db084c475a67737c7ee082010330000879a66ad533b89c24bfe1680b0745ab2138b4098c33c9ba956639d0cbfce9a657a4076ad04ae0b190441d489b62452aef0c240229e8c0ff3c03e18ddabdc6cdffa94330ca9c16be8059aa17a9084b6bec007d2f675d720a65fd0a70f1eaf16122cddf80971057b4d8eb7e"
     encryption_key = bytes.fromhex("7340BC1501143C498CD677811D771921")
@@ -44,7 +44,7 @@ def test_decode_packet_LG():
     assert dec == [{"key": "WirkenergieP", "value": 8684853}, {"key": "MomentanleistungP", "value": 1565}]
 
 
-def test_decode_packet_LG_2():
+def test_decode_packet_sc_1():
     encryption_key = bytes.fromhex("A8C74F67ECA8EF9C55C4743FF6F4F031")
     authentication_key = bytes.fromhex("F6089912E1CC910884DFC86E9F028201")
 
@@ -54,7 +54,7 @@ def test_decode_packet_LG_2():
     assert dec == [{"key": "WirkenergieP", "value": 7112944}, {"key": "WirkenergieN", "value": 33153972}]
 
 
-def test_decode_packet_LG_exception():
+def test_decode_packet_lg_exception():
     print("test_decode_packet_v2")
     data_hex_str = (
         "7ea030ceff031386f8e0c0000300001f8b379c3b5a58d7c6c8517275468aae0f5b5f5916445e6fc45ca0fed1618ad77f2a7e"

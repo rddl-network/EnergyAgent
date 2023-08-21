@@ -2,6 +2,9 @@ import grpc
 import json
 import pika
 import time
+
+from pika.exceptions import AMQPConnectionError, ConnectionClosedByBroker
+
 from app.dependencies import config, logger
 from app.energy_meter_interaction.energy_decrypter import (
     extract_data,
@@ -85,6 +88,7 @@ class DataFetcher:
         logger.debug(f"connect to rabbitmq: {config.amqp_url}")
         try:
             if not self.rabbitmq_connection or self.rabbitmq_connection.is_closed:
+                logger.info("Reconnecting to RabbitMQ")
                 self.rabbitmq_connection = self.connect_to_rabbitmq()
             channel = self.rabbitmq_connection.channel()
             channel.basic_publish(
@@ -97,10 +101,14 @@ class DataFetcher:
         except Exception as e:
             logger.error(f"Exception occurred: {e}")
 
-    def connect_to_rabbitmq(self):
-        while True:
+    @staticmethod
+    def connect_to_rabbitmq():
+        max_retries = 5
+        retry_count = 0
+        while retry_count < max_retries:
             try:
                 return pika.BlockingConnection(pika.URLParameters(config.amqp_url))
-            except Exception as e:
+            except AMQPConnectionError as e:
                 logger.error(f"Exception occurred while connecting to RabbitMQ: {e}")
                 time.sleep(10)  # Wait for a while before retrying the connection
+                retry_count += 1
