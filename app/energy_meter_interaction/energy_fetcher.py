@@ -31,7 +31,7 @@ class DataFetcher:
         while not self.stopped:
             time.sleep(config.interval)
             try:
-                logger.info(f"grpc_endpoint: {config.grpc_endpoint}")
+                logger.debug(f"grpc_endpoint: {config.grpc_endpoint}")
                 channel = grpc.insecure_channel(config.grpc_endpoint)
                 stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
                 request = meter_connector_pb2.SMDataRequest()
@@ -40,7 +40,7 @@ class DataFetcher:
                     logger.error("No data from Smart Meter")
                     continue
                 data_hex = response.message
-                logger.info(f"data_hex: {data_hex}")
+                logger.debug(f"data_hex: {data_hex}")
                 metric = self.decrypt_device(data_hex)
                 self.post_to_rabbitmq(metric)
             except UnicodeDecodeError as e:
@@ -88,7 +88,7 @@ class DataFetcher:
         logger.debug(f"connect to rabbitmq: {config.amqp_url}")
         try:
             if not self.rabbitmq_connection or self.rabbitmq_connection.is_closed:
-                logger.info("Reconnecting to RabbitMQ")
+                logger.debug("Reconnecting to RabbitMQ")
                 self.rabbitmq_connection = self.connect_to_rabbitmq()
             channel = self.rabbitmq_connection.channel()
             channel.basic_publish(

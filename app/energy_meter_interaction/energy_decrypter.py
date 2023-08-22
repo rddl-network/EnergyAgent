@@ -364,8 +364,8 @@ def transform_to_metrics(data_list, public_key) -> MetricCreate:
         "time_stamp": now.utcnow(),
         "type": "absolute_energy",
         "unit": "kWh",
-        "absolute_energy_in": Decimal(0),
-        "absolute_energy_out": Decimal(0),
+        "absolute_energy_in": 0,
+        "absolute_energy_out": 0,
     }
 
     for data in data_list:
