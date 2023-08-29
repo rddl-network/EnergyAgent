@@ -29,8 +29,9 @@ class DataFetcher:
     def fetch_data(self):
         logger.info("start fetching")
         while not self.stopped:
-            time.sleep(config.interval)
             try:
+                # We need to wait 5 seconds before requesting data from the Smart Meter again after a invalid frame
+                time.sleep(5)
                 logger.debug(f"grpc_endpoint: {config.grpc_endpoint}")
                 channel = grpc.insecure_channel(config.grpc_endpoint)
                 stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
@@ -43,6 +44,7 @@ class DataFetcher:
                 logger.debug(f"data_hex: {data_hex}")
                 metric = self.decrypt_device(data_hex)
                 self.post_to_rabbitmq(metric)
+                time.sleep(config.interval)
             except UnicodeDecodeError as e:
                 logger.exception(f"Invalid Frame: {e.args[0]}")
                 continue

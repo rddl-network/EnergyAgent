@@ -1,9 +1,13 @@
+import json
+
 from app.dependencies import config
 from app.energy_meter_interaction.energy_decrypter import (
     decrypt_evn_data,
     decrypt_aes_gcm_landis_and_gyr,
     decrypt_sagemcom,
+    transform_to_metrics,
 )
+from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
 
 
 def test_decode_packet_evn():
@@ -64,4 +68,4 @@ def test_decode_packet_lg_exception():
     try:
         decrypt_aes_gcm_landis_and_gyr(data_hex_str, encryption_key, authentication_key)
     except Exception as e:
-        assert e.args[0] == "Wrong input encrypted data should have 282 characters. Please check your device"
+        assert e.args[0] == "Wrong input encrypted data should have 282 characters. Please check your device, data_hex 7ea030ceff031386f8e0c0000300001f8b379c3b5a58d7c6c8517275468aae0f5b5f5916445e6fc45ca0fed1618ad77f2a7e"
