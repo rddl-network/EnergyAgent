@@ -1,5 +1,5 @@
+import logging
 import os
-from contextlib import contextmanager
 
 
 class Config:
@@ -21,13 +21,22 @@ class Config:
         self.amqp_url = (
             f"amqp://{self.rabbitmq_username}:{self.rabbitmq_password}@{self.rabbitmq_host}:{self.rabbitmq_port}/"
         )
+        self.log_level = os.environ.get("LOG_LEVEL") or "INFO"
 
         self.evn_key = os.environ.get("EVN_KEY") or None
-        self.lg_encryption_key = os.environ.get("LG_ENCRYPTION_KEY") or None
-        self.lg_authentication_key = os.environ.get("LG_AUTH_KEY") or None
+        self.encryption_key = os.environ.get("ENCRYPTION_KEY") or None
+        self.authentication_key = os.environ.get("AUTH_KEY") or None
 
         # build the database url
         self.grpc_endpoint = f"{self.grpc_host}:{self.grpc_port}"
 
 
 config = Config()
+
+
+numeric_level = getattr(logging, config.log_level.upper(), None)
+if not isinstance(numeric_level, int):
+    raise ValueError(f"Invalid log level: {config.log_level}")
+logging.basicConfig(level=numeric_level)
+
+logger = logging.getLogger(__name__)

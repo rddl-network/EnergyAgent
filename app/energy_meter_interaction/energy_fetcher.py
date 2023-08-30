@@ -1,87 +1,116 @@
-import asyncio
 import grpc
 import json
-from aio_pika import connect, Message
+import pika
+import time
 
-from app.dependencies import config
+from pika.exceptions import AMQPConnectionError, ConnectionClosedByBroker
+
+from app.dependencies import config, logger
 from app.energy_meter_interaction.energy_decrypter import (
     extract_data,
     decode_packet,
     decrypt_evn_data,
     transform_to_metrics,
     decrypt_aes_gcm_landis_and_gyr,
+    decrypt_sagemcom,
 )
-from app.energy_meter_interaction.energy_meter_data import MeterData
 from app.proto.MeterConnectorProto import meter_connector_pb2_grpc, meter_connector_pb2
-
-import logging
-
 from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
+
+
+SM_READ_ERROR = "ERROR! SM METER READ"
 
 
 class DataFetcher:
     def __init__(self):
         self.stopped = False
-        self.thing_id = None
-        self.logger = logging.getLogger(__name__)
+        self.rabbitmq_connection = self.connect_to_rabbitmq()
 
-    async def fetch_data(self):
-        self.logger.info("start fetching")
-        try:
-            while not self.stopped:
-                print("grpc_endpoint: %s", config.grpc_endpoint)
+    def fetch_data(self):
+        logger.info("start fetching")
+        while not self.stopped:
+            try:
+                # We need to wait 5 seconds before requesting data from the Smart Meter again after a invalid frame
+                time.sleep(5)
+                logger.debug(f"grpc_endpoint: {config.grpc_endpoint}")
                 channel = grpc.insecure_channel(config.grpc_endpoint)
                 stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
                 request = meter_connector_pb2.SMDataRequest()
                 response = stub.readMeter(request)
+                if response.message == SM_READ_ERROR:
+                    logger.error("No data from Smart Meter")
+                    continue
                 data_hex = response.message
-                print("data_hex: %s", data_hex)
-                metric = await self.decrypt_device(data_hex)
-                await self.post_to_rabbitmq(metric)
-                await asyncio.sleep(config.interval)
-        except Exception as e:
-            self.logger.exception("DataFetcher thread failed with exception: %s", str(e))
+                logger.debug(f"data_hex: {data_hex}")
+                metric = self.decrypt_device(data_hex)
+                self.post_to_rabbitmq(metric)
+                time.sleep(config.interval)
+            except UnicodeDecodeError as e:
+                logger.exception(f"Invalid Frame: {e.args[0]}")
+                continue
+            except ValueError as e:
+                logger.exception(f"Invalid Frame: {e.args[0]}")
+                continue
+            except Exception as e:
+                logger.exception(f"DataFetcher thread failed with exception: {e.args[0]}")
 
-    async def decrypt_device(self, data_hex):
+    @staticmethod
+    def decrypt_device(data_hex):
         if config.device == "EVN":
             dec = decrypt_evn_data(data_hex)
             return transform_to_metrics(dec, config.pubkey)
         elif config.device == "LG":
             dec = decrypt_aes_gcm_landis_and_gyr(
-                data_hex, bytes.fromhex(config.lg_encryption_key), bytes.fromhex(config.lg_authentication_key)
+                data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
+            )
+            return transform_to_metrics(dec, config.pubkey)
+        elif config.device == "SC":
+            dec = decrypt_sagemcom(
+                data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
             )
             return transform_to_metrics(dec, config.pubkey)
         else:
             decoded_packet = decode_packet(bytearray.fromhex(data_hex))
-            print("data_hex: %s", decoded_packet)
-            metric = extract_data(decode_packet(bytearray.fromhex(data_hex)))
-            self.logger.info("data: %s", metric)
+            metric = extract_data(decoded_packet)
             if metric is None:
-                self.logger.error("data is None")
-                raise Exception("data is None")
+                logger.error("data is None")
+                raise ValueError("data is None")
             return metric
 
-    @staticmethod
-    async def post_to_rabbitmq(data: MetricCreate):
-        print("post_to_rabbitmq")
+    def post_to_rabbitmq(self, data: MetricCreate):
+        logger.info("Posting to RabbitMQ")
+
         metric_dict = data.dict()
         metric_dict["time_stamp"] = metric_dict["time_stamp"].isoformat()
         metric_dict["absolute_energy_in"] = float(metric_dict["absolute_energy_in"])
         metric_dict["absolute_energy_out"] = float(metric_dict["absolute_energy_out"])
-        print(metric_dict)
-        print(f"Queue name: {config.queue_name}")
+        logger.debug(f"Metric data: {metric_dict}")
 
         message = json.dumps(metric_dict)
-
+        logger.debug(f"connect to rabbitmq: {config.amqp_url}")
         try:
-            connection = await connect(
-                config.amqp_url,
+            if not self.rabbitmq_connection or self.rabbitmq_connection.is_closed:
+                logger.debug("Reconnecting to RabbitMQ")
+                self.rabbitmq_connection = self.connect_to_rabbitmq()
+            channel = self.rabbitmq_connection.channel()
+            channel.basic_publish(
+                exchange="",
+                routing_key=config.queue_name,
+                body=message.encode(),
+                properties=pika.BasicProperties(content_type="application/json"),
             )
-
-            async with connection:
-                channel = await connection.channel()
-                await channel.default_exchange.publish(Message(body=message.encode()), routing_key=config.queue_name)
-
-            print(" [x] Sent %r" % message)
+            logger.info(f" [x] Sent {message}")
         except Exception as e:
-            print(f"Exception occurred: {e}")
+            logger.error(f"Exception occurred: {e}")
+
+    @staticmethod
+    def connect_to_rabbitmq():
+        max_retries = 5
+        retry_count = 0
+        while retry_count < max_retries:
+            try:
+                return pika.BlockingConnection(pika.URLParameters(config.amqp_url))
+            except AMQPConnectionError as e:
+                logger.error(f"Exception occurred while connecting to RabbitMQ: {e}")
+                time.sleep(10)  # Wait for a while before retrying the connection
+                retry_count += 1
