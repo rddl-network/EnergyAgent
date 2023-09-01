@@ -353,8 +353,8 @@ def parse_dsmr_frame(hex_frame):
     return data
 
 
-def convert_to_kwh(value):
-    return int(value) // 1000
+def convert_to_kwh(value) -> float:
+    return value // 1000
 
 
 def transform_to_metrics(data_list, public_key) -> MetricCreate:
