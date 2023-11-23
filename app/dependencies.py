@@ -12,15 +12,12 @@ class Config:
         self.interval = int(os.environ.get("INTERVAL") or "15")
         self.thing_id = os.environ.get("THING_ID") or "st-energy-meter"
         self.pubkey = os.environ.get("PUBKEY") or "st-energy-meter"
-        self.rabbitmq_host = os.environ.get("RABBITMQ_HOST") or "rabbitmq"
+        self.mqtt_host = os.environ.get("MQTT_HOST") or "mqtt"
         self.queue_name = os.environ.get("QUEUE_NAME") or "metrics"
         self.exchange_name = os.environ.get("EXCHANGE_NAME") or ""
-        self.rabbitmq_port = os.environ.get("RABBITMQ_PORT") or "5672"
-        self.rabbitmq_password = os.environ.get("RABBITMQ_PASSWORD") or ""
-        self.rabbitmq_username = os.environ.get("RABBITMQ_USERNAME") or ""
-        self.amqp_url = (
-            f"amqp://{self.rabbitmq_username}:{self.rabbitmq_password}@{self.rabbitmq_host}:{self.rabbitmq_port}/"
-        )
+        self.mqtt_port = os.environ.get("MQTT_PORT") or "5672"
+        self.mqtt_password = os.environ.get("MQTT_PASSWORD") or ""
+        self.mqtt_username = os.environ.get("MQTT_USERNAME") or ""
         self.log_level = os.environ.get("LOG_LEVEL") or "INFO"
 
         self.evn_key = os.environ.get("EVN_KEY") or None

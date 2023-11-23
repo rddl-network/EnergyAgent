@@ -1,9 +1,7 @@
 import grpc
 import json
-import pika
 import time
-
-from pika.exceptions import AMQPConnectionError, ConnectionClosedByBroker
+import paho.mqtt.client as mqtt
 
 from app.dependencies import config, logger
 from app.energy_meter_interaction.energy_decrypter import (
@@ -23,28 +21,29 @@ SM_READ_ERROR = "ERROR! SM METER READ"
 
 class DataFetcher:
     def __init__(self):
+        self.mqtt_client = None
         self.stopped = False
-        self.rabbitmq_connection = self.connect_to_rabbitmq()
+
+        self.connect_to_mqtt()
 
     def fetch_data(self):
         logger.info("start fetching")
         while not self.stopped:
             try:
-                # We need to wait 5 seconds before requesting data from the Smart Meter again after a invalid frame
                 time.sleep(5)
                 logger.debug(f"grpc_endpoint: {config.grpc_endpoint}")
-                channel = grpc.insecure_channel(config.grpc_endpoint)
-                stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
-                request = meter_connector_pb2.SMDataRequest()
-                response = stub.readMeter(request)
-                if response.message == SM_READ_ERROR:
-                    logger.error("No data from Smart Meter")
-                    continue
-                data_hex = response.message
-                logger.debug(f"data_hex: {data_hex}")
-                metric = self.decrypt_device(data_hex)
-                self.post_to_rabbitmq(metric)
-                time.sleep(config.interval)
+                with grpc.insecure_channel(config.grpc_endpoint) as channel:
+                    stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
+                    request = meter_connector_pb2.SMDataRequest()
+                    response = stub.readMeter(request)
+                    if response.message == SM_READ_ERROR:
+                        logger.error("No data from Smart Meter")
+                        continue
+                    data_hex = response.message
+                    logger.debug(f"data_hex: {data_hex}")
+                    metric = self.decrypt_device(data_hex)
+                    self.post_to_mqtt(metric)
+                    time.sleep(config.interval)
             except UnicodeDecodeError as e:
                 logger.exception(f"Invalid Frame: {e.args[0]}")
                 continue
@@ -77,8 +76,8 @@ class DataFetcher:
                 raise ValueError("data is None")
             return metric
 
-    def post_to_rabbitmq(self, data: MetricCreate):
-        logger.info("Posting to RabbitMQ")
+    def post_to_mqtt(self, data: MetricCreate):
+        logger.info("Posting to MQTT")
 
         metric_dict = data.dict()
         metric_dict["time_stamp"] = metric_dict["time_stamp"].isoformat()
@@ -87,30 +86,39 @@ class DataFetcher:
         logger.debug(f"Metric data: {metric_dict}")
 
         message = json.dumps(metric_dict)
-        logger.debug(f"connect to rabbitmq: {config.amqp_url}")
         try:
-            if not self.rabbitmq_connection or self.rabbitmq_connection.is_closed:
-                logger.debug("Reconnecting to RabbitMQ")
-                self.rabbitmq_connection = self.connect_to_rabbitmq()
-            channel = self.rabbitmq_connection.channel()
-            channel.basic_publish(
-                exchange="",
-                routing_key=config.queue_name,
-                body=message.encode(),
-                properties=pika.BasicProperties(content_type="application/json"),
-            )
+            result = self.mqtt_client.publish(config.mqtt_topic, payload=message, qos=1)
+            result.wait_for_publish()
             logger.info(f" [x] Sent {message}")
         except Exception as e:
-            logger.error(f"Exception occurred: {e}")
+            logger.error(f"Exception occurred while publishing to MQTT: {e}")
+            self.handle_publish_failure(data)
 
-    @staticmethod
-    def connect_to_rabbitmq():
-        max_retries = 5
-        retry_count = 0
-        while retry_count < max_retries:
-            try:
-                return pika.BlockingConnection(pika.URLParameters(config.amqp_url))
-            except AMQPConnectionError as e:
-                logger.error(f"Exception occurred while connecting to RabbitMQ: {e}")
-                time.sleep(10)  # Wait for a while before retrying the connection
-                retry_count += 1
+    def connect_to_mqtt(self):
+        self.mqtt_client = mqtt.Client()
+        self.mqtt_client.on_connect = self.on_connect
+        self.mqtt_client.on_disconnect = self.on_disconnect
+        self.mqtt_client.on_publish = self.on_publish
+        self.mqtt_client.username_pw_set(config.mqtt_username, config.mqtt_username)
+        try:
+            self.mqtt_client.connect(config.mqtt_host, config.mqtt_port, 60)
+        except Exception as e:
+            logger.error(f"Exception occurred while connecting to MQTT: {e}")
+
+    def handle_publish_failure(self, data):
+        logger.warning("Attempting to republish to MQTT")
+        try:
+            self.mqtt_client.reconnect()  # Attempt to reconnect
+            self.post_to_mqtt(data)  # Try to republish the data
+        except Exception as e:
+            logger.error(f"Republishing failed: {e}")
+            # Implement additional failure handling, like queuing the message
+
+    def on_connect(self, client, userdata, flags, rc):
+        logger.info(f"Connected to MQTT Broker with result code {rc}")
+
+    def on_disconnect(self, client, userdata, rc):
+        logger.info("Disconnected from MQTT Broker")
+
+    def on_publish(self, client, userdata, mid):
+        logger.info(f"Message with mid {mid} has been published.")
