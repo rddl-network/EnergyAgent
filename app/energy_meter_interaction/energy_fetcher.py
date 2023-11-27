@@ -89,7 +89,9 @@ class DataFetcher:
 
         message = json.dumps(metric_dict)
         try:
+            logger.info(f"Publishing to MQTT: {message}")
             result = self.mqtt_client.publish(config.mqtt_topic, payload=message, qos=1)
+            logger.info(f"MQTT publish result: {result}")
             result.wait_for_publish()
             logger.info(f" [x] Sent {message}")
         except Exception as e:
@@ -104,6 +106,7 @@ class DataFetcher:
         self.mqtt_client.username_pw_set(config.mqtt_username, config.mqtt_username)
         try:
             self.mqtt_client.connect(config.mqtt_host, config.mqtt_port, 60)
+            self.mqtt_client.loop_start()  # Start the network loop
         except Exception as e:
             logger.error(f"Exception occurred while connecting to MQTT: {e}")
 
@@ -114,7 +117,6 @@ class DataFetcher:
             self.post_to_mqtt(data)  # Try to republish the data
         except Exception as e:
             logger.error(f"Republishing failed: {e}")
-            # Implement additional failure handling, like queuing the message
 
     def on_connect(self, client, userdata, flags, rc):
         logger.info(f"Connected to MQTT Broker with result code {rc}")
