@@ -13,11 +13,11 @@ class Config:
         self.thing_id = os.environ.get("THING_ID") or "st-energy-meter"
         self.pubkey = os.environ.get("PUBKEY") or "st-energy-meter"
         self.mqtt_host = os.environ.get("MQTT_HOST") or "mqtt"
-        self.queue_name = os.environ.get("QUEUE_NAME") or "metrics"
         self.exchange_name = os.environ.get("EXCHANGE_NAME") or ""
         self.mqtt_port = os.environ.get("MQTT_PORT") or "1883"
         self.mqtt_password = os.environ.get("MQTT_PASSWORD") or ""
         self.mqtt_username = os.environ.get("MQTT_USERNAME") or ""
+        self.mqtt_topic = os.environ.get("MQTT_TOPIC") or "metrics"
         self.log_level = os.environ.get("LOG_LEVEL") or "INFO"
 
         self.evn_key = os.environ.get("EVN_KEY") or None
