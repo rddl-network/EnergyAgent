@@ -46,9 +46,11 @@ class DataFetcher:
                     time.sleep(config.interval)
             except UnicodeDecodeError as e:
                 logger.exception(f"Invalid Frame: {e.args[0]}")
+                time.sleep(5)
                 continue
             except ValueError as e:
                 logger.exception(f"Invalid Frame: {e.args[0]}")
+                time.sleep(5)
                 continue
             except Exception as e:
                 logger.exception(f"DataFetcher thread failed with exception: {e.args[0]}")
