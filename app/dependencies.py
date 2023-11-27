@@ -15,7 +15,7 @@ class Config:
         self.mqtt_host = os.environ.get("MQTT_HOST") or "mqtt"
         self.queue_name = os.environ.get("QUEUE_NAME") or "metrics"
         self.exchange_name = os.environ.get("EXCHANGE_NAME") or ""
-        self.mqtt_port = os.environ.get("MQTT_PORT") or "5672"
+        self.mqtt_port = os.environ.get("MQTT_PORT") or "1883"
         self.mqtt_password = os.environ.get("MQTT_PASSWORD") or ""
         self.mqtt_username = os.environ.get("MQTT_USERNAME") or ""
         self.log_level = os.environ.get("LOG_LEVEL") or "INFO"
