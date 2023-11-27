@@ -14,7 +14,7 @@ class Config:
         self.pubkey = os.environ.get("PUBKEY") or "st-energy-meter"
         self.mqtt_host = os.environ.get("MQTT_HOST") or "mqtt"
         self.exchange_name = os.environ.get("EXCHANGE_NAME") or ""
-        self.mqtt_port = os.environ.get("MQTT_PORT") or "1883"
+        self.mqtt_port = int(os.environ.get("MQTT_PORT")) or 1883
         self.mqtt_password = os.environ.get("MQTT_PASSWORD") or ""
         self.mqtt_username = os.environ.get("MQTT_USERNAME") or ""
         self.mqtt_topic = os.environ.get("MQTT_TOPIC") or "metrics"
