@@ -17,6 +17,7 @@ from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
 
 
 SM_READ_ERROR = "ERROR! SM METER READ"
+DEFAULT_SLEEP_TIME = 5
 
 
 class DataFetcher:
@@ -30,7 +31,7 @@ class DataFetcher:
         logger.info("start fetching")
         while not self.stopped:
             try:
-                time.sleep(5)
+                time.sleep(DEFAULT_SLEEP_TIME)
                 logger.debug(f"grpc_endpoint: {config.grpc_endpoint}")
                 with grpc.insecure_channel(config.grpc_endpoint) as channel:
                     stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
@@ -46,11 +47,11 @@ class DataFetcher:
                     time.sleep(config.interval)
             except UnicodeDecodeError as e:
                 logger.exception(f"Invalid Frame: {e.args[0]}")
-                time.sleep(5)
+                time.sleep(DEFAULT_SLEEP_TIME)
                 continue
             except ValueError as e:
                 logger.exception(f"Invalid Frame: {e.args[0]}")
-                time.sleep(5)
+                time.sleep(DEFAULT_SLEEP_TIME)
                 continue
             except Exception as e:
                 logger.exception(f"DataFetcher thread failed with exception: {e.args[0]}")
