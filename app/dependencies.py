@@ -13,7 +13,7 @@ class Config:
         self.thing_id = os.environ.get("THING_ID") or "st-energy-meter"
         self.pubkey = os.environ.get("PUBKEY") or "st-energy-meter"
         self.mqtt_host = os.environ.get("MQTT_HOST") or "app-rabbitmq-dev.r3c.network"
-        self.mqtt_port: int = int(os.environ.get("MQTT_PORT")) or 1893
+        self.mqtt_port: int = int(os.environ.get("MQTT_PORT") or 1893)
         self.mqtt_password = os.environ.get("MQTT_PASSWORD") or "cYBgEh8Gk6G9qqcKzEPr"
         self.mqtt_username = os.environ.get("MQTT_USERNAME") or "stanz"
         self.mqtt_topic = os.environ.get("MQTT_TOPIC") or "metrics"
