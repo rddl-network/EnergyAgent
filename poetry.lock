@@ -636,6 +636,20 @@ files = [
 ]
 
 [[package]]
+name = "paho-mqtt"
+version = "1.6.1"
+description = "MQTT version 5.0/3.1.1 client class"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "paho-mqtt-1.6.1.tar.gz", hash = "sha256:2a8291c81623aec00372b5a85558a372c747cbca8e9934dfe218638b8eefc26f"},
+]
+
+[package.extras]
+proxy = ["PySocks"]
+
+[[package]]
 name = "pamqp"
 version = "3.2.1"
 description = "RabbitMQ Focused AMQP low-level library"
@@ -1075,4 +1089,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "03b978e2cdd3dfbc9b7617f15e3cba06e69fe1763e9a8088c5a64ad7020d69ed"
+content-hash = "97ea3ba4fd01f839fd890e4c77ecd71c6f84bc674eb632cd8763d63705950851"
