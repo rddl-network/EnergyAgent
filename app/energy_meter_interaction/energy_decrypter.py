@@ -2,6 +2,7 @@
 To decode smart meter data retrieved from the infrared customer interface provided by Wiener Netze.
 Tested with Iskra AM550 (But should work for all smart meters provided by Wiener Netze)
 """
+
 import binascii
 from decimal import Decimal
 from datetime import datetime
