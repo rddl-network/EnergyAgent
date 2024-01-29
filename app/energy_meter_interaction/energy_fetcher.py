@@ -55,6 +55,7 @@ class DataFetcher:
                 continue
             except Exception as e:
                 logger.exception(f"DataFetcher thread failed with exception: {e.args[0]}")
+                exit(1)
 
     @staticmethod
     def decrypt_device(data_hex):
