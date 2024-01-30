@@ -29,10 +29,10 @@ class DataFetcher:
 
     def fetch_data(self):
         logger.info("start fetching")
+        time.sleep(DEFAULT_SLEEP_TIME)
         while not self.stopped:
             try:
                 logger.info("Starting a new fetch cycle")
-                time.sleep(DEFAULT_SLEEP_TIME)
                 logger.debug(f"grpc_endpoint: {config.grpc_endpoint}")
                 with grpc.insecure_channel(config.grpc_endpoint) as channel:
                     stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
