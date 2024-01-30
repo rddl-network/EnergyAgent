@@ -15,7 +15,12 @@ from app.energy_meter_interaction.energy_decrypter import (
 from app.proto.MeterConnectorProto import meter_connector_pb2_grpc, meter_connector_pb2
 from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
 
-
+GRPC_OPTIONS = options = [
+    ("grpc.max_receive_message_length", 10 * 1024 * 1024),
+    ("grpc.max_send_message_length", 10 * 1024 * 1024),
+    ("grpc.max_reconnect_backoff_ms", 2000),
+    ("grpc.keepalive_time_ms", 10000),
+]
 SM_READ_ERROR = "ERROR! SM METER READ"
 DEFAULT_SLEEP_TIME = 5
 
@@ -29,16 +34,17 @@ class DataFetcher:
 
     def fetch_data(self):
         logger.info("start fetching")
-        time.sleep(DEFAULT_SLEEP_TIME)
         while not self.stopped:
             try:
                 logger.info("Starting a new fetch cycle")
-                with grpc.insecure_channel(config.grpc_endpoint) as channel:
+                with grpc.insecure_channel(config.grpc_endpoint, options=GRPC_OPTIONS) as channel:
+                    time.sleep(DEFAULT_SLEEP_TIME)
+                    logger.info("Connected to Smart Meter")
                     stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
+                    logger.info("Creating request to Smart Meter")
                     request = meter_connector_pb2.SMDataRequest()
                     logger.info("Sending request to Smart Meter")
-                    response = stub.readMeter(request, timeout=10)
-                    logger.info(f"Received response from Smart Meter: {response}")
+                    response = stub.readMeter(request)
                     if response.message == SM_READ_ERROR:
                         logger.error("No data from Smart Meter")
                         continue
@@ -48,18 +54,16 @@ class DataFetcher:
                     self.post_to_mqtt(metric)
                     time.sleep(config.interval)
             except UnicodeDecodeError as e:
-                logger.error(f"Invalid Frame: {e.args[0]}")
-                time.sleep(DEFAULT_SLEEP_TIME)
+                logger.error(f"Invalid Frame: {e}")
                 continue
             except ValueError as e:
-                logger.error(f"Invalid Frame: {e.args[0]}")
-                time.sleep(DEFAULT_SLEEP_TIME)
+                logger.error(f"Invalid Frame: {e}")
                 continue
             except grpc.FutureTimeoutError:
                 logger.error("gRPC request timed out")
                 continue
             except Exception as e:
-                logger.error(f"DataFetcher thread failed with exception: {e.args[0]}")
+                logger.error(f"DataFetcher thread failed with exception: {e}")
                 exit(1)
 
     @staticmethod
