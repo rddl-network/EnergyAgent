@@ -53,6 +53,9 @@ class DataFetcher:
             except ValueError as e:
                 logger.error(f"Invalid Frame: {e}")
                 continue
+            except concurrent.futures.TimeoutError:
+                logger.info("The function call timed out.")
+                continue
             except Exception as e:
                 logger.error(f"DataFetcher thread failed with exception: {e}")
                 exit(1)
@@ -67,12 +70,8 @@ class DataFetcher:
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future = executor.submit(make_grpc_call)
-            try:
-                response = future.result(timeout=timeout)
-                return response
-            except concurrent.futures.TimeoutError:
-                logger.info("The function call timed out.")
-                return None
+            response = future.result(timeout=timeout)
+            return response
 
     @staticmethod
     def decrypt_device(data_hex):
