@@ -16,12 +16,6 @@ from app.proto.MeterConnectorProto import meter_connector_pb2_grpc, meter_connec
 from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
 import concurrent.futures
 
-GRPC_OPTIONS = options = [
-    ("grpc.max_receive_message_length", 10 * 1024 * 1024),
-    ("grpc.max_send_message_length", 10 * 1024 * 1024),
-    ("grpc.max_reconnect_backoff_ms", 2000),
-    ("grpc.keepalive_time_ms", 10000),
-]
 SM_READ_ERROR = "ERROR! SM METER READ"
 DEFAULT_SLEEP_TIME = 5
 
@@ -38,13 +32,13 @@ class DataFetcher:
         while not self.stopped:
             try:
                 logger.info("Starting a new fetch cycle")
-                time.sleep(DEFAULT_SLEEP_TIME)  # Assuming this is necessary for rate-limiting
+                time.sleep(DEFAULT_SLEEP_TIME)
 
                 logger.info("Sending request to Smart Meter")
-                response = self.get_meter_response_with_timeout()
+                response = self.get_meter_response_with_timeout(config.smart_meter_timeout)
 
                 if response is None or response.message == SM_READ_ERROR:
-                    logger.error("No data from Smart Meter")
+                    logger.error(f"No data from Smart Meter: {response}")
                     continue
 
                 data_hex = response.message
@@ -52,7 +46,7 @@ class DataFetcher:
                 metric = self.decrypt_device(data_hex)
                 self.post_to_mqtt(metric)
 
-                time.sleep(config.interval)  # Assuming this is for rate-limiting between fetches
+                time.sleep(config.interval)
             except UnicodeDecodeError as e:
                 logger.error(f"Invalid Frame: {e}")
                 continue
@@ -64,9 +58,9 @@ class DataFetcher:
                 exit(1)
 
     @staticmethod
-    def get_meter_response_with_timeout(timeout=20):
+    def get_meter_response_with_timeout(timeout=10):
         def make_grpc_call():
-            with grpc.insecure_channel(config.grpc_endpoint, options=GRPC_OPTIONS) as channel:
+            with grpc.insecure_channel(config.grpc_endpoint) as channel:
                 stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
                 request = meter_connector_pb2.SMDataRequest()
                 return stub.readMeter(request)
