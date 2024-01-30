@@ -14,6 +14,7 @@ from app.energy_meter_interaction.energy_decrypter import (
 )
 from app.proto.MeterConnectorProto import meter_connector_pb2_grpc, meter_connector_pb2
 from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
+import concurrent.futures
 
 GRPC_OPTIONS = options = [
     ("grpc.max_receive_message_length", 10 * 1024 * 1024),
@@ -37,34 +38,47 @@ class DataFetcher:
         while not self.stopped:
             try:
                 logger.info("Starting a new fetch cycle")
-                with grpc.insecure_channel(config.grpc_endpoint, options=GRPC_OPTIONS) as channel:
-                    time.sleep(DEFAULT_SLEEP_TIME)
-                    logger.info("Connected to Smart Meter")
-                    stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
-                    logger.info("Creating request to Smart Meter")
-                    request = meter_connector_pb2.SMDataRequest()
-                    logger.info("Sending request to Smart Meter")
-                    response = stub.readMeter(request)
-                    if response.message == SM_READ_ERROR:
-                        logger.error("No data from Smart Meter")
-                        continue
-                    data_hex = response.message
-                    logger.debug(f"data_hex: {data_hex}")
-                    metric = self.decrypt_device(data_hex)
-                    self.post_to_mqtt(metric)
-                    time.sleep(config.interval)
+                time.sleep(DEFAULT_SLEEP_TIME)  # Assuming this is necessary for rate-limiting
+
+                logger.info("Sending request to Smart Meter")
+                response = self.get_meter_response_with_timeout()
+
+                if response is None or response.message == SM_READ_ERROR:
+                    logger.error("No data from Smart Meter")
+                    continue
+
+                data_hex = response.message
+                logger.debug(f"data_hex: {data_hex}")
+                metric = self.decrypt_device(data_hex)
+                self.post_to_mqtt(metric)
+
+                time.sleep(config.interval)  # Assuming this is for rate-limiting between fetches
             except UnicodeDecodeError as e:
                 logger.error(f"Invalid Frame: {e}")
                 continue
             except ValueError as e:
                 logger.error(f"Invalid Frame: {e}")
                 continue
-            except grpc.FutureTimeoutError:
-                logger.error("gRPC request timed out")
-                continue
             except Exception as e:
                 logger.error(f"DataFetcher thread failed with exception: {e}")
                 exit(1)
+
+    @staticmethod
+    def get_meter_response_with_timeout(timeout=20):
+        def make_grpc_call():
+            with grpc.insecure_channel(config.grpc_endpoint, options=GRPC_OPTIONS) as channel:
+                stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
+                request = meter_connector_pb2.SMDataRequest()
+                return stub.readMeter(request)
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(make_grpc_call)
+            try:
+                response = future.result(timeout=timeout)
+                return response
+            except concurrent.futures.TimeoutError:
+                logger.info("The function call timed out.")
+                return None
 
     @staticmethod
     def decrypt_device(data_hex):
