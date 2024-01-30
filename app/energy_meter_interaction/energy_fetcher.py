@@ -33,11 +33,12 @@ class DataFetcher:
         while not self.stopped:
             try:
                 logger.info("Starting a new fetch cycle")
-                logger.debug(f"grpc_endpoint: {config.grpc_endpoint}")
                 with grpc.insecure_channel(config.grpc_endpoint) as channel:
                     stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
                     request = meter_connector_pb2.SMDataRequest()
-                    response = stub.readMeter(request)
+                    logger.info("Sending request to Smart Meter")
+                    response = stub.readMeter(request, timeout=10)
+                    logger.info(f"Received response from Smart Meter: {response}")
                     if response.message == SM_READ_ERROR:
                         logger.error("No data from Smart Meter")
                         continue
@@ -53,6 +54,9 @@ class DataFetcher:
             except ValueError as e:
                 logger.error(f"Invalid Frame: {e.args[0]}")
                 time.sleep(DEFAULT_SLEEP_TIME)
+                continue
+            except grpc.FutureTimeoutError:
+                logger.error("gRPC request timed out")
                 continue
             except Exception as e:
                 logger.error(f"DataFetcher thread failed with exception: {e.args[0]}")
