@@ -70,8 +70,13 @@ class DataFetcher:
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future = executor.submit(make_grpc_call)
-            response = future.result(timeout=timeout)
-            return response
+            try:
+                response = future.result(timeout=timeout)
+                return response
+            except concurrent.futures.TimeoutError:
+                logger.info("The function call timed out.")
+                raise TimeoutError("The function call timed out.")
+                return None
 
     @staticmethod
     def decrypt_device(data_hex):
