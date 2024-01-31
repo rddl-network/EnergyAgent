@@ -82,7 +82,7 @@ class DataFetcher:
             except concurrent.futures.TimeoutError:
                 logger.info("The function call timed out.")
                 logger.info("Canceling the future...")
-                sys.exit(1)
+                os._exit(10)
 
     @staticmethod
     def decrypt_device(data_hex):
