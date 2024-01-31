@@ -1,3 +1,6 @@
+import os
+import sys
+
 import grpc
 import json
 import time
@@ -78,7 +81,7 @@ class DataFetcher:
                 return response
             except concurrent.futures.TimeoutError:
                 logger.info("The function call timed out.")
-                exit(10)
+                sys.exit(1)
 
     @staticmethod
     def decrypt_device(data_hex):
