@@ -81,6 +81,7 @@ class DataFetcher:
                 return response
             except concurrent.futures.TimeoutError:
                 logger.info("The function call timed out.")
+                logger.info("Canceling the future...")
                 sys.exit(1)
 
     @staticmethod
