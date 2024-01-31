@@ -24,6 +24,7 @@ class DataFetcher:
     def __init__(self):
         self.mqtt_client = None
         self.stopped = False
+        self.channel = None
 
         self.connect_to_mqtt()
 
@@ -54,19 +55,21 @@ class DataFetcher:
                 logger.error(f"Invalid Frame: {e}")
                 continue
             except concurrent.futures.TimeoutError:
-                logger.info("The function call timed out.")
+                logger.info(f"grpc call timed out")
                 continue
             except Exception as e:
                 logger.error(f"DataFetcher thread failed with exception: {e}")
                 exit(1)
 
-    @staticmethod
-    def get_meter_response_with_timeout(timeout=10):
+    def get_meter_response_with_timeout(self, timeout=10):
         def make_grpc_call():
-            with grpc.insecure_channel(config.grpc_endpoint) as channel:
-                stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
-                request = meter_connector_pb2.SMDataRequest()
-                return stub.readMeter(request)
+            self.channel = grpc.insecure_channel(config.grpc_endpoint)
+            self.stub = meter_connector_pb2_grpc.MeterConnectorStub(self.channel)
+            request = meter_connector_pb2.SMDataRequest()
+            stub_response = self.stub.readMeter(request)
+            del self.channel
+            del self.stub
+            return stub_response
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future = executor.submit(make_grpc_call)
@@ -75,8 +78,7 @@ class DataFetcher:
                 return response
             except concurrent.futures.TimeoutError:
                 logger.info("The function call timed out.")
-                raise TimeoutError("The function call timed out.")
-                return None
+                exit(10)
 
     @staticmethod
     def decrypt_device(data_hex):
