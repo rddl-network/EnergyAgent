@@ -57,9 +57,6 @@ class DataFetcher:
             except ValueError as e:
                 logger.error(f"Invalid Frame: {e}")
                 continue
-            except concurrent.futures.TimeoutError:
-                logger.info(f"grpc call timed out")
-                continue
             except Exception as e:
                 logger.error(f"DataFetcher thread failed with exception: {e}")
                 exit(1)
@@ -80,9 +77,10 @@ class DataFetcher:
                 response = future.result(timeout=timeout)
                 return response
             except concurrent.futures.TimeoutError:
-                logger.info("The function call timed out.")
-                logger.info("Canceling the future...")
-                os._exit(10)
+                logger.info("Smart Meter grpc call timed out")
+                os._exit(
+                    10
+                )  # This is a very radically step to take but the Smart Meter sometimes do no longer response so it is needed to restart the whole container
 
     @staticmethod
     def decrypt_device(data_hex):
