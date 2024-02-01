@@ -1,3 +1,6 @@
+import os
+import sys
+
 import grpc
 import json
 import time
@@ -14,7 +17,7 @@ from app.energy_meter_interaction.energy_decrypter import (
 )
 from app.proto.MeterConnectorProto import meter_connector_pb2_grpc, meter_connector_pb2
 from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
-
+import concurrent.futures
 
 SM_READ_ERROR = "ERROR! SM METER READ"
 DEFAULT_SLEEP_TIME = 5
@@ -24,6 +27,7 @@ class DataFetcher:
     def __init__(self):
         self.mqtt_client = None
         self.stopped = False
+        self.channel = None
 
         self.connect_to_mqtt()
 
@@ -31,30 +35,52 @@ class DataFetcher:
         logger.info("start fetching")
         while not self.stopped:
             try:
+                logger.info("Starting a new fetch cycle")
                 time.sleep(DEFAULT_SLEEP_TIME)
-                logger.debug(f"grpc_endpoint: {config.grpc_endpoint}")
-                with grpc.insecure_channel(config.grpc_endpoint) as channel:
-                    stub = meter_connector_pb2_grpc.MeterConnectorStub(channel)
-                    request = meter_connector_pb2.SMDataRequest()
-                    response = stub.readMeter(request)
-                    if response.message == SM_READ_ERROR:
-                        logger.error("No data from Smart Meter")
-                        continue
-                    data_hex = response.message
-                    logger.debug(f"data_hex: {data_hex}")
-                    metric = self.decrypt_device(data_hex)
-                    self.post_to_mqtt(metric)
-                    time.sleep(config.interval)
+
+                logger.info("Sending request to Smart Meter")
+                response = self.get_meter_response_with_timeout(config.smart_meter_timeout)
+
+                if response is None or response.message == SM_READ_ERROR:
+                    logger.error(f"No data from Smart Meter: {response}")
+                    continue
+
+                data_hex = response.message
+                logger.debug(f"data_hex: {data_hex}")
+                metric = self.decrypt_device(data_hex)
+                self.post_to_mqtt(metric)
+
+                time.sleep(config.interval)
             except UnicodeDecodeError as e:
-                logger.exception(f"Invalid Frame: {e.args[0]}")
-                time.sleep(DEFAULT_SLEEP_TIME)
+                logger.error(f"Invalid Frame: {e}")
                 continue
             except ValueError as e:
-                logger.exception(f"Invalid Frame: {e.args[0]}")
-                time.sleep(DEFAULT_SLEEP_TIME)
+                logger.error(f"Invalid Frame: {e}")
                 continue
             except Exception as e:
-                logger.exception(f"DataFetcher thread failed with exception: {e.args[0]}")
+                logger.error(f"DataFetcher thread failed with exception: {e}")
+                exit(1)
+
+    def get_meter_response_with_timeout(self, timeout=10):
+        def make_grpc_call():
+            self.channel = grpc.insecure_channel(config.grpc_endpoint)
+            self.stub = meter_connector_pb2_grpc.MeterConnectorStub(self.channel)
+            request = meter_connector_pb2.SMDataRequest()
+            stub_response = self.stub.readMeter(request)
+            del self.channel
+            del self.stub
+            return stub_response
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(make_grpc_call)
+            try:
+                response = future.result(timeout=timeout)
+                return response
+            except concurrent.futures.TimeoutError:
+                logger.info("Smart Meter grpc call timed out")
+                os._exit(
+                    10
+                )  # This is a very radically step to take but the Smart Meter sometimes do no longer response so it is needed to restart the whole container
 
     @staticmethod
     def decrypt_device(data_hex):

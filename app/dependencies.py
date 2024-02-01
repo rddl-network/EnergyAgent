@@ -18,6 +18,7 @@ class Config:
         self.mqtt_username = os.environ.get("MQTT_USERNAME") or "stanz"
         self.mqtt_topic = os.environ.get("MQTT_TOPIC") or "metrics"
         self.log_level = os.environ.get("LOG_LEVEL") or "INFO"
+        self.smart_meter_timeout = int(os.environ.get("SMART_METER_TIMEOUT") or 10)
 
         self.evn_key = os.environ.get("EVN_KEY") or None
         self.encryption_key = os.environ.get("ENCRYPTION_KEY") or None

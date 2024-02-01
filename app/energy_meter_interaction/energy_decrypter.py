@@ -2,6 +2,7 @@
 To decode smart meter data retrieved from the infrared customer interface provided by Wiener Netze.
 Tested with Iskra AM550 (But should work for all smart meters provided by Wiener Netze)
 """
+
 import binascii
 from decimal import Decimal
 from datetime import datetime
@@ -329,7 +330,7 @@ def decrypt_gcm(authentication_key, cipher_text_str, encryption_key):
 
 def parse_dsmr_frame(hex_frame):
     # Decode the hexadecimal string into its string representation
-    logger.info(f"hex_frame: {hex_frame}")
+    logger.debug(f"hex_frame: {hex_frame}")
     decoded_frame = bytes.fromhex(hex_frame).decode("utf-8")
 
     # Split the decoded frame into lines
