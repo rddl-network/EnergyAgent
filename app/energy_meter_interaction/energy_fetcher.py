@@ -134,14 +134,12 @@ class DataFetcher:
             self.mqtt_client.loop_start()  # Start the network loop
         except Exception as e:
             logger.error(f"Exception occurred while connecting to MQTT: {e}")
+            self.mqtt_client.reconnect()
 
     def handle_publish_failure(self, data):
         logger.warning("Attempting to republish to MQTT")
-        try:
-            self.mqtt_client.reconnect()  # Attempt to reconnect
-            self.post_to_mqtt(data)  # Try to republish the data
-        except Exception as e:
-            logger.error(f"Republishing failed: {e}")
+        self.mqtt_client.reconnect()  # Attempt to reconnect
+        self.post_to_mqtt(data)  # Try to republish the data
 
     def on_connect(self, client, userdata, flags, rc):
         logger.info(f"Connected to MQTT Broker with result code {rc}")
