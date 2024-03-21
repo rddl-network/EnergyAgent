@@ -1,23 +1,13 @@
-import os
-import sys
-
-import grpc
 import json
-import time
 import paho.mqtt.client as mqtt
 
 from app.dependencies import config, logger
 from app.energy_meter_interaction.energy_decrypter import (
-    extract_data,
-    decode_packet,
-    decrypt_evn_data,
     transform_to_metrics,
     decrypt_aes_gcm_landis_and_gyr,
     decrypt_sagemcom,
 )
-from app.proto.MeterConnectorProto import meter_connector_pb2_grpc, meter_connector_pb2
 from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
-import concurrent.futures
 
 SM_READ_ERROR = "ERROR! SM METER READ"
 DEFAULT_SLEEP_TIME = 5
@@ -25,69 +15,46 @@ DEFAULT_SLEEP_TIME = 5
 
 class DataFetcher:
     def __init__(self):
-        self.mqtt_client = None
+        self.forwarder_mqtt_client = None
+        self.subscriber_mqtt_client = None
         self.stopped = False
         self.channel = None
 
-        self.connect_to_mqtt()
+    def on_message(self, client, userdata, message):
+        data_hex = message.payload.decode()
+        metric = self.decrypt_device(data_hex)
+        self.post_to_mqtt(metric)
 
-    def fetch_data(self):
-        logger.info("start fetching")
-        while not self.stopped:
-            try:
-                logger.info("Starting a new fetch cycle")
-                time.sleep(DEFAULT_SLEEP_TIME)
+    def connect_to_mqtt(self):
+        # Forwarder MQTT client
+        self.forwarder_mqtt_client = mqtt.Client(client_id=config.pubkey, protocol=mqtt.MQTTv311)
+        self.forwarder_mqtt_client.on_connect = self.on_connect
+        self.forwarder_mqtt_client.on_disconnect = self.on_disconnect
+        self.forwarder_mqtt_client.on_publish = self.on_publish
+        self.forwarder_mqtt_client.username_pw_set(config.forwarder_mqtt_username, config.forwarder_mqtt_password)
 
-                logger.info("Sending request to Smart Meter")
-                response = self.get_meter_response_with_timeout(config.smart_meter_timeout)
+        # Subscriber MQTT client
+        self.subscriber_mqtt_client = mqtt.Client()
+        self.subscriber_mqtt_client.on_message = self.on_message
+        self.subscriber_mqtt_client.username_pw_set(config.subscriber_mqtt_username, config.subscriber_mqtt_password)
 
-                if response is None or response.message == SM_READ_ERROR:
-                    logger.error(f"No data from Smart Meter: {response}")
-                    continue
+        try:
+            # Connect to forwarder MQTT server
+            self.forwarder_mqtt_client.connect(config.forwarder_mqtt_host, config.forwarder_mqtt_port, 60)
+            self.forwarder_mqtt_client.loop_start()  # Start the network loop
 
-                data_hex = response.message
-                logger.debug(f"data_hex: {data_hex}")
-                metric = self.decrypt_device(data_hex)
-                self.post_to_mqtt(metric)
-
-                time.sleep(config.interval)
-            except UnicodeDecodeError as e:
-                logger.error(f"Invalid Frame: {e}")
-                continue
-            except ValueError as e:
-                logger.error(f"Invalid Frame: {e}")
-                continue
-            except Exception as e:
-                logger.error(f"DataFetcher thread failed with exception: {e}")
-                exit(1)
-
-    def get_meter_response_with_timeout(self, timeout=10):
-        def make_grpc_call():
-            self.channel = grpc.insecure_channel(config.grpc_endpoint)
-            self.stub = meter_connector_pb2_grpc.MeterConnectorStub(self.channel)
-            request = meter_connector_pb2.SMDataRequest()
-            stub_response = self.stub.readMeter(request)
-            del self.channel
-            del self.stub
-            return stub_response
-
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            future = executor.submit(make_grpc_call)
-            try:
-                response = future.result(timeout=timeout)
-                return response
-            except concurrent.futures.TimeoutError:
-                logger.info("Smart Meter grpc call timed out")
-                os._exit(
-                    10
-                )  # This is a very radically step to take but the Smart Meter sometimes do no longer response so it is needed to restart the whole container
+            # Connect to subscriber MQTT server and subscribe to the topic
+            self.subscriber_mqtt_client.connect(config.subscriber_mqtt_host, config.subscriber_mqtt_port, 60)
+            self.subscriber_mqtt_client.subscribe(config.subscriber_mqtt_topic)
+            self.subscriber_mqtt_client.loop_start()  # Start the network loop
+        except Exception as e:
+            logger.error(f"Exception occurred while connecting to MQTT: {e}")
+            self.forwarder_mqtt_client.reconnect()
+            self.subscriber_mqtt_client.reconnect()
 
     @staticmethod
     def decrypt_device(data_hex):
-        if config.device == "EVN":
-            dec = decrypt_evn_data(data_hex)
-            return transform_to_metrics(dec, config.pubkey)
-        elif config.device == "LG":
+        if config.device == "LG":
             dec = decrypt_aes_gcm_landis_and_gyr(
                 data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
             )
@@ -98,12 +65,7 @@ class DataFetcher:
             )
             return transform_to_metrics(dec, config.pubkey)
         else:
-            decoded_packet = decode_packet(bytearray.fromhex(data_hex))
-            metric = extract_data(decoded_packet)
-            if metric is None:
-                logger.error("data is None")
-                raise ValueError("data is None")
-            return metric
+            logger.error(f"Unknown device: {config.device}")
 
     def post_to_mqtt(self, data: MetricCreate):
         logger.info("Posting to MQTT")
@@ -116,29 +78,16 @@ class DataFetcher:
 
         message = json.dumps(metric_dict)
         try:
-            result = self.mqtt_client.publish(config.mqtt_topic, payload=message, qos=1)
+            result = self.forwarder_mqtt_client.publish(config.forwarder_mqtt_topic, payload=message, qos=1)
             result.wait_for_publish()
             logger.info(f" [x] Sent {message}")
         except Exception as e:
             logger.error(f"Exception occurred while publishing to MQTT: {e}")
             self.handle_publish_failure(data)
 
-    def connect_to_mqtt(self):
-        self.mqtt_client = mqtt.Client(client_id=config.pubkey, protocol=mqtt.MQTTv311)
-        self.mqtt_client.on_connect = self.on_connect
-        self.mqtt_client.on_disconnect = self.on_disconnect
-        self.mqtt_client.on_publish = self.on_publish
-        self.mqtt_client.username_pw_set(config.mqtt_username, config.mqtt_password)
-        try:
-            self.mqtt_client.connect(config.mqtt_host, config.mqtt_port, 60)
-            self.mqtt_client.loop_start()  # Start the network loop
-        except Exception as e:
-            logger.error(f"Exception occurred while connecting to MQTT: {e}")
-            self.mqtt_client.reconnect()
-
     def handle_publish_failure(self, data):
         logger.warning("Attempting to republish to MQTT")
-        self.mqtt_client.reconnect()  # Attempt to reconnect
+        self.forwarder_mqtt_client.reconnect()  # Attempt to reconnect
         self.post_to_mqtt(data)  # Try to republish the data
 
     def on_connect(self, client, userdata, flags, rc):
