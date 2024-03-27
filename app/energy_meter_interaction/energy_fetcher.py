@@ -18,12 +18,19 @@ class DataFetcher:
         self.forwarder_mqtt_client = None
         self.subscriber_mqtt_client = None
         self.stopped = False
-        self.channel = None
 
     def on_message(self, client, userdata, message):
-        data_hex = message.payload.decode()
-        metric = self.decrypt_device(data_hex)
-        self.post_to_mqtt(metric)
+        topic = message.topic
+        data = message.payload.decode()
+
+        # TODO use actual sm topic
+        if topic == 'sm_meter_data':
+            # Handle the message for the specific topic
+            metric = self.decrypt_device(data)
+            metric_dict = self.enricht_metric(metric.dict())
+            self.post_to_mqtt(metric_dict)
+        else:
+            self.post_to_mqtt(data)
 
     def connect_to_mqtt(self):
         # Forwarder MQTT client
@@ -54,29 +61,30 @@ class DataFetcher:
 
     @staticmethod
     def decrypt_device(data_hex):
-        if config.device == "LG":
+        if config.device_type == "LG":
             dec = decrypt_aes_gcm_landis_and_gyr(
                 data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
             )
             return transform_to_metrics(dec, config.pubkey)
-        elif config.device == "SC":
+        elif config.device_type == "SC":
             dec = decrypt_sagemcom(
                 data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
             )
             return transform_to_metrics(dec, config.pubkey)
         else:
-            logger.error(f"Unknown device: {config.device}")
+            logger.error(f"Unknown device: {config.device_type}")
 
-    def post_to_mqtt(self, data: MetricCreate):
-        logger.info("Posting to MQTT")
-
-        metric_dict = data.dict()
+    def enricht_metric(self, data: dict) -> dict:
+        metric_dict = data
         metric_dict["time_stamp"] = metric_dict["time_stamp"].isoformat()
         metric_dict["absolute_energy_in"] = float(metric_dict["absolute_energy_in"])
         metric_dict["absolute_energy_out"] = float(metric_dict["absolute_energy_out"])
         logger.debug(f"Metric data: {metric_dict}")
+        return metric_dict
 
-        message = json.dumps(metric_dict)
+    def post_to_mqtt(self, data: dict):
+        logger.info("Posting to MQTT")
+        message = json.dumps(data)
         try:
             result = self.forwarder_mqtt_client.publish(config.forwarder_mqtt_topic, payload=message, qos=1)
             result.wait_for_publish()

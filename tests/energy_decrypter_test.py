@@ -1,38 +1,9 @@
 import json
 
-from app.dependencies import config
 from app.energy_meter_interaction.energy_decrypter import (
-    decrypt_evn_data,
     decrypt_aes_gcm_landis_and_gyr,
     decrypt_sagemcom,
-    transform_to_metrics,
 )
-from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
-
-
-def test_decode_packet_evn():
-    print("test_decode_packet_v2")
-    config.evn_key = "A89AE6C225E45130298B3CC3F4D23463"
-    data_hex_str = "68fafa6853ff000167db085341475905e990f381f8200001ca1d78efc0c0df5eb7fdf7ccef510234c8281c7dadfecd22d027a91352206a2f33ecb771c238240da352a398feda9ec144bcde15108e045470d549a35cad7fe716e1fdcfbbd75bae402019d69e4cdc58af40876b1a3d9428a2388ab63471c35c245784ebff041af5d55791f954ada371815940927e49a8208bfa1098a0203c2fe35808db07b9c01d366b4c7cc302d7e8eea2ecf5a97a6a3c5e67ed44c59e2eb6e04d82e5e35ae9c2237cf03119d40b48b132df77cac7b614fe30655838e76b9a28dbb6294eb8e100eafd98ca7e4a9ca77ee0dbc5d8511709a028d57f1010b28ae92461ab618022166814146853ff110167e5a52b128178e1fd01a2d75b60beab0716"
-    dec = decrypt_evn_data(data_hex_str)
-    # show_data(dec) if (dec) else "CRC error"
-    print(dec)
-    assert dec == [
-        {"key": "WirkenergieP", "value": 6842204},
-        {"key": "WirkenergieN", "value": 6430217},
-        {"key": "MomentanleistungP", "value": 0},
-        {"key": "MomentanleistungN", "value": 2088},
-        {"key": "SpannungL1", "value": 2373},
-        {"key": "SpannungL2", "value": 2378},
-        {"key": "SpannungL3", "value": 2392},
-        {"key": "StromL1", "value": 320},
-        {"key": "StromL2", "value": 273},
-        {"key": "StromL3", "value": 292},
-        {"key": "Leistungsfaktor", "value": 991},
-    ]
-
-
-# db085341473500046c9b8201f2300000807d2c13af3525b76a039334fe227934a2fb6b7bdb1795efa3dd6e54f93c4fbc41955dd2960911ad33656426f841b10df3201cf9024e0c4a87b3b716004e7697a2f3fd9076db4d62752595436892ff3724c95c93c12bf0ba3f2942470e371d9b539e676c191ef64265062a0f640f3396cbbec9660c36331029be39a82c06f1ea2e147cd8725c07813cf644f94bc1dc613c030dab0b2e426f7fdd920b080608cf350e3fd969714a5b97fd13d6227721072166b09b21536440b7b5545579addd9fdbbad6f8769d98819567014433e1524c870034f24fd0d3f68fd22c582d5f54d28cb5298f0be58c1daf2943c79ffe7c9c0a0372a3e4a48db2068aa9f6d21f01089563a9c7a260beb2efa44a56dc6bf21e3690f45a6da27c6604b3eebd0fc3aadb2fc819fc6ee1bde55300e233dc5f08c8ef331216894d633fedab73372254f67fd387691308922ef82d65344aec024951f91b0ab0257af775cc681e99d317e7c251f58edb220eac6e759276d195f4ba64b0ec0615656185a101d3fb006c0941d85910c91c244373995612ee63bd9cf0aca1b55406ee5db6bbbac1a3536c12c50130228b7264db08b5501cb78edc623c12d3b5d7bb7f0dcccba541e136b977fa9e7e5e1e40186aa1a3dcd19631b665a9f1cf2f08690037fec8f88094c261a78a68274cf96f933aaa62b0851066f5494e
 
 
 # db084c475a67737c7e
