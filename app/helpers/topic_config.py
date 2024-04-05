@@ -9,13 +9,13 @@ class SmartMeterConfig:
         self.authentication_key = authentication_key
 
     def save_topic_config(self, path_to_topic_config: str):
-        with open(path_to_topic_config, 'w') as f:
+        with open(path_to_topic_config, "w") as f:
             json.dump(self.__dict__, f)
 
     @staticmethod
     def load_topic_config(path_to_topic_config: str):
         try:
-            with open(path_to_topic_config, 'r') as f:
+            with open(path_to_topic_config, "r") as f:
                 data = json.load(f)
             return SmartMeterConfig(**data)
         except (FileNotFoundError, json.JSONDecodeError) as e:
@@ -24,13 +24,13 @@ class SmartMeterConfig:
 
 
 def save_topics(path_to_topic_config: str, topics: list[str]):
-    with open(path_to_topic_config, 'w') as f:
+    with open(path_to_topic_config, "w") as f:
         json.dump(topics, f)
 
 
 def load_topics(path_to_topic_config: str) -> list[str]:
     try:
-        with open(path_to_topic_config, 'r') as f:
+        with open(path_to_topic_config, "r") as f:
             data = json.load(f)
         return data
     except (FileNotFoundError, json.JSONDecodeError) as e:

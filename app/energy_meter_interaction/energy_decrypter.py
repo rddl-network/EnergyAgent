@@ -95,6 +95,35 @@ def parse_root_items(root) -> list:
     return found_lines
 
 
+def decrypt_evn_data(data: str):
+    mbus_start = data[MBUS_START_SLICE]
+    frame_len = int(data[FRAME_LEN_SLICE], 16)
+    system_title = data[SYSTEM_TITLE_SLICE]
+    frame_counter = data[FRAME_COUNTER_SLICE]
+    frame = data[52 : 12 + frame_len * 2]
+    print(
+        "Daten ok"
+        if mbus_start == "686868" and mbus_start[2:4] == mbus_start[4:6]
+        else "wrong M-Bus Start, restarting"
+    )
+
+    apdu = evn_decrypt(frame, system_title, frame_counter)
+    print("apdu: ", apdu)
+    if apdu[0:4] != "0f80":
+        raise ValueError("wrong apdu start")
+
+    root = ET.fromstring(GXDLMSTranslator().pduToXml(apdu))
+    return parse_root_items(root)
+
+
+def evn_decrypt(frame, system_title, frame_counter):
+    frame = unhexlify(frame)
+    encryption_key = unhexlify(config.evn_key)
+    init_vector = unhexlify(system_title + frame_counter)
+    cipher = AES.new(encryption_key, AES.MODE_GCM, nonce=init_vector)
+    return cipher.decrypt(frame).hex()
+
+
 def decrypt_aes_gcm_landis_and_gyr(data_hex, encryption_key=None, authentication_key=None):
     if len(data_hex) != 282:
         raise ValueError(

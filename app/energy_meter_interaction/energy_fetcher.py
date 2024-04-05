@@ -24,7 +24,7 @@ class DataFetcher:
         data = message.payload.decode()
 
         # TODO use actual sm topic
-        if topic == 'sm_meter_data':
+        if topic == "sm_meter_data":
             # Handle the message for the specific topic
             metric = self.decrypt_device(data)
             metric_dict = self.enricht_metric(metric.dict())
@@ -70,6 +70,9 @@ class DataFetcher:
             dec = decrypt_sagemcom(
                 data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
             )
+            return transform_to_metrics(dec, config.pubkey)
+        elif config.device == "EVN":
+            dec = decrypt_evn_data(data_hex)
             return transform_to_metrics(dec, config.pubkey)
         else:
             logger.error(f"Unknown device: {config.device_type}")
