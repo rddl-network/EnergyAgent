@@ -16,7 +16,7 @@ pycryptodome = "^3.17"
 pydantic = "^1.10.7"
 gurux-dlms = "^1.0.144"
 lxml = "^4.9.2"
-cryptography = "^41.0.1"
+cryptography = "^42.0.4"
 paho-mqtt = "^1.6.1"
 
 [tool.poetry.dev-dependencies]
