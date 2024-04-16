@@ -13,9 +13,9 @@ services:
   test:
     build:
       context: .
-      dockerfile: docker/DockerFile_test
+      dockerfile: docker/DockerFile
     profiles: [ "test" ]
-    container_name: app-business-logic-tests
+    container_name: rddl-energy-agent-tests
     environment:
       DB_USER: postgres
       DB_PASSWORD: password

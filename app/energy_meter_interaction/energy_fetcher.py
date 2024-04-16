@@ -8,7 +8,6 @@ from app.energy_meter_interaction.energy_decrypter import (
     decrypt_sagemcom,
     decrypt_evn_data,
 )
-from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
 
 SM_READ_ERROR = "ERROR! SM METER READ"
 DEFAULT_SLEEP_TIME = 5
@@ -28,7 +27,7 @@ class DataFetcher:
         if topic == "sm_meter_data":
             # Handle the message for the specific topic
             metric = self.decrypt_device(data)
-            metric_dict = self.enricht_metric(metric.dict())
+            metric_dict = self.enricht_metric(metric)
             self.post_to_mqtt(metric_dict)
         else:
             self.post_to_mqtt(data)

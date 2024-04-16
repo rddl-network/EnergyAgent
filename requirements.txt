@@ -1,9 +1,0 @@
-loguru==0.5.3
-grpcio==1.38.1
-grpcio-tools==1.38.1
-ecdsa==0.17.0
-pycryptodome==3.11.0
-pydantic==1.8.2
-gurux-dlms==1.0.144
-lxml==4.9.2
-paho-mqtt==1.6.1
