@@ -13,10 +13,10 @@ SM_READ_ERROR = "ERROR! SM METER READ"
 DEFAULT_SLEEP_TIME = 5
 
 
-class DataFetcher:
+class DataAgent:
     def __init__(self):
         self.forwarder_mqtt_client = None
-        self.subscriber_mqtt_client = None
+        self.data_mqtt_client = None
         self.stopped = False
 
     def on_message(self, client, userdata, message):
@@ -34,16 +34,23 @@ class DataFetcher:
 
     def connect_to_mqtt(self):
         # Forwarder MQTT client
-        self.forwarder_mqtt_client = mqtt.Client(client_id=config.pubkey, protocol=mqtt.MQTTv311)
+        self.forwarder_mqtt_client = mqtt.Client(
+            callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
+            client_id=config.pubkey,
+            protocol=mqtt.MQTTv311,
+        )
         self.forwarder_mqtt_client.on_connect = self.on_connect
         self.forwarder_mqtt_client.on_disconnect = self.on_disconnect
         self.forwarder_mqtt_client.on_publish = self.on_publish
         self.forwarder_mqtt_client.username_pw_set(config.forwarder_mqtt_username, config.forwarder_mqtt_password)
 
         # Subscriber MQTT client
-        self.subscriber_mqtt_client = mqtt.Client()
-        self.subscriber_mqtt_client.on_message = self.on_message
-        self.subscriber_mqtt_client.username_pw_set(config.subscriber_mqtt_username, config.subscriber_mqtt_password)
+        # TODO: check if newer version of paho-mqtt works? callback_api_version=mqtt.CallbackAPIVersion.VERSION2 is new in old version 1.6.1 it was not needed
+        self.data_mqtt_client = mqtt.Client(
+            callback_api_version=mqtt.CallbackAPIVersion.VERSION2, client_id=config.pubkey, protocol=mqtt.MQTTv5
+        )
+        self.data_mqtt_client.on_message = self.on_message
+        self.data_mqtt_client.username_pw_set(config.data_mqtt_username, config.data_mqtt_password)
 
         try:
             # Connect to forwarder MQTT server
@@ -51,13 +58,13 @@ class DataFetcher:
             self.forwarder_mqtt_client.loop_start()  # Start the network loop
 
             # Connect to subscriber MQTT server and subscribe to the topic
-            self.subscriber_mqtt_client.connect(config.subscriber_mqtt_host, config.subscriber_mqtt_port, 60)
-            self.subscriber_mqtt_client.subscribe(config.subscriber_mqtt_topic)
-            self.subscriber_mqtt_client.loop_start()  # Start the network loop
+            self.data_mqtt_client.connect(config.data_mqtt_host, config.data_mqtt_port, 60)
+            self.data_mqtt_client.subscribe(config.data_mqtt_topic)
+            self.data_mqtt_client.loop_start()  # Start the network loop
         except Exception as e:
             logger.error(f"Exception occurred while connecting to MQTT: {e}")
             self.forwarder_mqtt_client.reconnect()
-            self.subscriber_mqtt_client.reconnect()
+            self.data_mqtt_client.reconnect()
 
     @staticmethod
     def decrypt_device(data_hex):

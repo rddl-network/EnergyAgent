@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Configure Device</title>
+</head>
+<body>
+    <h1>Device Configuration</h1>
+    <form id="configForm">
+        <label for="device_name">Device Name:</label>
+        <input type="text" id="device_name" name="device_name" required><br><br>
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location" required><br><br>
+        <button type="submit">Submit</button>
+    </form>
+    <div id="responseMessage"></div>
+
+    <script>
+        const form = document.getElementById('configForm');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(form);
+            fetch('http://0.0.0.0:8000/configure/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('responseMessage').innerText = 'Configuration Saved';
+            })
+            .catch(error => {
+                document.getElementById('responseMessage').innerText = 'Error saving configuration';
+            });
+        });
+    </script>
+</body>
+</html>

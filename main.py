@@ -1,12 +1,64 @@
-from app.energy_meter_interaction.energy_fetcher import DataFetcher
+from fastapi import FastAPI, Request, Form
+from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+from app.energy_meter_interaction.energy_agent import DataAgent
+import threading
+import uvicorn
+
+app = FastAPI(
+    title="Rddl Energy Agent",
+    description="Set of tools that help to interact with the RDDL Network and offer services that are domain agnostic",
+    version="1.0.0",
+    terms_of_service="http://example.com/terms/",
+    contact={
+        "name": "Riddle and code",
+        "url": "https://www.riddleandcode.com",
+        "email": "abc@riddleandcode.com",
+    },
+    license_info={
+        "name": "W3BS 0.9.0",
+        "url": "https://www.riddleandcode.com",
+    },
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+templates = Jinja2Templates(directory="templates")
 
 
-def main():
-    data_fetcher = DataFetcher()
+@app.get("/")
+async def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+class Config(BaseModel):
+    device_name: str
+    location: str
+
+
+@app.post("/configure/")
+async def configure(device_name: str = Form(...), location: str = Form(...)):
+    config = Config(device_name=device_name, location=location)
+    # Here you would typically save the config to a file or database
+    return {"message": "Configuration received", "data": config.dict()}
+
+
+def run_data_agent():
+    data_fetcher = DataAgent()
     data_fetcher.connect_to_mqtt()
 
 
 if __name__ == "__main__":
-    print("Starting data fetcher...")
-    main()
-    print("Data fetcher stopped")
+    # print("Starting data fetcher...")
+    # threading.Thread(target=run_data_agent).start()
+    # print("Data fetcher started")
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
