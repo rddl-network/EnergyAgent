@@ -46,6 +46,7 @@ class DataAgent:
 
         # Subscriber MQTT client
         # TODO: check if newer version of paho-mqtt works? callback_api_version=mqtt.CallbackAPIVersion.VERSION2 is new in old version 1.6.1 it was not needed
+        # TODO: Also check if code compiles on raspberrypi!
         self.data_mqtt_client = mqtt.Client(
             callback_api_version=mqtt.CallbackAPIVersion.VERSION2, client_id=config.pubkey, protocol=mqtt.MQTTv5
         )

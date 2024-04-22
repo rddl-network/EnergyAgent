@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Topic Configuration</title>
+    <script>
+        async function fetchTopics() {
+            const response = await fetch('/topics');
+            const data = await response.json();
+            document.getElementById('currentTopics').innerText = JSON.stringify(data.topics);
+        }
+
+        async function updateTopics() {
+            const newTopic = document.getElementById('newTopic').value;
+            const response = await fetch('/topics', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ topics: [newTopic] })
+            });
+            const data = await response.json();
+            alert(data.message);
+            await fetchTopics(); // Refresh the list of topics
+        }
+
+        window.onload = fetchTopics;
+    </script>
+</head>
+<body>
+    <h1>Configure Topics</h1>
+    <div>Current Topics: <span id="currentTopics"></span></div>
+    <input type="text" id="newTopic" placeholder="Enter new topic">
+    <button onclick="updateTopics()">Update Topics</button>
+</body>
+</html>

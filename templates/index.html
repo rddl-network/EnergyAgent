@@ -1,36 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Configure Device</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background-color: #f3f3f3;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+        .buttons {
+            margin-top: 20px; /* Adds space between the description and the buttons */
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <h1>Device Configuration</h1>
-    <form id="configForm">
-        <label for="device_name">Device Name:</label>
-        <input type="text" id="device_name" name="device_name" required><br><br>
-        <label for="location">Location:</label>
-        <input type="text" id="location" name="location" required><br><br>
-        <button type="submit">Submit</button>
-    </form>
-    <div id="responseMessage"></div>
-
-    <script>
-        const form = document.getElementById('configForm');
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
-            const formData = new FormData(form);
-            fetch('http://0.0.0.0:8000/configure/', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('responseMessage').innerText = 'Configuration Saved';
-            })
-            .catch(error => {
-                document.getElementById('responseMessage').innerText = 'Error saving configuration';
-            });
-        });
-    </script>
+    <div class="header">
+        <h1>Welcome to your Energy Agent</h1>
+    </div>
+    <div class="content">
+        <p>Here you can start configuring you Energy Agent. </p>
+        <div class="buttons">
+            <a href="/topics-page"><button type="button">Topic Config</button></a>
+            <a href="/wallet-interaction-page"><button type="button">Trust Wallet</button></a>
+            <a href="/resolve-cid-page"><button type="button">CID Resolver</button></a>
+            <a href="/smart-meter-page"><button type="button">Smart Meter</button></a>
+        </div>
+    </div>
 </body>
 </html>

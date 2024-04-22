@@ -8,6 +8,7 @@ class Config:
         self.log_level = os.environ.get("LOG_LEVEL") or "INFO"
         self.pubkey = os.environ.get("PUBKEY") or "st-energy-meter"
         self.path_to_topic_config = os.environ.get("PATH_TO_TOPIC_CONFIG") or "topic_config.json"
+        self.path_to_smart_meter_config = os.environ.get("PATH_TO_SMART_METER_CONFIG") or "smart_meter_config.json"
 
         # Forwarder MQTT Config
         self.forwarder_mqtt_host = os.environ.get("MQTT_HOST") or "app-rabbitmq-dev.r3c.network"

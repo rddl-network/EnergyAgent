@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CID Resolver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        label {
+            margin: 10px 0;
+        }
+        input, button {
+            margin: 5px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>CID Resolver</h1>
+    <label for="cidInput">CID to resolve:</label>
+    <input type="text" id="cidInput" placeholder="Enter CID">
+    <button onclick="resolveCID()">Resolve CID</button>
+    <div id="output">Result will appear here...</div>
+
+    <script>
+        function resolveCID() {
+            const cid = document.getElementById('cidInput').value;
+            fetch(`/resolve-cid/${cid}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                document.getElementById('output').textContent = 'Failed to retrieve data: ' + error;
+            });
+        }
+    </script>
+</body>
+</html>

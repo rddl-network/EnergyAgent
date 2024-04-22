@@ -7,6 +7,8 @@ from app.energy_meter_interaction.energy_agent import DataAgent
 import threading
 import uvicorn
 
+from app.routers import templates, configuration
+
 app = FastAPI(
     title="Rddl Energy Agent",
     description="Set of tools that help to interact with the RDDL Network and offer services that are domain agnostic",
@@ -31,13 +33,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-templates = Jinja2Templates(directory="templates")
-
-
-@app.get("/")
-async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
+app.include_router(templates.router)
+app.include_router(configuration.router)
 
 class Config(BaseModel):
     device_name: str
