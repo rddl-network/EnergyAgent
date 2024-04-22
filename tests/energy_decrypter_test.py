@@ -1,5 +1,3 @@
-import json
-
 from app.energy_meter_interaction.energy_decrypter import (
     decrypt_aes_gcm_landis_and_gyr,
     decrypt_sagemcom,

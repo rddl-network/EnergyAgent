@@ -34,4 +34,3 @@ async def resolve_cid(request: Request):
 @router.get("/wallet-interaction-page")
 async def wallet_interaction(request: Request):
     return templates.TemplateResponse("TrustWalletInteraction.html", {"request": request})
-

@@ -1,7 +1,5 @@
-from fastapi import FastAPI, Request, Form
-from fastapi.templating import Jinja2Templates
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
 from app.energy_meter_interaction.energy_agent import DataAgent
 import threading
@@ -36,17 +34,6 @@ app.add_middleware(
 app.include_router(templates.router)
 app.include_router(configuration.router)
 
-class Config(BaseModel):
-    device_name: str
-    location: str
-
-
-@app.post("/configure/")
-async def configure(device_name: str = Form(...), location: str = Form(...)):
-    config = Config(device_name=device_name, location=location)
-    # Here you would typically save the config to a file or database
-    return {"message": "Configuration received", "data": config.dict()}
-
 
 def run_data_agent():
     data_fetcher = DataAgent()
@@ -54,8 +41,8 @@ def run_data_agent():
 
 
 if __name__ == "__main__":
-    # print("Starting data fetcher...")
-    # threading.Thread(target=run_data_agent).start()
-    # print("Data fetcher started")
+    print("Starting data fetcher...")
+    threading.Thread(target=run_data_agent).start()
+    print("Data fetcher started")
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
