@@ -3,24 +3,47 @@
 <head>
     <title>Topic Configuration</title>
     <script>
+        let topics = []; // Array to hold topics
+
         async function fetchTopics() {
-            const response = await fetch('/topics');
+            const response = await fetch('/config/topics');
             const data = await response.json();
             document.getElementById('currentTopics').innerText = JSON.stringify(data.topics);
         }
 
+        function addTopic() {
+            const newTopicInput = document.getElementById('newTopic');
+            const newTopic = newTopicInput.value.trim();
+            if (newTopic) {
+                topics.push(newTopic); // Add new topic to the array
+                newTopicInput.value = ''; // Clear input field
+                displayTopics(); // Update display
+            }
+        }
+
+        function displayTopics() {
+            const topicsList = document.getElementById('topicsList');
+            topicsList.innerHTML = ''; // Clear existing entries
+            topics.forEach((topic, index) => {
+                const topicElement = document.createElement('li');
+                topicElement.textContent = topic;
+                topicsList.appendChild(topicElement);
+            });
+        }
+
         async function updateTopics() {
-            const newTopic = document.getElementById('newTopic').value;
-            const response = await fetch('/topics', {
+            const response = await fetch('/config/topics', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ topics: [newTopic] })
+                body: JSON.stringify({ topics: topics })
             });
             const data = await response.json();
             alert(data.message);
-            await fetchTopics(); // Refresh the list of topics
+            topics = []; // Clear topics array after sending
+            displayTopics(); // Refresh the displayed list
+            await fetchTopics(); // Refresh the list of topics from the server
         }
 
         window.onload = fetchTopics;
@@ -30,6 +53,8 @@
     <h1>Configure Topics</h1>
     <div>Current Topics: <span id="currentTopics"></span></div>
     <input type="text" id="newTopic" placeholder="Enter new topic">
+    <button onclick="addTopic()">Add Topic</button>
+    <ul id="topicsList"></ul>
     <button onclick="updateTopics()">Update Topics</button>
 </body>
 </html>

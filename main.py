@@ -41,8 +41,8 @@ def run_data_agent():
 
 
 if __name__ == "__main__":
-    print("Starting data fetcher...")
-    threading.Thread(target=run_data_agent).start()
-    print("Data fetcher started")
+    # print("Starting data fetcher...")
+    # threading.Thread(target=run_data_agent).start()
+    # print("Data fetcher started")
 
     uvicorn.run(app, host="0.0.0.0", port=8000)

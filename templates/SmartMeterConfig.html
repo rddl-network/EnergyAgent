@@ -4,7 +4,7 @@
     <title>Smart Meter Configuration</title>
     <script>
         async function fetchSmartMeterConfig() {
-            const response = await fetch('/smart-meter');
+            const response = await fetch('/config/smart-meter');
             const data = await response.json();
             document.getElementById('smartMeterType').value = data.smart_meter_type || '';
             document.getElementById('encryptionKey').value = data.encryption_key || '';
@@ -16,7 +16,7 @@
             const encryptionKey = document.getElementById('encryptionKey').value;
             const authenticationKey = document.getElementById('authenticationKey').value;
 
-            const response = await fetch('/smart-meter', {
+            const response = await fetch('/config/smart-meter', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
