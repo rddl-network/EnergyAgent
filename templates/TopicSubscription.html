@@ -46,15 +46,32 @@
             await fetchTopics(); // Refresh the list of topics from the server
         }
 
+        async function resetTopics() {
+            topics = []; // Clear the topics array locally first
+            const response = await fetch('/config/topics', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ topics: [] }) // Send empty list to reset topics on the server
+            });
+            const data = await response.json();
+            alert(data.message);
+            displayTopics(); // Update UI to reflect the reset
+            await fetchTopics(); // Refresh the list of topics from the server
+        }
+
         window.onload = fetchTopics;
     </script>
 </head>
 <body>
     <h1>Configure Topics</h1>
+    <a href="/">Home</a>
     <div>Current Topics: <span id="currentTopics"></span></div>
     <input type="text" id="newTopic" placeholder="Enter new topic">
     <button onclick="addTopic()">Add Topic</button>
     <ul id="topicsList"></ul>
     <button onclick="updateTopics()">Update Topics</button>
+    <button onclick="resetTopics()">Reset Topics</button>
 </body>
 </html>
