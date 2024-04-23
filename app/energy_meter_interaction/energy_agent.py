@@ -1,6 +1,9 @@
 import json
 import paho.mqtt.client as mqtt
+from ipfs_cid import cid_sha256_hash
 
+from app.RddlInteraction.cid_tool import store_cid
+from app.db.cid_store import insert_key_value
 from app.dependencies import config, logger
 from app.energy_meter_interaction.energy_decrypter import (
     transform_to_metrics,
@@ -8,6 +11,8 @@ from app.energy_meter_interaction.energy_decrypter import (
     decrypt_sagemcom,
     decrypt_evn_data,
 )
+from app.helpers.config_helper import load_config
+from app.helpers.models import TopicConfig
 
 SM_READ_ERROR = "ERROR! SM METER READ"
 DEFAULT_SLEEP_TIME = 5
@@ -21,28 +26,25 @@ class DataAgent:
         self.stopped = False
 
     def on_message(self, client, userdata, message):
-        topic = message.topic
-        data = message.payload.decode()
+        try:
+            topic = message.topic
+            data = message.payload.decode()
 
-        if topic == self.sm_meter_topic:
-            # Handle the message for the specific topic
-            metric = self.decrypt_device(data)
-            metric_dict = self.enricht_metric(metric)
-            print("create cid and planetmint transaction")
-        else:
-            print("create cid and planetmint transaction")
+            topic_config_dict = load_config(config.path_to_topic_config)
+            topic_config = TopicConfig.parse_obj(topic_config_dict)
+
+            if topic_config.contains(topic):
+                cid = store_cid(data)
+                print(f"notarize CID planetmint transaction {cid}")
+            elif topic == self.sm_meter_topic:
+                metric = self.decrypt_device(data)
+                metric_dict = self.enricht_metric(metric)
+                cid = store_cid(json.dumps(metric_dict))
+                print(f"notarize SM data cid on planetmint {cid}")
+        except Exception as e:
+            logger.error(f"Error occurred while processing message: {e}")
 
     def connect_to_mqtt(self):
-        # Forwarder MQTT client
-        self.data_mqtt = mqtt.Client(
-            callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
-            client_id=config.pubkey,
-            protocol=mqtt.MQTTv311,
-        )
-        self.data_mqtt.on_connect = self.on_connect
-        self.data_mqtt.on_disconnect = self.on_disconnect
-        self.data_mqtt.username_pw_set(config.forwarder_mqtt_username, config.forwarder_mqtt_password)
-
         # Subscriber MQTT client
         # TODO: check if newer version of paho-mqtt works? callback_api_version=mqtt.CallbackAPIVersion.VERSION2 is new in old version 1.6.1 it was not needed
         # TODO: Also check if code compiles on raspberrypi!
@@ -53,17 +55,11 @@ class DataAgent:
         self.data_mqtt_client.username_pw_set(config.data_mqtt_username, config.data_mqtt_password)
 
         try:
-            # Connect to forwarder MQTT server
-            self.data_mqtt.connect(config.forwarder_mqtt_host, config.forwarder_mqtt_port, 60)
-            self.data_mqtt.loop_start()  # Start the network loop
-
-            # Connect to subscriber MQTT server and subscribe to the topic
             self.data_mqtt_client.connect(config.data_mqtt_host, config.data_mqtt_port, 60)
             self.data_mqtt_client.subscribe(self.data_mqtt_topics)
             self.data_mqtt_client.loop_start()  # Start the network loop
         except Exception as e:
             logger.error(f"Exception occurred while connecting to MQTT: {e}")
-            self.data_mqtt.reconnect()
             self.data_mqtt_client.reconnect()
 
     @staticmethod

@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from ipfs_cid import cid_sha256_hash
 
+from app.RddlInteraction.cid_tool import store_cid
 from app.db.cid_store import insert_key_value, get_value
 
 router = APIRouter(
@@ -17,7 +18,6 @@ async def resolve_cid(cid: str) -> dict:
 
 
 @router.post("")
-async def store_cid(data: str) -> dict:
-    cid = cid_sha256_hash(data.encode("utf-8"))
-    insert_key_value(cid, data)
+async def save_cid(data: str) -> dict:
+    cid = store_cid(data)
     return {"cid": cid}
