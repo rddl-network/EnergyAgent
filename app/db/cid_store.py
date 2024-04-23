@@ -23,7 +23,7 @@ def transform_result(result):
 def insert_key_value(cid, json_value):
     execute_sql_command("INSERT INTO key_value_store (cid, json_value) VALUES (?, ?)", (cid, json.dumps(json_value)))
     config.db_connection.commit()
-    logger.info("Key-value pair added.")
+    logger.debug("Key-value pair added.")
 
 
 def get_value(cid):
@@ -34,4 +34,4 @@ def get_value(cid):
 def delete_key(cid):
     execute_sql_command("DELETE FROM key_value_store WHERE cid=?", (cid,))
     config.db_connection.commit()
-    logger.info("Key-value pair deleted.")
+    logger.debug("Key-value pair deleted.")

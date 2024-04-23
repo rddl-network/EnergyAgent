@@ -67,7 +67,6 @@ OCTET_STRING_VALUES = {
     "01000D0700FF": "Leistungsfaktor",
 }
 
-
 MBUS_START_SLICE = slice(0, 8)
 FRAME_LEN_SLICE = slice(2, 4)
 SYSTEM_TITLE_SLICE = slice(22, 38)
@@ -91,6 +90,24 @@ def parse_root_items(root) -> list:
         current_child, next_child = next_child, next(iterator, None)
 
     return found_lines
+
+
+def decrypt_device(data_hex):
+    if config.device_type == "LG":
+        dec = decrypt_aes_gcm_landis_and_gyr(
+            data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
+        )
+        return transform_to_metrics(dec, config.pubkey)
+    elif config.device_type == "SC":
+        dec = decrypt_sagemcom(
+            data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
+        )
+        return transform_to_metrics(dec, config.pubkey)
+    elif config.device == "EVN":
+        dec = decrypt_evn_data(data_hex)
+        return transform_to_metrics(dec, config.pubkey)
+    else:
+        logger.error(f"Unknown device: {config.device_type}")
 
 
 def decrypt_evn_data(data: str):
