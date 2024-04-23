@@ -1,23 +1,12 @@
 version: "3.8"
 
 services:
-  timescaledb:
-    image: timescale/timescaledb-ha:pg14-latest
-    profiles: [ "app" ]
-    container_name: timescaledb
-    restart: always
-    ports:
-      - 5432:5432
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-
   app:
     build:
       context: .
       dockerfile: docker/DockerFile_Pip
     profiles: [ "app" ]
-    container_name: app-business-logic
+    container_name: rddl-energy-agent
     environment:
       DB_USER: postgres
       DB_PASSWORD: password

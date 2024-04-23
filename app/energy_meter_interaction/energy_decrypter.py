@@ -1,5 +1,5 @@
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime, timezone
 
 from Crypto.Cipher import AES
 
@@ -7,8 +7,6 @@ from app.dependencies import config, logger
 from binascii import unhexlify
 from gurux_dlms.GXDLMSTranslator import GXDLMSTranslator
 import xml.etree.ElementTree as ET
-
-from submoudles.submodules.app_mypower_modul.schemas import MetricCreate
 
 # CRC-STUFF BEGIN
 CRC_INIT = 0xFFFF
@@ -190,11 +188,11 @@ def convert_to_kwh(value) -> float:
     return value / 1000
 
 
-def transform_to_metrics(data_list, public_key) -> MetricCreate:
-    now = datetime.now()
+def transform_to_metrics(data_list, public_key) -> dict:
+    now = datetime.now(timezone.utc)
     metric_data = {
         "public_key": public_key,
-        "time_stamp": now.utcnow(),
+        "time_stamp": now,
         "type": "absolute_energy",
         "unit": "kWh",
         "absolute_energy_in": 0,
@@ -208,4 +206,4 @@ def transform_to_metrics(data_list, public_key) -> MetricCreate:
         elif data.get("key") == "WirkenergieN":
             metric_data["absolute_energy_out"] = convert_to_kwh(value)
 
-    return MetricCreate(**metric_data)
+    return metric_data

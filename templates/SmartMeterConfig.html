@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Smart Meter Configuration</title>
+    <script>
+        async function fetchSmartMeterConfig() {
+            const response = await fetch('/config/smart-meter');
+            const data = await response.json();
+            document.getElementById('smartMeterType').value = data.smart_meter_type || '';
+            document.getElementById('encryptionKey').value = data.encryption_key || '';
+            document.getElementById('authenticationKey').value = data.authentication_key || '';
+        }
+
+        async function updateSmartMeterConfig() {
+            const smartMeterType = document.getElementById('smartMeterType').value;
+            const encryptionKey = document.getElementById('encryptionKey').value;
+            const authenticationKey = document.getElementById('authenticationKey').value;
+
+            const response = await fetch('/config/smart-meter', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    smart_meter_type: smartMeterType,
+                    encryption_key: encryptionKey,
+                    authentication_key: authenticationKey
+                })
+            });
+            const data = await response.json();
+            alert(data.message);
+        }
+
+        window.onload = fetchSmartMeterConfig;
+    </script>
+</head>
+<body>
+    <h1>Configure Smart Meter</h1>
+    <label>Smart Meter Type:</label>
+    <input type="text" id="smartMeterType" placeholder="Enter Smart Meter Type">
+    <br>
+    <label>Encryption Key:</label>
+    <input type="text" id="encryptionKey" placeholder="Enter Encryption Key">
+    <br>
+    <label>Authentication Key:</label>
+    <input type="text" id="authenticationKey" placeholder="Enter Authentication Key">
+    <br>
+    <button onclick="updateSmartMeterConfig()">Update Configuration</button>
+</body>
+</html>
