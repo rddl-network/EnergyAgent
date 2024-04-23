@@ -5,7 +5,7 @@ from app.energy_meter_interaction.energy_agent import DataAgent
 import threading
 import uvicorn
 
-from app.routers import templates, configuration
+from app.routers import templates, configuration, cid_resolver
 
 app = FastAPI(
     title="Rddl Energy Agent",
@@ -33,6 +33,7 @@ app.add_middleware(
 
 app.include_router(templates.router)
 app.include_router(configuration.router)
+app.include_router(cid_resolver.router)
 
 
 def run_data_agent():
