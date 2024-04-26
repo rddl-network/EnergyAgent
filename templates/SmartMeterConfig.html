@@ -2,6 +2,64 @@
 <html lang="en">
 <head>
     <title>Smart Meter Configuration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        header {
+            background: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 5px;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
     <script>
         async function fetchSmartMeterConfig() {
             const response = await fetch('/config/smart-meter');
@@ -35,16 +93,19 @@
     </script>
 </head>
 <body>
-    <h1>Configure Smart Meter</h1>
-    <label>Smart Meter Type:</label>
-    <input type="text" id="smartMeterType" placeholder="Enter Smart Meter Type">
-    <br>
-    <label>Encryption Key:</label>
-    <input type="text" id="encryptionKey" placeholder="Enter Encryption Key">
-    <br>
-    <label>Authentication Key:</label>
-    <input type="text" id="authenticationKey" placeholder="Enter Authentication Key">
-    <br>
-    <button onclick="updateSmartMeterConfig()">Update Configuration</button>
+    <header>
+        <h1>Configure Smart Meter</h1>
+    </header>
+    <div class="container">
+        <form>
+            <label for="smartMeterType">Smart Meter Type:</label>
+            <input type="text" id="smartMeterType" placeholder="Enter Smart Meter Type">
+            <label for="encryptionKey">Encryption Key:</label>
+            <input type="text" id="encryptionKey" placeholder="Enter Encryption Key">
+            <label for="authenticationKey">Authentication Key:</label>
+            <input type="text" id="authenticationKey" placeholder="Enter Authentication Key">
+            <button onclick="updateSmartMeterConfig()">Update Configuration</button>
+        </form>
+    </div>
 </body>
 </html>

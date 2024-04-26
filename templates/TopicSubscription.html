@@ -2,28 +2,111 @@
 <html lang="en">
 <head>
     <title>Topic Configuration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        header {
+            background: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        a {
+            color: #17a2b8;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #333;
+            text-decoration: underline;
+        }
+
+        input[type="text"], button {
+            padding: 10px;
+            margin-top: 10px;
+            margin-right: 5px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 22px);
+        }
+
+        button {
+            background-color: #28a745;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            margin-top: 5px;
+            padding: 8px;
+        }
+
+        .status, .current-topics {
+            padding: 15px;
+            background-color: #e9ecef;
+            border-left: 3px solid #17a2b8;
+            margin: 10px 0;
+            font-style: italic;
+        }
+    </style>
     <script>
-        let topics = []; // Array to hold topics
+        let topics = [];
 
         async function fetchTopics() {
             const response = await fetch('/config/topics');
             const data = await response.json();
-            document.getElementById('currentTopics').innerText = JSON.stringify(data.topics);
+            const topicsData = data.topics;
+            const currentTopicsList = document.getElementById('currentTopicsList');
+            currentTopicsList.innerHTML = '';
+            topicsData.forEach(topic => {
+                const li = document.createElement('li');
+                li.textContent = topic;
+                currentTopicsList.appendChild(li);
+            });
         }
 
         function addTopic() {
             const newTopicInput = document.getElementById('newTopic');
             const newTopic = newTopicInput.value.trim();
             if (newTopic) {
-                topics.push(newTopic); // Add new topic to the array
-                newTopicInput.value = ''; // Clear input field
-                displayTopics(); // Update display
+                topics.push(newTopic);
+                newTopicInput.value = '';
+                displayTopics();
             }
         }
 
         function displayTopics() {
             const topicsList = document.getElementById('topicsList');
-            topicsList.innerHTML = ''; // Clear existing entries
+            topicsList.innerHTML = '';
             topics.forEach((topic, index) => {
                 const topicElement = document.createElement('li');
                 topicElement.textContent = topic;
@@ -41,37 +124,44 @@
             });
             const data = await response.json();
             alert(data.message);
-            topics = []; // Clear topics array after sending
-            displayTopics(); // Refresh the displayed list
-            await fetchTopics(); // Refresh the list of topics from the server
+            topics = [];
+            displayTopics();
+            await fetchTopics();
         }
 
         async function resetTopics() {
-            topics = []; // Clear the topics array locally first
+            topics = [];
             const response = await fetch('/config/topics', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ topics: [] }) // Send empty list to reset topics on the server
+                body: JSON.stringify({ topics: [] })
             });
             const data = await response.json();
             alert(data.message);
-            displayTopics(); // Update UI to reflect the reset
-            await fetchTopics(); // Refresh the list of topics from the server
+            displayTopics();
+            await fetchTopics();
         }
 
         window.onload = fetchTopics;
     </script>
 </head>
 <body>
-    <h1>Configure Topics</h1>
-    <a href="/">Home</a>
-    <div>Current Topics: <span id="currentTopics"></span></div>
-    <input type="text" id="newTopic" placeholder="Enter new topic">
-    <button onclick="addTopic()">Add Topic</button>
-    <ul id="topicsList"></ul>
-    <button onclick="updateTopics()">Update Topics</button>
-    <button onclick="resetTopics()">Reset Topics</button>
+    <header>
+        <h1>Configure Topics</h1>
+    </header>
+    <div class="container">
+        <a href="/">Home</a>
+        <div class="current-topics">
+            Current Topics:
+            <ul id="currentTopicsList"></ul>
+        </div>
+        <input type="text" id="newTopic" placeholder="Enter new topic">
+        <button onclick="addTopic()">Add Topic</button>
+        <ul id="topicsList"></ul>
+        <button onclick="updateTopics()">Update Topics</button>
+        <button onclick="resetTopics()">Reset Topics</button>
+    </div>
 </body>
 </html>
