@@ -12,12 +12,12 @@ router = APIRouter(
 
 
 @router.get("/topics")
-async def get_der_subscription() -> TopicConfig:
+async def get_der_subscription() -> TopicConfig | dict:
     topic_config_dict = load_config(config.path_to_topic_config)
+    if not topic_config_dict:
+        return TopicConfig()
     topic_config = TopicConfig.parse_obj(topic_config_dict)
-    if topic_config:
-        return topic_config
-    return TopicConfig()
+    return topic_config
 
 
 @router.post("/topics")

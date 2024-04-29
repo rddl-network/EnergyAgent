@@ -78,7 +78,9 @@
     <script>
         function resolveCID() {
             const cid = document.getElementById('cidInput').value;
-            fetch(`/resolve-cid/${cid}`)
+            const url = new URL('http://0.0.0.0:8001/cid_resolver');
+            url.searchParams.append('cid', cid);
+            fetch(url)
             .then(response => response.json())
             .then(data => {
                 document.getElementById('output').textContent = JSON.stringify(data, null, 2);
