@@ -9,7 +9,7 @@ class SmartMeterConfig(BaseModel):
 
 
 class TopicConfig(BaseModel):
-    topics: list[str]
+    topics: list[str] = []
 
     def contains(self, topic: str) -> bool:
         return topic in self.topics
