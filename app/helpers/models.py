@@ -20,3 +20,9 @@ class AdditionalInfo(BaseModel):
     device_type: str = ""
     latitude: float = 0.0
     longitude: float = 0.0
+
+
+class PlanetMintKeys(BaseModel):
+    planetmint_address: str = ""
+    extended_planetmint_pubkey: str = ""
+    extended_liquid_pubkey: str = ""

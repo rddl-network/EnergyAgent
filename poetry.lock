@@ -579,6 +579,16 @@ files = [
 ]
 
 [[package]]
+name = "osc4py3"
+version = "1.0.8"
+description = "Python3 package for Open Sound Control (OSC) communications."
+optional = false
+python-versions = ">=3.2"
+files = [
+    {file = "osc4py3-1.0.8.tar.gz", hash = "sha256:f45364b793270dfec860b399af6b5b361e54d440f14bf43d33b83a0b615a714c"},
+]
+
+[[package]]
 name = "packaging"
 version = "24.0"
 description = "Core utilities for Python packages"
@@ -965,4 +975,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "700a59deb3e70c5eb27733921f9865d8af00be89fd5f657694edba91fc2c7c65"
+content-hash = "9b3fc014545fd614d4b2472b63086ef867497b37a0692d46a7174df177120ec2"
