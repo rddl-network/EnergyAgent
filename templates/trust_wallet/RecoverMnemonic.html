@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recover Mnemonic</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        input {
+            margin: 5px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: calc(100% - 22px);
+            max-width: 350px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            font-family: monospace;
+            background-color: #f4f4f4;
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Recover Mnemonic</h1>
+        <form id="mnemonicForm" onsubmit="return false;">
+            <div id="mnemonicInputs"></div>
+            <button type="button" onclick="recoverMnemonic()">Recover Mnemonic</button>
+        </form>
+        <div id="result">Recovery result will appear here...</div>
+    </div>
+    <script>
+        function setupInputs() {
+            const container = document.getElementById('mnemonicInputs');
+            const inputHTML = Array.from({length: 24}, (_, i) =>
+                `<input type="text" id="word${i+1}" placeholder="Word ${i+1}">`
+            ).join('');
+            container.innerHTML = inputHTML;
+        }
+
+        function recoverMnemonic() {
+            const mnemonic = Array.from({length: 24}, (_, i) => document.getElementById(`word${i+1}`).value).join(' ');
+            const url = `http://0.0.0.0:8000/twi/recover-mnemonic/${encodeURIComponent(mnemonic)}`;
+
+            fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').textContent = data.result || 'Recovery successful';
+            })
+            .catch(error => {
+                document.getElementById('result').textContent = 'Recovery failed: ' + error;
+            });
+        }
+
+        window.onload = setupInputs; // Setup the input fields when the window loads
+    </script>
+</body>
+</html>

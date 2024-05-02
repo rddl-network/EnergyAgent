@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.energy_meter_interaction.energy_agent import DataAgent
 import uvicorn
 
-from app.routers import templates, configuration, cid_resolver, energy_agent_thread
+from app.routers import configuration, cid_resolver, energy_agent_thread, trust_wallet_interaction
+from app.routers.html import templates, trust_wallet_templates
 
 app = FastAPI(
     title="Rddl Energy Agent",
@@ -30,10 +30,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(templates.router)
+# This routes the API
+
 app.include_router(configuration.router)
 app.include_router(cid_resolver.router)
 app.include_router(energy_agent_thread.router)
+app.include_router(trust_wallet_interaction.router)
+
+# This routes the HTML
+app.include_router(templates.router)
+app.include_router(trust_wallet_templates.router)
 
 
 if __name__ == "__main__":

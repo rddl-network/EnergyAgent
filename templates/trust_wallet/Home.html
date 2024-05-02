@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Agent</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            background-color: #f0f0f0;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 20px;
+            text-align: center;
+            flex: 1;
+        }
+
+        .card {
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px auto;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .card h2 {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .key {
+            font-size: 16px;
+            color: #555;
+            margin: 10px 0;
+        }
+
+        .value {
+            font-size: 16px;
+            color: #000;
+            font-weight: bold;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Welcome to your Trust Wallet</h1>
+</div>
+<div class="content">
+    <p>Here is the Home of your Trust Wallet</p>
+    <div class="card">
+        <h2>Wallet Details</h2>
+        <div class="key">Planetmint Address:</div>
+        <div class="value" id="planetmintAddress">Loading...</div>
+        <div class="key">Planetmint Public Key:</div>
+        <div class="value" id="planetmintPubKey">Loading...</div>
+        <div class="key">Rddl Public Key:</div>
+        <div class="value" id="rddlPubKey">Loading...</div>
+    </div>
+    <div class="buttons">
+        <a href="/create-mnemonic">
+            <button type="button">Create Mnemonic</button>
+        </a>
+        php
+        Copy code
+        <a href="/recover-mnemonic">
+            <button type="button">Recover Mnemonic</button>
+        </a>
+    </div>
+</div>
+<script>
+    window.onload = function () {
+        fetch('http://0.0.0.0:8000/twi/get-planetmint-keys')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('planetmintAddress').textContent = data.planetmint_address;
+                    document.getElementById('planetmintPubKey').textContent = data.extended_planetmint_pubkey;
+                    document.getElementById('rddlPubKey').textContent = data.extended_liquid_pubkey;
+                })
+                .catch(error => {
+                    console.error('Failed to fetch keys:', error);
+                    document.getElementById('planetmintAddress').textContent = 'Failed to load';
+                    document.getElementById('planetmintPubKey').textContent = 'Failed to load';
+                    document.getElementById('rddlPubKey').textContent = 'Failed to load';
+                });
+    };
+</script>
+</body>
+</html>

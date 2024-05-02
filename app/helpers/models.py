@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel
 
 
@@ -26,3 +28,8 @@ class PlanetMintKeys(BaseModel):
     planetmint_address: str = ""
     extended_planetmint_pubkey: str = ""
     extended_liquid_pubkey: str = ""
+
+
+class OSCResponse(BaseModel):
+    command: str = ""
+    data: List[str] = []

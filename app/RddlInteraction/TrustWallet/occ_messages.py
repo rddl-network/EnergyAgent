@@ -15,33 +15,39 @@ class TrustWalletInteraction:
         @brief: Gets the seed
         @return: return seed
         """
-        msg = OSCMessage(f"{PREFIX_IHW}/getSeed", "", [""])
+        msg = OSCMessage(f"{PREFIX_IHW}/getSeed", ",", [])
         occ_message = self.occ_message_sender.send_message(msg)
-        seed = occ_message[2][0]
-        return seed
+        return occ_message.data[1]
 
     # mnemonicToSeed
 
-    def mnemonic_to_private_key(self, mnemonic):
+    def create_mnemonic(self):
         """
         @brief: Derives the private key from the mnemonic seed
         """
-        msg = OSCMessage(f"{PREFIX_IHW}/mnemonicToSeed", "ss", [mnemonic, ""])
+        msg = OSCMessage(f"{PREFIX_IHW}/mnemonicToSeed", ",", [])
         occ_message = self.occ_message_sender.send_message(msg)
-        mnemonic = occ_message[2][0]
-        return mnemonic
+        return occ_message.data[1]
+
+    def recover_from_mnemonic(self, mnemonic: str) -> str:
+        """
+        @brief: Derives the private key from the mnemonic seed
+        """
+        msg = OSCMessage(f"{PREFIX_IHW}/mnemonicToSeed", ",s", [mnemonic])
+        occ_message = self.occ_message_sender.send_message(msg)
+        return occ_message.data[1]
 
     def get_planetmint_keys(self) -> PlanetMintKeys:
         """
         @brief: Gets the seed
         @return: return seed
         """
-        msg = OSCMessage(f"{PREFIX_IHW}/getPlntmntKeys", "", [""])
+        msg = OSCMessage(f"{PREFIX_IHW}/getPlntmntKeys", ",", [])
         occ_message = self.occ_message_sender.send_message(msg)
         plmnt_keys = PlanetMintKeys()
-        plmnt_keys.planetmint_address = occ_message[2][0]
-        plmnt_keys.extended_planetmint_pubkey = occ_message[2][1]
-        plmnt_keys.extended_liquid_pubkey = occ_message[2][2]
+        plmnt_keys.planetmint_address = occ_message.data[1]
+        plmnt_keys.extended_planetmint_pubkey = occ_message.data[2]
+        plmnt_keys.extended_liquid_pubkey = occ_message.data[3]
         return plmnt_keys
 
     def sign_hash_with_planetmint(self, data_to_sign: str) -> str:
@@ -50,9 +56,9 @@ class TrustWalletInteraction:
         @param data_to_sign: hash to sign
         @return: signature
         """
-        msg = OSCMessage(f"{PREFIX_IHW}/ecdsaSignPlmnt", "s", [data_to_sign])
+        msg = OSCMessage(f"{PREFIX_IHW}/ecdsaSignPlmnt", ",s", [data_to_sign])
         occ_message = self.occ_message_sender.send_message(msg)
-        signature = occ_message[2][0]
+        signature = occ_message.data[1]
         return signature
 
     def sign_hash_with_rddl(self, data_to_sign: str) -> str:
@@ -61,9 +67,9 @@ class TrustWalletInteraction:
         @param data_to_sign: hash to sign
         @return: signature
         """
-        msg = OSCMessage(f"{PREFIX_IHW}/ecdsaSignRddl", "s", [data_to_sign])
+        msg = OSCMessage(f"{PREFIX_IHW}/ecdsaSignRddl", ",s", [data_to_sign])
         occ_message = self.occ_message_sender.send_message(msg)
-        signature = occ_message[2][0]
+        signature = occ_message.data[1]
         return signature
 
     def create_optega_keypair(self, ctx: int) -> str:
@@ -72,9 +78,9 @@ class TrustWalletInteraction:
         @param ctx: define one of 4 context of Optega x
         @return: public key
         """
-        msg = OSCMessage(f"{PREFIX_IHW}/optigaTrustXCreateSecret", "i", [ctx])
+        msg = OSCMessage(f"{PREFIX_IHW}/optigaTrustXCreateSecret", ",i", [ctx])
         occ_message = self.occ_message_sender.send_message(msg)
-        pubkey = occ_message[2][0]
+        pubkey = occ_message.data[1]
         return pubkey
 
     def sign_with_optega(self, ctx: int, data_to_sign: str, pubkey: str) -> str:
@@ -86,7 +92,9 @@ class TrustWalletInteraction:
         @return: signature
 
         """
-        msg = OSCMessage(f"{PREFIX_IHW}/optigaTrustXSignMessage", "iss", [ctx, data_to_sign, pubkey])
+        msg = OSCMessage(f"{PREFIX_IHW}/optigaTrustXSignMessage", ",iss", [ctx, data_to_sign, pubkey])
         occ_message = self.occ_message_sender.send_message(msg)
-        signature = occ_message[2][0]
+        signature = occ_message.data[1]
         return signature
+
+

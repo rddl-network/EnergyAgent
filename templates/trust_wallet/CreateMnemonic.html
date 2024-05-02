@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Mnemonic</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #mnemonic {
+            margin-top: 20px;
+            font-family: monospace;
+            background-color: #f4f4f4;
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Mnemonic</h1>
+        <button onclick="createMnemonic()">Create Mnemonic</button>
+        <div id="mnemonic">Your mnemonic will appear here...</div>
+    </div>
+    <script>
+        function createMnemonic() {
+            fetch('http://0.0.0.0:8000/twi/mnemonic')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('mnemonic').textContent = data.mnemonic;
+            })
+            .catch(error => {
+                document.getElementById('mnemonic').textContent = 'Failed to retrieve mnemonic: ' + error;
+            });
+        }
+    </script>
+</body>
+</html>
