@@ -16,6 +16,11 @@ async def home(request: Request):
     return jinja2_templates.TemplateResponse("index.html", {"request": request})
 
 
+@router.get("/energy-agent")
+async def energy_agent(request: Request):
+    return jinja2_templates.TemplateResponse("EnergyAgent.html", {"request": request})
+
+
 @router.get("/topics-page")
 async def get_der_subscription(request: Request):
     return jinja2_templates.TemplateResponse("TopicSubscription.html", {"request": request})
