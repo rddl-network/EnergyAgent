@@ -1,8 +1,7 @@
 from fastapi import APIRouter
-from ipfs_cid import cid_sha256_hash
 
 from app.RddlInteraction.cid_tool import store_cid
-from app.db.cid_store import insert_key_value, get_value
+from app.db.cid_store import get_value
 
 router = APIRouter(
     prefix="/cid_resolver",

@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from app.dependencies import config
 from app.helpers.config_helper import save_config, load_config
-from app.helpers.models import SmartMeterConfig, TopicConfig
+from app.helpers.models import SmartMeterConfig, TopicConfig, MQTTConfig
 
 router = APIRouter(
     prefix="/config",
@@ -40,3 +40,15 @@ async def get_der_smart_meter() -> SmartMeterConfig:
 async def create_der_smart_meter(smart_meter_config: SmartMeterConfig):
     save_config(config.path_to_smart_meter_config, smart_meter_config.__dict__)
     return {"message": "Updated smart meter configuration"}
+
+
+@router.get("/mqtt")
+async def get_mqtt_config():
+    mqtt_config = load_config(config.path_to_mqtt_config)
+    return mqtt_config
+
+
+@router.post("/mqtt")
+async def create_mqtt_config(mqtt_config: MQTTConfig):
+    save_config(config.path_to_mqtt_config, mqtt_config.__dict__)
+    return {"message": "Updated MQTT configuration"}

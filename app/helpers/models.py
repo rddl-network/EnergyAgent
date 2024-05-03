@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel
 
 
@@ -15,8 +17,26 @@ class TopicConfig(BaseModel):
         return topic in self.topics
 
 
+class MQTTConfig(BaseModel):
+    mqtt_host: str = ""
+    mqtt_port: int = 0
+    mqtt_password: str = ""
+    mqtt_username: str = ""
+
+
 class AdditionalInfo(BaseModel):
     device_name: str = ""
     device_type: str = ""
     latitude: float = 0.0
     longitude: float = 0.0
+
+
+class PlanetMintKeys(BaseModel):
+    planetmint_address: str = ""
+    extended_planetmint_pubkey: str = ""
+    extended_liquid_pubkey: str = ""
+
+
+class OSCResponse(BaseModel):
+    command: str = ""
+    data: List[str] = []
