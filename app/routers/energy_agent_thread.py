@@ -2,7 +2,10 @@ import threading
 import logging
 from fastapi import APIRouter
 
+from app.dependencies import config
 from app.energy_meter_interaction.energy_agent import DataAgent
+from app.helpers.config_helper import load_config
+from app.helpers.models import SmartMeterConfig
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +17,7 @@ class EnergyAgentThread:
         self.data_fetcher = DataAgent()
 
     def _run(self):
+        self.data_fetcher.setup()
         self.data_fetcher.connect_to_mqtt()
 
     def _is_thread_running(self):

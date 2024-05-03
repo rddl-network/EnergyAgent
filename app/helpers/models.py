@@ -17,6 +17,13 @@ class TopicConfig(BaseModel):
         return topic in self.topics
 
 
+class MQTTConfig(BaseModel):
+    mqtt_host: str = ""
+    mqtt_port: int = 0
+    mqtt_password: str = ""
+    mqtt_username: str = ""
+
+
 class AdditionalInfo(BaseModel):
     device_name: str = ""
     device_type: str = ""

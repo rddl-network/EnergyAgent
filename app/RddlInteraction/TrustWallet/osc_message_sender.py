@@ -6,10 +6,15 @@ from app.helpers.models import OSCResponse
 
 def load_occ_library(lib_path):
     lib_occ = ctypes.CDLL(lib_path)
-    lib_occ.occ_do.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_size_t,
-                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_size_t,
-                               ctypes.c_size_t, ctypes.POINTER(ctypes.c_ubyte),
-                               ctypes.c_size_t]
+    lib_occ.occ_do.argtypes = [
+        ctypes.POINTER(ctypes.c_ubyte),
+        ctypes.c_size_t,
+        ctypes.POINTER(ctypes.c_ubyte),
+        ctypes.c_size_t,
+        ctypes.c_size_t,
+        ctypes.POINTER(ctypes.c_ubyte),
+        ctypes.c_size_t,
+    ]
     lib_occ.occ_do.restype = ctypes.c_size_t
     return lib_occ
 
@@ -33,8 +38,15 @@ class OSCMessageSender:
         return input_ptr, output_buffer
 
     def call_occ_do(self, input_ptr, len_input_data, output_buffer):
-        return self.lib_occ.occ_do(input_ptr, len_input_data, output_buffer, self.buffer_size,
-                                   self.buffer_delay_ms, self.port_name_ptr, len(self.port_name_ptr))
+        return self.lib_occ.occ_do(
+            input_ptr,
+            len_input_data,
+            output_buffer,
+            self.buffer_size,
+            self.buffer_delay_ms,
+            self.port_name_ptr,
+            len(self.port_name_ptr),
+        )
 
     def send_message(self, message) -> OSCResponse:
         encoded_data = encode_packet(message)
@@ -47,10 +59,10 @@ class OSCMessageSender:
 def extract_information(response_bytes):
     try:
         # Decode the byte string, assuming UTF-8 encoding.
-        decoded_string = response_bytes.decode('utf-8')
+        decoded_string = response_bytes.decode("utf-8")
 
         # Split the string on null characters to clean and separate the data.
-        parts = decoded_string.split('\x00')
+        parts = decoded_string.split("\x00")
 
         # Filter out any empty strings that may result from consecutive nulls or trailing nulls
         parts = [part.strip() for part in parts if part.strip()]
@@ -61,8 +73,8 @@ def extract_information(response_bytes):
             command_part = parts[0]
             data_parts = parts[1:]  # The rest are considered data parts
 
-            if ',' in command_part:
-                command, first_data = command_part.split(',', 1)
+            if "," in command_part:
+                command, first_data = command_part.split(",", 1)
                 # Prepend the first data part split from command to the rest of the data parts
                 data_parts = [first_data] + data_parts
             else:

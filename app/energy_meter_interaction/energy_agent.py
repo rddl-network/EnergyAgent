@@ -7,7 +7,7 @@ from app.energy_meter_interaction.energy_decrypter import (
     decrypt_device,
 )
 from app.helpers.config_helper import load_config
-from app.helpers.models import TopicConfig, SmartMeterConfig
+from app.helpers.models import TopicConfig, SmartMeterConfig, MQTTConfig
 
 SM_READ_ERROR = "ERROR! SM METER READ"
 DEFAULT_SLEEP_TIME = 5
@@ -17,9 +17,15 @@ MQTT_KEEP_ALIVE = 60
 class DataAgent:
     def __init__(self):
         self.data_mqtt_client = None
-        self.data_mqtt_topics = []
-        self.smart_meter_topic = ""
-        self.stopped = False
+        self.data_mqtt_topics: list[str] = []
+        self.smart_meter_topic: str = ""
+        self.mqtt_config: MQTTConfig = MQTTConfig()
+        self.stopped: bool = False
+
+    def setup(self):
+        self.update_mqtt_connection_params()
+        self.update_topics()
+        self.update_smart_meter_topic()
 
     def on_message(self, client, userdata, message):
         try:
@@ -42,6 +48,11 @@ class DataAgent:
         planetmint_tx = create_tx_notarize_data(notarize_cid, notarize_data)
         logger.info(f"Planetmint transaction: {planetmint_tx}")
 
+    def update_mqtt_connection_params(self):
+        topic_config_dict = load_config(config.path_to_mqtt_config)
+        topic_config = MQTTConfig.parse_obj(topic_config_dict)
+        self.mqtt_config = topic_config
+
     def update_topics(self):
         topic_config_dict = load_config(config.path_to_topic_config)
         topic_config = TopicConfig.parse_obj(topic_config_dict)
@@ -60,6 +71,7 @@ class DataAgent:
         return cid, data
 
     def connect_to_mqtt(self):
+
         self.initialize_mqtt_client()
         try:
             self.connect_client()
@@ -72,10 +84,10 @@ class DataAgent:
             callback_api_version=mqtt.CallbackAPIVersion.VERSION2, client_id=config.pubkey, protocol=mqtt.MQTTv5
         )
         self.data_mqtt_client.on_message = self.on_message
-        self.data_mqtt_client.username_pw_set(config.data_mqtt_username, config.data_mqtt_password)
+        self.data_mqtt_client.username_pw_set(self.mqtt_config.mqtt_username, self.mqtt_config.mqtt_password)
 
     def connect_client(self):
-        self.data_mqtt_client.connect(config.data_mqtt_host, config.data_mqtt_port, self.MQTT_KEEP_ALIVE)
+        self.data_mqtt_client.connect(self.mqtt_config.mqtt_host, self.mqtt_config.mqtt_port, MQTT_KEEP_ALIVE)
         self.data_mqtt_client.subscribe(self.data_mqtt_topics)
         self.data_mqtt_client.loop_start()  # Start the network loop
 

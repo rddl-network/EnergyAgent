@@ -10,6 +10,7 @@ router = APIRouter(
     responses={404: {"detail": "Not found"}},
 )
 
+
 @router.get("/trust-wallet")
 async def twi(request: Request):
     return jinja2_templates.TemplateResponse("trust_wallet/Home.html", {"request": request})

@@ -96,5 +96,3 @@ class TrustWalletInteraction:
         occ_message = self.occ_message_sender.send_message(msg)
         signature = occ_message.data[1]
         return signature
-
-
