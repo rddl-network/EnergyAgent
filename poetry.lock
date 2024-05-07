@@ -238,6 +238,20 @@ typing-extensions = ">=4.8.0"
 all = ["email-validator (>=2.0.0)", "httpx (>=0.23.0)", "itsdangerous (>=1.1.0)", "jinja2 (>=2.11.2)", "orjson (>=3.2.1)", "pydantic-extra-types (>=2.0.0)", "pydantic-settings (>=2.0.0)", "python-multipart (>=0.0.7)", "pyyaml (>=5.3.1)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0)", "uvicorn[standard] (>=0.12.0)"]
 
 [[package]]
+name = "gmqtt"
+version = "0.6.16"
+description = "Client for MQTT protocol"
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "gmqtt-0.6.16-py3-none-any.whl", hash = "sha256:577f9170a88c98c0b16e9ca5cc895d5a3ee82615ace628757454500e565bd12f"},
+    {file = "gmqtt-0.6.16.tar.gz", hash = "sha256:ddd1fdc1c6ae604e74377cf70e99f067e579c03c1c71a6acd494e199e93b7fa4"},
+]
+
+[package.extras]
+test = ["atomicwrites (>=1.3.0)", "attrs (>=19.1.0)", "codecov (>=2.0.15)", "coverage (>=4.5.3)", "more-itertools (>=7.0.0)", "pluggy (>=0.11.0)", "py (>=1.8.0)", "pytest (>=5.4.0)", "pytest-asyncio (>=0.12.0)", "pytest-cov (>=2.7.1)", "six (>=1.12.0)", "uvloop (>=0.14.0)"]
+
+[[package]]
 name = "gurux-dlms"
 version = "1.0.150"
 description = "Gurux DLMS library for Python."
@@ -975,4 +989,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "9b3fc014545fd614d4b2472b63086ef867497b37a0692d46a7174df177120ec2"
+content-hash = "a4a9c3ba6cd2a2df094eb07dd18f6d6eb8ba172f463e5dabe1c7bbed2934e5dc"

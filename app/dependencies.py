@@ -20,6 +20,7 @@ class Config:
         self.path_to_mqtt_config = build_config_path(self.config_base_path, FILE_MQTT_CONFIG)
         self.trust_wallet_port = os.environ.get("TRUST_WALLET_PORT") or "/dev/tty.usbmodem1101"
         self.libocc_path = os.environ.get("LIBOCC_PATH") or "libpyocc.dylib"
+        self.notarize_interval = int(os.environ.get("NOTARIZE_INTERVAL") or 60)
 
         # Database setup
         self.database = os.path.join(self.config_base_path, "energy_agent.db")

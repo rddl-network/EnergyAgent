@@ -1,86 +1,85 @@
 import json
-import paho.mqtt.client as mqtt
+import asyncio
+from gmqtt import Client as MQTTClient
+
 from app.RddlInteraction.cid_tool import store_cid
 from app.RddlInteraction.planetmint_interaction import create_tx_notarize_data
 from app.dependencies import config, logger
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.config_helper import load_config
-from app.helpers.models import TopicConfig, SmartMeterConfig, MQTTConfig
+from app.helpers.models import SmartMeterConfig, MQTTConfig
 from app.routers.trust_wallet_interaction import trust_wallet
-
-SM_READ_ERROR = "ERROR! SM METER READ"
-DEFAULT_SLEEP_TIME = 5
-MQTT_KEEP_ALIVE = 60
 
 
 class DataAgent:
     def __init__(self):
-        self.data_mqtt_client = None
-        self.smart_meter_topic: str = ""
-        self.mqtt_config: MQTTConfig = MQTTConfig()
-        self.stopped: bool = False
+        self.client = None
+        self.smart_meter_topic = ""
+        self.mqtt_config = MQTTConfig()
+        self.stopped = False
+        self.data_buffer = []
 
     def setup(self):
         self.update_mqtt_connection_params()
         self.update_smart_meter_topic()
+        self.initialize_mqtt_client()
 
-    def on_message(self, client, userdata, message):
+    def initialize_mqtt_client(self):
+        self.client = MQTTClient(client_id=config.pubkey)
+        self.client.on_message = self.on_message
+        self.client.set_auth_credentials(self.mqtt_config.mqtt_username, self.mqtt_config.mqtt_password)
+
+    async def connect_to_mqtt(self):
+        await self.client.connect(self.mqtt_config.mqtt_host, self.mqtt_config.mqtt_port)
+
+    async def on_message(self, client, topic, payload, qos, properties):
         try:
-            self.process_message(message)
+            self.process_message(topic, payload.decode())
         except Exception as e:
             logger.error(f"Error occurred while processing message: {e}")
 
-    def process_message(self, message):
-        topic = message.topic
-        data = message.payload.decode()
-
+    def process_message(self, topic, data):
         notarize_data = data
         if self.smart_meter_topic == topic:
             notarize_data = self.process_meter_data(data)
-        notarize_cid = store_cid(data)
-        logger.debug(f"notarize CID planetmint transaction {notarize_cid}, {notarize_data}")
-        planetmint_keys = trust_wallet.get_planetmint_keys()
-        planetmint_tx = create_tx_notarize_data(notarize_cid, planetmint_keys.planetmint_address)
-        logger.info(f"Planetmint transaction: {planetmint_tx}")
+        self.data_buffer.append(notarize_data)
+
+    async def notarize_data(self):
+        try:
+            data = json.dumps(self.data_buffer)
+            notarize_cid = store_cid(data)
+            logger.debug(f"notarize CID planetmint transaction {notarize_cid}, {data}")
+            planetmint_keys = trust_wallet.get_planetmint_keys()
+            planetmint_tx = create_tx_notarize_data(notarize_cid, planetmint_keys.planetmint_address)
+            logger.info(f"Planetmint transaction: {planetmint_tx}")
+            self.data_buffer.clear()
+        except Exception as e:
+            logger.error(f"Error occurred while notarizing data: {e}")
+
+    async def notarize_data_with_interval(self):
+        while not self.stopped:
+            if self.data_buffer:
+                await self.notarize_data()
+            else:
+                await asyncio.sleep(config.notarize_interval)
 
     def update_mqtt_connection_params(self):
-        topic_config_dict = load_config(config.path_to_mqtt_config)
-        topic_config = MQTTConfig.parse_obj(topic_config_dict)
-        self.mqtt_config = topic_config
+        mqtt_config_dict = load_config(config.path_to_mqtt_config)
+        mqtt_config_obj = MQTTConfig.parse_obj(mqtt_config_dict)
+        self.mqtt_config = mqtt_config_obj
 
     def update_smart_meter_topic(self):
         smart_meter_topic_dict = load_config(config.path_to_topic_config)
         sm_topic = SmartMeterConfig.parse_obj(smart_meter_topic_dict)
         self.smart_meter_topic = sm_topic.smart_meter_topic
 
-    def process_meter_data(self, data) -> str:
+    def process_meter_data(self, data):
         metric = decrypt_device(data)
         metric_dict = self.enrich_metric(metric)
-        data = json.dumps(metric_dict)
-        return data
+        return json.dumps(metric_dict)
 
-    def connect_to_mqtt(self):
-
-        self.initialize_mqtt_client()
-        try:
-            self.connect_client()
-        except Exception as e:
-            logger.error(f"Exception occurred while connecting to MQTT: {e}")
-            self.data_mqtt_client.reconnect()
-
-    def initialize_mqtt_client(self):
-        self.data_mqtt_client = mqtt.Client(
-            callback_api_version=mqtt.CallbackAPIVersion.VERSION2, client_id=config.pubkey, protocol=mqtt.MQTTv5
-        )
-        self.data_mqtt_client.on_message = self.on_message
-        self.data_mqtt_client.username_pw_set(self.mqtt_config.mqtt_username, self.mqtt_config.mqtt_password)
-
-    def connect_client(self):
-        self.data_mqtt_client.connect(self.mqtt_config.mqtt_host, self.mqtt_config.mqtt_port, MQTT_KEEP_ALIVE)
-        self.data_mqtt_client.subscribe(config.rddl_topic)
-        self.data_mqtt_client.loop_start()  # Start the network loop
-
-    def enrich_metric(self, data: dict) -> dict:
+    @staticmethod
+    def enrich_metric(data):
         metric_dict = data
         metric_dict["time_stamp"] = metric_dict["time_stamp"].isoformat()
         metric_dict["absolute_energy_in"] = float(metric_dict["absolute_energy_in"])
@@ -88,8 +87,7 @@ class DataAgent:
         logger.debug(f"Metric data: {metric_dict}")
         return metric_dict
 
-    def on_connect(self, userdata, flags, rc):
-        logger.debug(f"Connected to MQTT Broker with result code {rc}")
-
-    def on_disconnect(self, client, userdata, rc):
-        logger.debug("Disconnected from MQTT Broker")
+    async def run(self):
+        await self.connect_to_mqtt()
+        await self.client.subscribe(config.rddl_topic)
+        await self.notarize_data_with_interval()
