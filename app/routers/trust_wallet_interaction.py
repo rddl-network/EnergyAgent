@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.RddlInteraction.TrustWallet.occ_messages import TrustWalletInteraction
+from app.dependencies import config
 from app.helpers.models import PlanetMintKeys
 
 router = APIRouter(
@@ -9,7 +10,7 @@ router = APIRouter(
     responses={404: {"detail": "Not found"}},
 )
 
-trust_wallet = TrustWalletInteraction("libpyocc.dylib", "/dev/tty.usbmodem1101")
+trust_wallet = TrustWalletInteraction(config.libocc_path, config.trust_wallet_port)
 
 
 @router.get("/valise-get")

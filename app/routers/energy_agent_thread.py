@@ -2,10 +2,7 @@ import threading
 import logging
 from fastapi import APIRouter
 
-from app.dependencies import config
-from app.energy_meter_interaction.energy_agent import DataAgent
-from app.helpers.config_helper import load_config
-from app.helpers.models import SmartMeterConfig
+from app.energy_agent.energy_agent import DataAgent
 
 logger = logging.getLogger(__name__)
 
