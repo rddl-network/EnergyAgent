@@ -14,7 +14,7 @@ class Config:
         # general config
         self.log_level = os.environ.get("LOG_LEVEL") or "INFO"
         self.config_base_path = os.environ.get("CONFIG_PATH") or "/tmp"
-        self.rddl_topic = os.environ.get("RDDL_TOPIC") or "/rddl/SMD/"
+        self.rddl_topic = os.environ.get("RDDL_TOPIC") or "rddl/SMD/#"
         self.path_to_topic_config = build_config_path(self.config_base_path, FILE_TOPIC_CONFIG)
         self.path_to_smart_meter_config = build_config_path(self.config_base_path, FILE_SMART_METER_CONFIG)
         self.path_to_mqtt_config = build_config_path(self.config_base_path, FILE_MQTT_CONFIG)

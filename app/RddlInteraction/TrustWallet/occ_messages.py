@@ -78,7 +78,7 @@ class TrustWalletInteraction:
         @param ctx: define one of 4 context of Optega x
         @return: public key
         """
-        msg = OSCMessage(f"{PREFIX_IHW}/optigaTrustXCreateSecret", ",i", [ctx])
+        msg = OSCMessage(f"{PREFIX_IHW}/optigaTrustXCreateSecret", ",is", [ctx, ""])
         occ_message = self.occ_message_sender.send_message(msg)
         pubkey = occ_message.data[1]
         return pubkey
@@ -92,7 +92,7 @@ class TrustWalletInteraction:
         @return: signature
 
         """
-        msg = OSCMessage(f"{PREFIX_IHW}/optigaTrustXSignMessage", ",iss", [ctx, data_to_sign, pubkey])
+        msg = OSCMessage(f"{PREFIX_IHW}/optigaTrustXSignMessage", ",isss", [ctx, data_to_sign, pubkey, ""])
         occ_message = self.occ_message_sender.send_message(msg)
         signature = occ_message.data[1]
         return signature

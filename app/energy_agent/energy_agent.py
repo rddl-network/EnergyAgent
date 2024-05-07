@@ -38,6 +38,7 @@ class DataAgent:
     async def on_message(self, client, topic, payload, qos, properties):
         try:
             self.process_message(topic, payload.decode())
+            logger.debug(f"Received message: {topic}, {payload.decode()}")
         except Exception as e:
             logger.error(f"Error occurred while processing message: {e}")
 

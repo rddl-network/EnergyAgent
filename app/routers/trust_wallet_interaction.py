@@ -45,3 +45,12 @@ def recover_mnemonic(mnemonic: str):
 def get_planetmint_keys() -> PlanetMintKeys:
     planetmint_keys = trust_wallet.get_planetmint_keys()
     return planetmint_keys
+
+
+# @router.get("/optegax_create")
+# def optegax_create():
+#     return trust_wallet.create_optega_keypair(2)
+#
+# @router.get("/optegax_sign")
+# def optegax_create(public_key: str, tx: str):
+#     return trust_wallet.sign_with_optega(2, tx, public_key)
