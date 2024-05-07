@@ -21,6 +21,7 @@ class Config:
         self.trust_wallet_port = os.environ.get("TRUST_WALLET_PORT") or "/dev/tty.usbmodem1101"
         self.libocc_path = os.environ.get("LIBOCC_PATH") or "libpyocc.dylib"
         self.notarize_interval = int(os.environ.get("NOTARIZE_INTERVAL") or 60)
+        self.client_id = os.environ.get("CLIENT_ID") or "energy_agent"
 
         # Database setup
         self.database = os.path.join(self.config_base_path, "energy_agent.db")

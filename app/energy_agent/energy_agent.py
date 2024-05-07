@@ -1,6 +1,7 @@
 import json
 import asyncio
 from gmqtt import Client as MQTTClient
+from gmqtt.mqtt.constants import MQTTv311
 
 from app.RddlInteraction.cid_tool import store_cid
 from app.RddlInteraction.planetmint_interaction import create_tx_notarize_data
@@ -25,12 +26,13 @@ class DataAgent:
         self.initialize_mqtt_client()
 
     def initialize_mqtt_client(self):
-        self.client = MQTTClient(client_id=config.pubkey)
+        self.client = MQTTClient(client_id=config.client_id)
         self.client.on_message = self.on_message
         self.client.set_auth_credentials(self.mqtt_config.mqtt_username, self.mqtt_config.mqtt_password)
 
     async def connect_to_mqtt(self):
-        await self.client.connect(self.mqtt_config.mqtt_host, self.mqtt_config.mqtt_port)
+        await self.client.connect(self.mqtt_config.mqtt_host, self.mqtt_config.mqtt_port, keepalive=60,
+                                  version=MQTTv311)
 
     async def on_message(self, client, topic, payload, qos, properties):
         try:

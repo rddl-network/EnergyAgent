@@ -6,6 +6,7 @@ from app.energy_agent.energy_agent import DataAgent
 
 logger = logging.getLogger(__name__)
 
+
 class EnergyAgentManager:
     def __init__(self):
         self.agent = DataAgent()
