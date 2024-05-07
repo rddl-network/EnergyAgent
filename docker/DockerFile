@@ -1,32 +1,27 @@
-FROM python:3.12-alpine
+FROM python:3.12.3-slim-bookworm
 
-RUN apk update && apk upgrade
-
-RUN apk add -U \
-    build-base \
-    curl \
-    eudev-dev \
+# Install only necessary packages for building Python extensions and git for fetching Python packages
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+    build-essential \
+    libffi-dev \
+    libssl-dev \
     git \
-    libffi-dev \
-    libusb-dev \
-    openssh \
-    openssl-dev \
-    protobuf-dev \
-    udev \
-    gcc \
-    musl-dev \
-    python3-dev \
-    libffi-dev \
-    cargo \
-    pkgconfig
+    curl
 
-COPY . .
+# Clean up the Docker image by removing cache and unnecessary files
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy only necessary files for installing Python dependencies
 COPY poetry.lock pyproject.toml ./
 
-RUN pip install --only-binary cryptography poetry
+RUN pip install --upgrade setuptools
+RUN pip install poetry
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-root --only main
 
-EXPOSE 8080:8080
+# Copy the rest of the application
+COPY . .
+
+EXPOSE 8000
 
 CMD ["python", "-m", "main"]

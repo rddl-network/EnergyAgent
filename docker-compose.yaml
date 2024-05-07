@@ -11,7 +11,7 @@ services:
     energy-agent:
         build:
           context: .
-          dockerfile: docker/DockerFile
+          dockerfile: docker/Dockerfile
         container_name: energy-agent
         depends_on:
             - mqtt
