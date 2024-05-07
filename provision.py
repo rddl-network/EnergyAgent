@@ -1,4 +1,3 @@
-
 import sys
 import platform
 import hashlib
@@ -16,20 +15,19 @@ else:
     sys.exit("unsupported OS, cannot load TA Wallet connector")
 
 
-def getHash( data: bytes ) -> bytes:
+def getHash(data: bytes) -> bytes:
     hasher = hashlib.sha256()
     hasher.update(data)
     digest = hasher.digest()
     return digest
 
+
 slot = 2
-pubKey = trust_wallet.create_optega_keypair( slot )
+pubKey = trust_wallet.create_optega_keypair(slot)
 print("Public key: " + pubKey)
 
-hashBytes = getHash( pubKey.encode('utf-8'))
+hashBytes = getHash(pubKey.encode("utf-8"))
 hashBytes.hex()
 
-signature = trust_wallet.sign_with_optega( slot, hashBytes.hex(), pubKey)
-print( signature[0])
-
-
+signature = trust_wallet.sign_with_optega(slot, hashBytes.hex(), pubKey)
+print(signature[0])
