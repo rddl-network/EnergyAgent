@@ -1,3 +1,4 @@
+import time
 import sys
 import platform
 import hashlib
@@ -23,8 +24,14 @@ def getHash(data: bytes) -> bytes:
 
 
 slot = 2
-pubKey = trust_wallet.create_optega_keypair(slot)
+wrappedPubKey = trust_wallet.create_optega_keypair(slot)
+(valid, pubKey) = trust_wallet.unwrappPublicKey( wrappedPubKey )
+if valid == False:
+    exit(-1)
+    
 print("Public key: " + pubKey)
+print("Public key(len): " + str(len(pubKey)))
+time.sleep(2)
 
 hashBytes = getHash(pubKey.encode("utf-8"))
 hashBytes.hex()
