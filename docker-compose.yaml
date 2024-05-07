@@ -1,13 +1,14 @@
-version: "3.8"
 services:
     mqtt:
-        image: eclipse-mosquitto:2.0.10
-        container_name: mqtt
-        ports:
-            - "1883:1883"
-        volumes:
-            - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
-        restart: always
+      container_name: mqtt
+      image: eclipse-mosquitto:2.0.18
+      restart: unless-stopped
+      volumes:
+        - "./mosquitto-data:/mosquitto"
+      ports:
+        - "1883:1883"
+        - "9001:9001"
+      command: "mosquitto -c /mosquitto-no-auth.conf"
     energy-agent:
         build:
           context: .
@@ -16,13 +17,12 @@ services:
         depends_on:
             - mqtt
         environment:
-            CONFIG_PATH: "/data/config"
+            CONFIG_PATH: "/data"
             RDDL_TOPIC: "/rddl/SMD/"
             TRUST_WALLET_PORT: "/dev/ttyACM0"
-            LIBOCC_PATH: "lib/linux/armv7/libocc.so"
             NOTARIZE_INTERVAL: 60
             CLIENT_ID: "energy_agent"
         privileged: true
         volumes:
-            -   ./data:/data
+            -   ./energy-agent-data:/data
         restart: always

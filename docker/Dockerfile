@@ -13,15 +13,15 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy only necessary files for installing Python dependencies
 COPY poetry.lock pyproject.toml ./
+COPY app  /app
 
 RUN pip install --upgrade setuptools
 RUN pip install poetry
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-root --only main
+RUN poetry lock
+RUN poetry install --no-root
 
-# Copy the rest of the application
-COPY . .
+EXPOSE 8080
 
-EXPOSE 8000
-
-CMD ["python", "-m", "main"]
+#CMD ["tail", "-f", "/dev/null"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--timeout-keep-alive", "240"]

@@ -10,16 +10,6 @@ app = FastAPI(
     title="Rddl Energy Agent",
     description="Set of tools that help to interact with the RDDL Network and offer services that are domain agnostic",
     version="1.0.0",
-    terms_of_service="http://example.com/terms/",
-    contact={
-        "name": "Riddle and code",
-        "url": "https://www.riddleandcode.com",
-        "email": "abc@riddleandcode.com",
-    },
-    license_info={
-        "name": "W3BS 0.9.0",
-        "url": "https://www.riddleandcode.com",
-    },
 )
 
 app.add_middleware(
