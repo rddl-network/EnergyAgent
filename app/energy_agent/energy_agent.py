@@ -31,8 +31,9 @@ class DataAgent:
         self.client.set_auth_credentials(self.mqtt_config.mqtt_username, self.mqtt_config.mqtt_password)
 
     async def connect_to_mqtt(self):
-        await self.client.connect(self.mqtt_config.mqtt_host, self.mqtt_config.mqtt_port, keepalive=60,
-                                  version=MQTTv311)
+        await self.client.connect(
+            self.mqtt_config.mqtt_host, self.mqtt_config.mqtt_port, keepalive=60, version=MQTTv311
+        )
 
     async def on_message(self, client, topic, payload, qos, properties):
         try:
