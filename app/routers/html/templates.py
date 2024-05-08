@@ -33,7 +33,7 @@ async def create_mqtt_config(request: Request):
 
 @router.get("/resolve-cid-page")
 async def resolve_cid(request: Request):
-    return jinja2_templates.TemplateResponse("ResolveCid.html", {"request": request})
+    return jinja2_templates.TemplateResponse("LocalCidResolver.html", {"request": request})
 
 
 @router.get("/wallet-interaction-page")
