@@ -78,12 +78,12 @@ class TrustWalletInteraction:
         @param ctx: define one of 4 context of Optega x
         @return: public key
         """
-        msg = OSCMessage(f"{PREFIX_IHW}/optigaTrustXCreateSecret", ",is", [ctx, ""])
+        msg = OSCMessage(f"{PREFIX_IHW}/optigaTrustXCreateSecret", ",i", [ctx])
         occ_message = self.occ_message_sender.send_message(msg)
         pubkey = occ_message.data[1]
         return pubkey
 
-    def sign_with_optega(self, ctx: int, data_to_sign: str, pubkey: str) -> str:
+    def sign_with_optega(self, ctx: int, data_to_sign: str, pubkey: str) ->  str:
         """
         @brief: Signs the hash with the planetmint private key
         @param ctx: define one of 4 context of Optega x
@@ -92,7 +92,7 @@ class TrustWalletInteraction:
         @return: signature
 
         """
-        msg = OSCMessage(f"{PREFIX_IHW}/optigaTrustXSignMessage", ",isss", [ctx, data_to_sign, pubkey, ""])
+        msg = OSCMessage(f"{PREFIX_IHW}/optigaTrustXSignMessage", ",iss", [ctx, data_to_sign, pubkey])
         occ_message = self.occ_message_sender.send_message(msg)
         signature = occ_message.data[1]
         return signature

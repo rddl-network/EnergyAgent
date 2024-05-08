@@ -20,7 +20,7 @@ services:
             CONFIG_PATH: "/data"
             RDDL_TOPIC: "/rddl/SMD/"
             TRUST_WALLET_PORT: "/dev/ttyACM0"
-            NOTARIZE_INTERVAL: 60
+            NOTARIZE_INTERVAL: 1
             CLIENT_ID: "energy_agent"
         privileged: true
         volumes:

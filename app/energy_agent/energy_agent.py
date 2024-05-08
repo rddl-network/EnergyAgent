@@ -35,10 +35,13 @@ class DataAgent:
             self.mqtt_config.mqtt_host, self.mqtt_config.mqtt_port, keepalive=60, version=MQTTv311
         )
 
+    async def disconnect_from_mqtt(self):
+        await self.client.disconnect()
+
     async def on_message(self, client, topic, payload, qos, properties):
         try:
             self.process_message(topic, payload.decode())
-            logger.debug(f"Received message: {topic}, {payload.decode()}")
+            logger.info(f"Received message: {topic}, {payload.decode()}")
         except Exception as e:
             logger.error(f"Error occurred while processing message: {e}")
 
@@ -62,10 +65,13 @@ class DataAgent:
 
     async def notarize_data_with_interval(self):
         while not self.stopped:
+            logger.debug(f"Data buffer: {self.data_buffer}")  # Log the contents of the data buffer
             if self.data_buffer:
+                logger.debug("Data to notarize")
                 await self.notarize_data()
             else:
-                await asyncio.sleep(config.notarize_interval)
+                logger.debug("No data to notarize")
+                await asyncio.sleep(config.notarize_interval * 60)
 
     def update_mqtt_connection_params(self):
         mqtt_config_dict = load_config(config.path_to_mqtt_config)
@@ -93,5 +99,5 @@ class DataAgent:
 
     async def run(self):
         await self.connect_to_mqtt()
-        await self.client.subscribe(config.rddl_topic)
+        self.client.subscribe(config.rddl_topic)
         await self.notarize_data_with_interval()
