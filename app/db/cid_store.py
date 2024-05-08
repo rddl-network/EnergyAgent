@@ -27,8 +27,9 @@ def cid_exists(cid):
 
 def insert_key_value(cid, json_value):
     if not cid_exists(cid):
-        execute_sql_command("INSERT INTO key_value_store (cid, json_value) VALUES (?, ?)",
-                            (cid, json.dumps(json_value)))
+        execute_sql_command(
+            "INSERT INTO key_value_store (cid, json_value) VALUES (?, ?)", (cid, json.dumps(json_value))
+        )
         config.db_connection.commit()
         logger.debug("Key-value pair added.")
     else:

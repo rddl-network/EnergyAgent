@@ -83,7 +83,7 @@ class TrustWalletInteraction:
         pubkey = occ_message.data[1]
         return pubkey
 
-    def sign_with_optega(self, ctx: int, data_to_sign: str, pubkey: str) ->  str:
+    def sign_with_optega(self, ctx: int, data_to_sign: str, pubkey: str) -> str:
         """
         @brief: Signs the hash with the planetmint private key
         @param ctx: define one of 4 context of Optega x

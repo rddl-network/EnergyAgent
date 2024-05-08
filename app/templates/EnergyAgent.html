@@ -109,7 +109,7 @@
     }
 
     function stopAgent() {
-        fetch('http://0.0.0.0:8000/energy_agent/stop')
+        fetch(`${API_BASE}/stop`)
                 .then(response => response.json())
                 .then(data => updateStatus())
                 .catch(error => console.error('Failed to stop agent:', error));

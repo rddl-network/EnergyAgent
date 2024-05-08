@@ -11,21 +11,6 @@ router = APIRouter(
 )
 
 
-@router.get("/topics")
-async def get_der_subscription() -> TopicConfig | dict:
-    topic_config_dict = load_config(config.path_to_topic_config)
-    if not topic_config_dict:
-        return TopicConfig()
-    topic_config = TopicConfig.parse_obj(topic_config_dict)
-    return topic_config
-
-
-@router.post("/topics")
-async def create_der_subscription(topic_config: TopicConfig):
-    save_config(config.path_to_topic_config, topic_config.__dict__)
-    return {"message": "Updated Smart Metering device topic configuration"}
-
-
 @router.get("/smart-meter")
 async def get_der_smart_meter() -> SmartMeterConfig:
     smart_meter_config = load_config(config.path_to_smart_meter_config)
