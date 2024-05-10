@@ -3,6 +3,7 @@ import sys
 import platform
 import hashlib
 from app.RddlInteraction.TrustWallet.occ_messages import TrustWalletInteraction
+import binascii
 
 # system pick and optimistic architecture selection
 if platform.system() == "Linux":
@@ -25,16 +26,17 @@ def getHash(data: bytes) -> bytes:
 
 slot = 2
 wrappedPubKey = trust_wallet.create_optega_keypair(slot)
-(valid, pubKey) = trust_wallet.unwrappPublicKey( wrappedPubKey )
+(valid, pubKey) = trust_wallet.unwrapPublicKey( wrappedPubKey )
 if valid == False:
     exit(-1)
     
 print("Public key: " + pubKey)
 print("Public key(len): " + str(len(pubKey)))
-time.sleep(2)
+time.sleep(0.2)
 
-hashBytes = getHash(pubKey.encode("utf-8"))
-hashBytes.hex()
-
+hashBytes = getHash(binascii.unhexlify(pubKey))
+print(hashBytes)
+print(hashBytes.hex())
+print(binascii.hexlify( hashBytes))
 signature = trust_wallet.sign_with_optega(slot, hashBytes.hex(), pubKey)
-print(signature[0])
+print(signature)
