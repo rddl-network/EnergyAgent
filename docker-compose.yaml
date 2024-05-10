@@ -26,3 +26,6 @@ services:
         volumes:
             -   ./energy-agent-data:/data
         restart: always
+        network_mode: "host"  # Share host network
+        cap_add:
+          - NET_RAW  # Add raw socket capability

@@ -23,6 +23,9 @@ python-multipart = "^0.0.9"
 ipfs-cid = "^1.0.0"
 osc4py3 = "^1.0.8"
 gmqtt = "^0.6.16"
+requests = "^2.31.0"
+scapy = "^2.5.0"
+netifaces = "^0.11.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.1.1"
