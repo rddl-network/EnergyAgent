@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Energy Agent Configuration</title>
+    <title>Device Configuration</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -12,94 +11,169 @@
             background-color: #f0f0f0;
             color: #333;
             line-height: 1.6;
-            min-height: 100vh;
         }
+
         .container {
             width: 80%;
             margin: auto;
             overflow: hidden;
             padding: 20px;
         }
+
         header {
             background: #333;
             color: #fff;
             padding: 20px;
             text-align: center;
+            border-radius: 8px;
         }
-        .section {
-            margin-top: 20px;
+
+        form {
             background-color: #fff;
             padding: 20px;
+            margin-top: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        input[type="text"], input[type="password"], input[type="number"], button {
+
+        label {
+            display: block;
+            margin: 15px 0 5px;
+        }
+
+        input[type="text"], input[type="number"], input[type="password"], select {
+            width: calc(100% - 22px);
             padding: 10px;
-            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
             border: none;
             border-radius: 5px;
-        }
-        input[type="text"], input[type="number"], input[type="password"] {
-            width: calc(100% - 22px);
-        }
-        .button-container {
-            display: flex;
-            justify-content: flex-start; /* Align buttons to the left */
-            gap: 10px; /* Space between buttons */
-        }
-        button {
-            background-color: #28a745;
-            color: #fff;
             cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 15px;
-            width: auto; /* Allows the button to size according to its content */
+            margin-top: 20px;
         }
+
         button:hover {
             background-color: #218838;
         }
-        label {
-            display: block;
-            margin-bottom: 5px;
+
+        /* Styles for the loading spinner overlay */
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
         }
-        .description {
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 10px;
+
+        .spinner {
+            margin: auto;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        /* Flexbox style to align radio buttons horizontally */
+        .radio-buttons {
+            display: flex;
+            gap: 10px;
         }
     </style>
     <script>
-        let topics = [];
+        let shellyDevices = [];
+        let tasmotaDevices = [];
+
+        async function fetchDevices() {
+            toggleSpinner(true);
+            try {
+                let response = await fetch('/smd/scan-devices');
+                if (!response.ok) {
+                    alert('Error fetching devices');
+                    return;
+                }
+                let data = await response.json();
+                shellyDevices = data.shelly_devices;
+                tasmotaDevices = data.tasmota_devices;
+                populateDropdown('shelly');
+            } finally {
+                toggleSpinner(false);
+            }
+        }
+
+        function populateDropdown(type) {
+            let dropdown = document.getElementById('device-dropdown');
+            dropdown.innerHTML = '<option value="">Select a device</option>';
+            let devices = type === 'shelly' ? shellyDevices : tasmotaDevices;
+            devices.forEach(device => {
+                let option = document.createElement('option');
+                option.value = device.ip;
+                option.text = `${device.name} (${device.ip})`;
+                dropdown.appendChild(option);
+            });
+        }
+
+        function toggleSpinner(visible) {
+            let overlay = document.getElementById('spinner-overlay');
+            overlay.style.display = visible ? 'flex' : 'none';
+        }
 
         async function fetchMQTTConfig() {
             const response = await fetch('/config/mqtt');
             const data = await response.json();
-            document.getElementById('mqttHost').value = data.mqtt_host || '';
-            document.getElementById('mqttPort').value = data.mqtt_port || '';
-            document.getElementById('mqttUsername').value = data.mqtt_username || '';
-            document.getElementById('mqttPassword').value = data.mqtt_password || '';
+            document.getElementById('mqtt-host').value = data.mqtt_host || '';
+            document.getElementById('mqtt-port').value = data.mqtt_port || '';
+            document.getElementById('mqtt-user').value = data.mqtt_username || '';
+            document.getElementById('mqtt-password').value = data.mqtt_password || '';
         }
 
-        async function updateMQTTConfig() {
-            const mqttHost = document.getElementById('mqttHost').value;
-            const mqttPort = document.getElementById('mqttPort').value;
-            const mqttUsername = document.getElementById('mqttUsername').value;
-            const mqttPassword = document.getElementById('mqttPassword').value;
+        async function updateMqttConfig() {
+            let mqttHost = document.getElementById('mqtt-host').value;
+            let mqttPort = document.getElementById('mqtt-port').value;
+            let mqttUser = document.getElementById('mqtt-user').value;
+            let mqttPassword = document.getElementById('mqtt-password').value;
 
-            const response = await fetch('/config/mqtt', {
+            // Publish MQTT config to backend
+            let response = await fetch('/config/mqtt', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     mqtt_host: mqttHost,
-                    mqtt_port: parseInt(mqttPort, 10),
-                    mqtt_username: mqttUsername,
-                    mqtt_password: mqttPassword,
+                    mqtt_port: parseInt(mqttPort),
+                    mqtt_user: mqttUser,
+                    mqtt_password: mqttPassword
                 })
             });
-            const data = await response.json();
-            alert(data.message);
+
+            if (!response.ok) {
+                let errorData = await response.json();
+                alert('Error publishing MQTT config: ' + errorData.detail);
+            } else {
+                alert('MQTT config published successfully!');
+            }
         }
 
         async function resetMQTTConfig() {
@@ -120,107 +194,103 @@
             await fetchMQTTConfig();
         }
 
-        async function fetchTopics() {
-            const response = await fetch('/config/topics');
-            const data = await response.json();
-            const topicsData = data.topics;
-            const currentTopicsList = document.getElementById('currentTopicsList');
-            currentTopicsList.innerHTML = '';
-            topicsData.forEach(topic => {
-                const li = document.createElement('li');
-                li.textContent = topic;
-                currentTopicsList.appendChild(li);
-            });
-        }
+        async function applyMqttConfigToDevice() {
+            let deviceType = document.querySelector('input[name="device-type"]:checked').value;
+            let deviceIp = document.getElementById('device-dropdown').value;
+            let telemetryInterval = document.getElementById('telemetry-interval').value;
+            let mqttHost = document.getElementById('mqtt-host').value;
+            let mqttPort = document.getElementById('mqtt-port').value;
+            let mqttUser = document.getElementById('mqtt-user').value;
+            let mqttPassword = document.getElementById('mqtt-password').value;
+            let topic = "rddl/SMD/";
 
-        function addTopic() {
-            const newTopicInput = document.getElementById('newTopic');
-            const newTopic = newTopicInput.value.trim();
-            if (newTopic) {
-                topics.push(newTopic);
-                newTopicInput.value = '';
-                displayTopics();
+            if (!deviceIp) {
+                alert('Select a device first.');
+                return;
+            }
+
+            // Apply MQTT config directly to the IoT device
+            let response = await fetch('/smd/configure-device', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    device_type: deviceType,
+                    device_ip: deviceIp,
+                    mqtt_host: mqttHost,
+                    mqtt_port: parseInt(mqttPort),
+                    mqtt_user: mqttUser,
+                    mqtt_password: mqttPassword,
+                    topic: topic,
+                    telemetry_interval: parseInt(telemetryInterval)
+                })
+            });
+
+            if (!response.ok) {
+                let errorData = await response.json();
+                alert('Error configuring device: ' + errorData.detail);
+            } else {
+                alert('Device configured successfully!');
             }
         }
 
-        function displayTopics() {
-            const topicsList = document.getElementById('topicsList');
-            topicsList.innerHTML = '';
-            topics.forEach((topic, index) => {
-                const topicElement = document.createElement('li');
-                topicElement.textContent = topic;
-                topicsList.appendChild(topicElement);
-            });
+        function handleDeviceTypeChange() {
+            let selectedType = document.querySelector('input[name="device-type"]:checked').value;
+            populateDropdown(selectedType);
         }
 
-        async function updateTopics() {
-            const response = await fetch('/config/topics', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ topics: topics })
-            });
-            const data = await response.json();
-            alert(data.message);
-            topics = [];
-            displayTopics();
-            await fetchTopics();
-        }
-
-        async function resetTopics() {
-            topics = [];
-            const response = await fetch('/config/topics', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ topics: [] })
-            });
-            const data = await response.json();
-            alert(data.message);
-            displayTopics();
-            await fetchTopics();
-        }
-
-        window.onload = function() {
+        window.onload = function () {
             fetchMQTTConfig();
-            fetchTopics();
         };
     </script>
 </head>
 <body>
-    <header>
-        <h1>Energy Agent Configuration</h1>
-    </header>
     <div class="container">
-        <div class="section">
+        <header>
+            <h1>Configure Shelly and Tasmota Devices</h1>
+        </header>
+
+        <form>
             <h2>MQTT Configuration</h2>
-            <label for="mqttHost">MQTT Host:</label>
-            <input type="text" id="mqttHost" placeholder="Enter MQTT Host">
-            <label for="mqttPort">MQTT Port:</label>
-            <input type="number" id="mqttPort" placeholder="Enter MQTT Port">
-            <label for="mqttUsername">MQTT Username:</label>
-            <input type="text" id="mqttUsername" placeholder="Enter MQTT Username">
-            <label for="mqttPassword">MQTT Password:</label>
-            <input type="password" id="mqttPassword" placeholder="Enter MQTT Password">
-            <div class="button-container">
-                <button onclick="updateMQTTConfig()">Update MQTT Configuration</button>
-                <button onclick="resetMQTTConfig()">Reset MQTT Configuration</button>
+            <label for="mqtt-host">MQTT Host:</label>
+            <input type="text" id="mqtt-host" value="broker.example.com">
+            <label for="mqtt-port">Port:</label>
+            <input type="number" id="mqtt-port" value="1883">
+            <label for="mqtt-user">User:</label>
+            <input type="text" id="mqtt-user" value="mqtt_user">
+            <label for="mqtt-password">Password:</label>
+            <input type="password" id="mqtt-password" value="mqtt_password">
+            <button type="button" onclick="updateMqttConfig()">Set Energy Agent MQTT</button>
+            <button type="button" onclick="resetMQTTConfig()">Reset Energy Agent MQTT</button>
+
+            <h2>Network Scan</h2>
+            <button type="button" onclick="fetchDevices()">Scan Network</button>
+
+            <h2>Device Selection</h2>
+            <div class="radio-buttons">
+                <label>
+                    <input type="radio" name="device-type" value="shelly" checked onchange="handleDeviceTypeChange()">
+                    Shelly
+                </label>
+                <label>
+                    <input type="radio" name="device-type" value="tasmota" onchange="handleDeviceTypeChange()">
+                    Tasmota
+                </label>
             </div>
-        </div>
-        <div class="section">
-            <h2>Topic Configuration</h2>
-            <div>Current Topics: <ul id="currentTopicsList"></ul></div>
-            <label for="newTopic">Add New Topic:</label>
-            <input type="text" id="newTopic" placeholder="Enter new topic">
-            <div class="button-container">
-                <button onclick="addTopic()">Add Topic</button>
-                <button onclick="updateTopics()">Update Topics</button>
-                <button onclick="resetTopics()">Reset Topics</button>
-            </div>
-            <ul id="topicsList"></ul>
-        </div>
+            <select id="device-dropdown"></select>
+
+            <h2>Additional Settings</h2>
+            <label for="telemetry-interval">Telemetry Interval (seconds):</label>
+            <input type="number" id="telemetry-interval" value="60">
+
+            <button type="button" onclick="applyMqttConfigToDevice()">Apply MQTT Config to IoT Device</button>
+        </form>
+    </div>
+
+    <!-- Loading spinner overlay -->
+    <div id="spinner-overlay" class="spinner-overlay">
+        <div class="spinner"></div>
     </div>
 </body>
 </html>
