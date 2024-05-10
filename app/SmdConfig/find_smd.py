@@ -2,18 +2,19 @@ import netifaces
 from scapy.all import ARP, Ether, srp
 import requests
 
+
 # Get the network IP range dynamically
 def get_ip_range():
     try:
         # Get the default gateway
         gateway_info = netifaces.gateways()
-        default_interface = gateway_info['default'][netifaces.AF_INET][1]
+        default_interface = gateway_info["default"][netifaces.AF_INET][1]
 
         # Get the IP address of the default interface
         addresses = netifaces.ifaddresses(default_interface)
         if netifaces.AF_INET in addresses:
             ipv4_info = addresses[netifaces.AF_INET][0]
-            ip_address = ipv4_info['addr']
+            ip_address = ipv4_info["addr"]
 
             # Replace the last part of the IP address with `0` and use a /24 subnet mask
             base_ip = ".".join(ip_address.split(".")[:-1]) + ".0"
