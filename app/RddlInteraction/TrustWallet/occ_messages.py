@@ -25,7 +25,7 @@ class TrustWalletInteraction:
         """
         @brief: Derives the private key from the mnemonic seed
         """
-        msg = OSCMessage(f"{PREFIX_IHW}/mnemonicToSeed", ",", [])
+        msg = OSCMessage(f"{PREFIX_IHW}/mnemonicToSeed", ",i", [0])
         occ_message = self.occ_message_sender.send_message(msg)
         return occ_message.data[1]
 
@@ -33,7 +33,7 @@ class TrustWalletInteraction:
         """
         @brief: Derives the private key from the mnemonic seed
         """
-        msg = OSCMessage(f"{PREFIX_IHW}/mnemonicToSeed", ",s", [mnemonic])
+        msg = OSCMessage(f"{PREFIX_IHW}/mnemonicToSeed", ",is", [0, mnemonic])
         occ_message = self.occ_message_sender.send_message(msg)
         return occ_message.data[1]
 
