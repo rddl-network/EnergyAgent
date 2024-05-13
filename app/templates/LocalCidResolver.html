@@ -76,13 +76,11 @@
     </div>
 
     <script>
-        const API_BASE = `http://0.0.0.0:{{ api_port }}/cid_resolver`;
+        const API_BASE = `/cid_resolver`;
 
         function resolveCID() {
             const cid = document.getElementById('cidInput').value;
-            const url = new URL('${API_BASE}');
-            url.searchParams.append('cid', cid);
-            fetch(url)
+            fetch("/cid_resolver?cid=" + cid)
             .then(response => response.json())
             .then(data => {
                 document.getElementById('output').textContent = JSON.stringify(data, null, 2);

@@ -101,8 +101,6 @@
     <div class="spinner"></div>
 </div>
 <script>
-    const API_BASE = `http://0.0.0.0:{{ api_port }}/twi`;
-
     function setupInputs() {
         const container = document.getElementById('mnemonicInputs');
         const inputHTML = Array.from({length: 24}, (_, i) =>
@@ -118,7 +116,7 @@
                 document.getElementById(`word${i+1}`).value.trim()
         ).join(' ');
 
-        const url = `${API_BASE}/recover-mnemonic/${encodeURIComponent(mnemonic)}`;
+        const url = `/twi/recover-mnemonic?mnemonic=${encodeURIComponent(mnemonic)}`;
 
         fetch(url)
                 .then(response => response.json())

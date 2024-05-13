@@ -35,7 +35,7 @@ def mnemonic_to_private_key():
     return {"mnemonic": mnemonic}
 
 
-@router.get("/recover-mnemonic/{mnemonic}")
+@router.get("/recover-mnemonic/")
 def recover_mnemonic(mnemonic: str):
     mnemonic = trust_wallet.recover_from_mnemonic(mnemonic)
     return {"mnemonic": mnemonic}
