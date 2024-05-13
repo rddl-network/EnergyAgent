@@ -90,7 +90,7 @@ def scan_and_identify_devices():
 
 # Function to configure a Shelly device via REST API
 def configure_shelly_mqtt(
-        device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, report_interval=60, custom_topic="shelly"
+    device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, report_interval=60, custom_topic="shelly"
 ):
     url = f"http://{device_ip}/rpc/MQTT.SetConfig"
     payload = {
@@ -116,7 +116,7 @@ def configure_shelly_mqtt(
 
 # Function to configure a Tasmota device via CMD
 def configure_tasmota_mqtt(
-        device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, topic="tasmota", telemetry_interval=60
+    device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, topic="tasmota", telemetry_interval=60
 ):
     base_url = f"http://{device_ip}/cm"
     try:
@@ -133,14 +133,14 @@ def configure_tasmota_mqtt(
 
 @router.post("/configure-device")
 def configure_device(
-        device_type: str = Body(...),
-        device_ip: str = Body(...),
-        mqtt_host: str = Body(...),
-        mqtt_port: int = Body(...),
-        mqtt_user: str = Body(...),
-        mqtt_password: str = Body(...),
-        topic: str = Body(default=""),
-        telemetry_interval: int = Body(default=60),
+    device_type: str = Body(...),
+    device_ip: str = Body(...),
+    mqtt_host: str = Body(...),
+    mqtt_port: int = Body(...),
+    mqtt_user: str = Body(...),
+    mqtt_password: str = Body(...),
+    topic: str = Body(default=""),
+    telemetry_interval: int = Body(default=60),
 ):
     if device_type.lower() == "shelly":
         configure_shelly_mqtt(device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, telemetry_interval, topic)

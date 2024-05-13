@@ -49,9 +49,8 @@
         <div id="mnemonic">Your mnemonic will appear here...</div>
     </div>
     <script>
-        const API_BASE = `http://0.0.0.0:{{ api_port }}/twi`;
         function createMnemonic() {
-            fetch(`${API_BASE}/mnemonic`)
+            fetch(`/twi/mnemonic`)
             .then(response => response.json())
             .then(data => {
                 document.getElementById('mnemonic').textContent = data.mnemonic;

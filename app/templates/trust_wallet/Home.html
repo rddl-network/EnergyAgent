@@ -112,9 +112,8 @@
     </div>
 </div>
 <script>
-    const API_BASE = `http://0.0.0.0:{{ api_port }}/twi`;
     window.onload = function () {
-        fetch('${API_BASE}/get-planetmint-keys')
+        fetch('/twi/get-planetmint-keys')
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('planetmintAddress').textContent = data.planetmint_address;
