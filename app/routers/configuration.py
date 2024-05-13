@@ -11,20 +11,20 @@ router = APIRouter(
 )
 
 
-@router.get("/smart-meter")
-async def get_der_smart_meter() -> SmartMeterConfig:
-    smart_meter_config = load_config(config.path_to_smart_meter_config)
-    smart_meter_config_obj = SmartMeterConfig.parse_obj(smart_meter_config)
+# @router.get("/smart-meter")
+# async def get_der_smart_meter() -> SmartMeterConfig:
+#     smart_meter_config = load_config(config.path_to_smart_meter_config)
+#     smart_meter_config_obj = SmartMeterConfig.parse_obj(smart_meter_config)
+#
+#     if smart_meter_config:
+#         return smart_meter_config_obj
+#     return SmartMeterConfig()
 
-    if smart_meter_config:
-        return smart_meter_config_obj
-    return SmartMeterConfig()
 
-
-@router.post("/smart-meter")
-async def create_der_smart_meter(smart_meter_config: SmartMeterConfig):
-    save_config(config.path_to_smart_meter_config, smart_meter_config.__dict__)
-    return {"message": "Updated smart meter configuration"}
+# @router.post("/smart-meter")
+# async def create_der_smart_meter(smart_meter_config: SmartMeterConfig):
+#     save_config(config.path_to_smart_meter_config, smart_meter_config.__dict__)
+#     return {"message": "Updated smart meter configuration"}
 
 
 @router.get("/mqtt")
