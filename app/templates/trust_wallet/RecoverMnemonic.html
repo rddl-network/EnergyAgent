@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recover Mnemonic</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        input {
+            margin: 5px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: calc(100% - 22px);
+            max-width: 350px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-family: monospace;
+            background-color: #f4f4f4;
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Recover Mnemonic</h1>
+    <form id="mnemonicForm" onsubmit="return false;">
+        <div id="mnemonicInputs"></div>
+        <button type="button" onclick="recoverMnemonic()">Recover Mnemonic</button>
+    </form>
+    <div id="result">Recovery result will appear here...</div>
+</div>
+<div class="spinner-overlay" id="spinner-overlay">
+    <div class="spinner"></div>
+</div>
+<script>
+    function setupInputs() {
+        const container = document.getElementById('mnemonicInputs');
+        const inputHTML = Array.from({length: 24}, (_, i) =>
+                `<input type="text" id="word${i+1}" placeholder="Word ${i+1}">`
+        ).join('');
+        container.innerHTML = inputHTML;
+    }
+
+    function recoverMnemonic() {
+        document.getElementById('spinner-overlay').style.display = 'flex';
+
+        const mnemonic = Array.from({length: 24}, (_, i) =>
+                document.getElementById(`word${i+1}`).value.trim()
+        ).join(' ');
+
+        const url = `/twi/recover-mnemonic?mnemonic=${encodeURIComponent(mnemonic)}`;
+
+        fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('result').textContent = data.result || 'Recovery successful';
+                    document.getElementById('spinner-overlay').style.display = 'none';
+                })
+                .catch(error => {
+                    document.getElementById('result').textContent = 'Recovery failed: ' + error;
+                    document.getElementById('spinner-overlay').style.display = 'none';
+                });
+    }
+
+    window.onload = setupInputs;
+</script>
+</body>
+</html>

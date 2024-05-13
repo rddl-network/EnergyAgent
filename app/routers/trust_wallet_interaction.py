@@ -3,6 +3,7 @@ import sys
 from fastapi import APIRouter
 
 from app.RddlInteraction.TrustWallet.occ_messages import TrustWalletInteraction
+from app.dependencies import config
 from app.helpers.models import PlanetMintKeys
 
 router = APIRouter(
@@ -14,11 +15,11 @@ router = APIRouter(
 # system pick and optimistic architecture selection
 if platform.system() == "Linux":
     if platform.processor() == "x86_64":
-        trust_wallet = TrustWalletInteraction("lib/linux/x86_64/libocc.so", "/dev/ttyACM0")
+        trust_wallet = TrustWalletInteraction("app/lib/linux/x86_64/libocc.so", "/dev/ttyACM0")
     else:
-        trust_wallet = TrustWalletInteraction("lib/linux/armv7/libocc.so", "/dev/ttyACM0")
+        trust_wallet = TrustWalletInteraction("app/lib/linux/armv7/libocc.so", "/dev/ttyACM0")
 elif platform.system() == "Darwin":
-    trust_wallet = TrustWalletInteraction("lib/macos/aarch/libpyocc.dylib", "/dev/ttyACM0")
+    trust_wallet = TrustWalletInteraction("app/lib/macos/aarch/libpyocc.dylib", "/dev/tty.usbmodem1101")
 else:
     sys.exit("unsupported OS, cannot load TA Wallet connector")
 
@@ -34,7 +35,7 @@ def mnemonic_to_private_key():
     return {"mnemonic": mnemonic}
 
 
-@router.get("/recover-mnemonic/{mnemonic}")
+@router.get("/recover-mnemonic/")
 def recover_mnemonic(mnemonic: str):
     mnemonic = trust_wallet.recover_from_mnemonic(mnemonic)
     return {"mnemonic": mnemonic}

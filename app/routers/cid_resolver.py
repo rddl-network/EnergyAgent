@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter
 
 from app.RddlInteraction.cid_tool import store_cid
@@ -13,7 +15,8 @@ router = APIRouter(
 @router.get("")
 async def resolve_cid(cid: str) -> dict:
     data = get_value(cid)
-    return {"cid": cid, "data": data}
+    data_dict = json.loads(data)
+    return {"cid": cid, "data": data_dict}
 
 
 @router.post("")

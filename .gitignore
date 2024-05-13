@@ -126,3 +126,6 @@ dmypy.json
 
 # intelij
 .idea/
+
+energy-agent-data
+mosquitto-data

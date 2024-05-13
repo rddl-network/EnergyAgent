@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Device Configuration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        header {
+            background: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 5px;
+        }
+
+        input[type="text"], input[type="number"], input[type="password"], select {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        /* Styles for the loading spinner overlay */
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            margin: auto;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        /* Flexbox style to align radio buttons horizontally */
+        .radio-buttons {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+    <script>
+        let shellyDevices = [];
+        let tasmotaDevices = [];
+
+        async function fetchDevices() {
+            toggleSpinner(true);
+            try {
+                let response = await fetch('/smd/scan-devices');
+                if (!response.ok) {
+                    alert('Error fetching devices');
+                    return;
+                }
+                let data = await response.json();
+                shellyDevices = data.shelly_devices;
+                tasmotaDevices = data.tasmota_devices;
+                populateDropdown('shelly');
+            } finally {
+                toggleSpinner(false);
+            }
+        }
+
+        function populateDropdown(type) {
+            let dropdown = document.getElementById('device-dropdown');
+            dropdown.innerHTML = '<option value="">Select a device</option>';
+            let devices = type === 'shelly' ? shellyDevices : tasmotaDevices;
+            devices.forEach(device => {
+                let option = document.createElement('option');
+                option.value = device.ip;
+                option.text = `${device.name} (${device.ip})`;
+                dropdown.appendChild(option);
+            });
+        }
+
+        function toggleSpinner(visible) {
+            let overlay = document.getElementById('spinner-overlay');
+            overlay.style.display = visible ? 'flex' : 'none';
+        }
+
+        async function fetchMQTTConfig() {
+            const response = await fetch('/config/mqtt');
+            const data = await response.json();
+            document.getElementById('mqtt-host').value = data.mqtt_host || '';
+            document.getElementById('mqtt-port').value = data.mqtt_port || '';
+            document.getElementById('mqtt-user').value = data.mqtt_username || '';
+            document.getElementById('mqtt-password').value = data.mqtt_password || '';
+        }
+
+        async function updateMqttConfig() {
+            let mqttHost = document.getElementById('mqtt-host').value;
+            let mqttPort = document.getElementById('mqtt-port').value;
+            let mqttUser = document.getElementById('mqtt-user').value;
+            let mqttPassword = document.getElementById('mqtt-password').value;
+
+            // Publish MQTT config to backend
+            let response = await fetch('/config/mqtt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    mqtt_host: mqttHost,
+                    mqtt_port: parseInt(mqttPort),
+                    mqtt_user: mqttUser,
+                    mqtt_password: mqttPassword
+                })
+            });
+
+            if (!response.ok) {
+                let errorData = await response.json();
+                alert('Error publishing MQTT config: ' + errorData.detail);
+            } else {
+                alert('MQTT config published successfully!');
+            }
+        }
+
+        async function resetMQTTConfig() {
+            const response = await fetch('/config/mqtt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    mqtt_host: '',
+                    mqtt_port: 0,
+                    mqtt_username: '',
+                    mqtt_password: '',
+                })
+            });
+            const data = await response.json();
+            alert(data.message);
+            await fetchMQTTConfig();
+        }
+
+        async function applyMqttConfigToDevice() {
+            let deviceType = document.querySelector('input[name="device-type"]:checked').value;
+            let deviceIp = document.getElementById('device-dropdown').value;
+            let telemetryInterval = document.getElementById('telemetry-interval').value;
+            let mqttHost = document.getElementById('mqtt-host').value;
+            let mqttPort = document.getElementById('mqtt-port').value;
+            let mqttUser = document.getElementById('mqtt-user').value;
+            let mqttPassword = document.getElementById('mqtt-password').value;
+            let topic = "rddl/SMD/";
+
+            if (!deviceIp) {
+                alert('Select a device first.');
+                return;
+            }
+
+            // Apply MQTT config directly to the IoT device
+            let response = await fetch('/smd/configure-device', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    device_type: deviceType,
+                    device_ip: deviceIp,
+                    mqtt_host: mqttHost,
+                    mqtt_port: parseInt(mqttPort),
+                    mqtt_user: mqttUser,
+                    mqtt_password: mqttPassword,
+                    topic: topic,
+                    telemetry_interval: parseInt(telemetryInterval)
+                })
+            });
+
+            if (!response.ok) {
+                let errorData = await response.json();
+                alert('Error configuring device: ' + errorData.detail);
+            } else {
+                alert('Device configured successfully!');
+            }
+        }
+
+        function handleDeviceTypeChange() {
+            let selectedType = document.querySelector('input[name="device-type"]:checked').value;
+            populateDropdown(selectedType);
+        }
+
+        async function fetchIPAddress() {
+            try {
+                const response = await fetch('/smd/ip-address');
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+                const data = await response.json();
+                document.getElementById('device-ip').textContent = `IP Address: ${data.ip}`;  // Update IP address in the header
+            } catch (error) {
+                document.getElementById('device-ip').textContent = 'IP Address: Error fetching IP';
+                console.error('Failed to fetch IP address:', error);
+            }
+        }
+
+
+        window.onload = function () {
+            fetchMQTTConfig();
+            fetchIPAddress();
+        };
+    </script>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Configure Shelly and Tasmota Devices</h1>
+        <h2 id="device-ip">IP Address: Fetching...</h2>  <!-- Placeholder for IP address -->
+    </header>
+
+    <form>
+        <h2>MQTT Configuration</h2>
+        <label for="mqtt-host">MQTT Host:</label>
+        <input type="text" id="mqtt-host" value="broker.example.com">
+        <label for="mqtt-port">Port:</label>
+        <input type="number" id="mqtt-port" value="1883">
+        <label for="mqtt-user">User:</label>
+        <input type="text" id="mqtt-user" value="mqtt_user">
+        <label for="mqtt-password">Password:</label>
+        <input type="password" id="mqtt-password" value="mqtt_password">
+        <button type="button" onclick="updateMqttConfig()">Set Energy Agent MQTT</button>
+        <button type="button" onclick="resetMQTTConfig()">Reset Energy Agent MQTT</button>
+
+        <h2>Network Scan</h2>
+        <button type="button" onclick="fetchDevices()">Scan Network</button>
+
+        <h2>Device Selection</h2>
+        <div class="radio-buttons">
+            <label>
+                <input type="radio" name="device-type" value="shelly" checked onchange="handleDeviceTypeChange()">
+                Shelly
+            </label>
+            <label>
+                <input type="radio" name="device-type" value="tasmota" onchange="handleDeviceTypeChange()">
+                Tasmota
+            </label>
+        </div>
+        <select id="device-dropdown"></select>
+
+        <h2>Additional Settings</h2>
+        <label for="telemetry-interval">Telemetry Interval (seconds):</label>
+        <input type="number" id="telemetry-interval" value="60">
+
+        <button type="button" onclick="applyMqttConfigToDevice()">Apply MQTT Config to IoT Device</button>
+    </form>
+</div>
+
+<!-- Loading spinner overlay -->
+<div id="spinner-overlay" class="spinner-overlay">
+    <div class="spinner"></div>
+</div>
+</body>
+</html>
