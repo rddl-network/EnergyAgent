@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import uvicorn
 
+from app.dependencies import config
 from app.routers import configuration, cid_resolver, energy_agent_thread, trust_wallet_interaction, manage_smd
 from app.routers.html import templates, trust_wallet_templates
 
@@ -34,4 +35,4 @@ app.include_router(trust_wallet_templates.router)
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=config.port)

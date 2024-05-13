@@ -67,7 +67,7 @@ class DataAgent:
         self.data_buffer.append(notarize_data)
         if len(self.data_buffer) >= self.max_buffer_size:
             logger.info("Buffer size limit reached. Initiating immediate notarization.")
-            asyncio.create_task(self.notarize_data())  # Flush buffer asynchronously
+            asyncio.create_task(self.notarize_data())
 
     async def notarize_data(self):
         attempts = 0
@@ -89,7 +89,7 @@ class DataAgent:
 
     async def notarize_data_with_interval(self):
         while not self.stopped:
-            logger.debug(f"Data buffer: {self.data_buffer}")  # Log the contents of the data buffer
+            logger.debug(f"Data buffer: {self.data_buffer}")
             if self.data_buffer:
                 await self.notarize_data()
             else:
@@ -149,4 +149,4 @@ class DataAgent:
             logger.error(f"Error in DataAgent run loop: {e}")
         finally:
             await self.disconnect_from_mqtt()
-            notarization_task.cancel()  # Make sure to stop the concurrent task properly
+            notarization_task.cancel()

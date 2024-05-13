@@ -123,7 +123,6 @@ def configure_tasmota_mqtt(
         raise HTTPException(status_code=500, detail=f"Error configuring MQTT on Tasmota device {device_ip}: {e}")
 
 
-# FastAPI route to configure a device (Shelly or Tasmota)
 @router.post("/configure-device")
 def configure_device(
     device_type: str = Body(...),

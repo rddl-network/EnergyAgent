@@ -11,6 +11,7 @@ FILE_MQTT_CONFIG = "mqtt_config.json"
 class Config:
     def __init__(self):
         # general config
+        self.port = os.environ.get("PORT") or 8000
         self.log_level = os.environ.get("LOG_LEVEL") or "INFO"
         self.config_base_path = os.environ.get("CONFIG_PATH") or "/tmp"
         self.rddl_topic = os.environ.get("RDDL_TOPIC") or "rddl/SMD/#"
