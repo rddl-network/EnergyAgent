@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from app.dependencies import config
-from app.routers import configuration, cid_resolver, energy_agent_thread, trust_wallet_interaction, manage_smd
+from app.routers import configuration, cid_resolver, energy_agent_manager, trust_wallet_interaction, manage_smd
 from app.routers.html import templates, trust_wallet_templates
 
 app = FastAPI(
@@ -25,7 +25,7 @@ app.add_middleware(
 
 app.include_router(configuration.router)
 app.include_router(cid_resolver.router)
-app.include_router(energy_agent_thread.router)
+app.include_router(energy_agent_manager.router)
 app.include_router(trust_wallet_interaction.router)
 app.include_router(manage_smd.router)
 

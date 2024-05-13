@@ -83,7 +83,7 @@
     const API_BASE = `http://0.0.0.0:{{ api_port }}/energy_agent`;
 
     function updateStatus() {
-        fetch('${API_BASE}/status')
+        fetch(`${API_BASE}/status`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP Error: ${response.status}`);
