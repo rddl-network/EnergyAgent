@@ -21,7 +21,7 @@ RUN poetry config virtualenvs.create false
 RUN poetry lock
 RUN poetry install --no-root
 
-EXPOSE 8088
+EXPOSE 2138
 
 #CMD ["tail", "-f", "/dev/null"]
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8081", "--timeout-keep-alive", "240"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "2138", "--timeout-keep-alive", "240"]

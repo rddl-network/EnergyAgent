@@ -76,9 +76,11 @@
     </div>
 
     <script>
+        const API_BASE = `http://0.0.0.0:{{ api_port }}/cid_resolver`;
+
         function resolveCID() {
             const cid = document.getElementById('cidInput').value;
-            const url = new URL('http://0.0.0.0:8000/cid_resolver');
+            const url = new URL('${API_BASE}');
             url.searchParams.append('cid', cid);
             fetch(url)
             .then(response => response.json())

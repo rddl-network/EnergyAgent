@@ -61,6 +61,8 @@
         <div id="result">Recovery result will appear here...</div>
     </div>
     <script>
+        const API_BASE = `http://0.0.0.0:{{ api_port }}/twi`;
+
         function setupInputs() {
             const container = document.getElementById('mnemonicInputs');
             const inputHTML = Array.from({length: 24}, (_, i) =>
@@ -71,7 +73,7 @@
 
         function recoverMnemonic() {
             const mnemonic = Array.from({length: 24}, (_, i) => document.getElementById(`word${i+1}`).value).join(' ');
-            const url = `http://0.0.0.0:8000/twi/recover-mnemonic/${encodeURIComponent(mnemonic)}`;
+            const url = `${API_Base}/recover-mnemonic/${encodeURIComponent(mnemonic)}`;
 
             fetch(url)
             .then(response => response.json())
