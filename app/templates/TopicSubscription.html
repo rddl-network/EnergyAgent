@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>Topic Configuration</title>
-    <style>
+    <link rel="stylesheet" href="css/app.css">
+    <!-- <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -77,7 +79,7 @@
             margin: 10px 0;
             font-style: italic;
         }
-    </style>
+    </style> -->
     <script>
         let topics = [];
 
@@ -147,21 +149,33 @@
         window.onload = fetchTopics;
     </script>
 </head>
+
 <body>
-    <header>
-        <h1>Configure Topics</h1>
-    </header>
+    <div class="header">
+        <div class="left"> <a class="link" href="/">Home</a></div>
+        <div class="center">
+            <h1>Configure Topics</h1>
+        </div>
+    </div>
     <div class="container">
-        <a href="/">Home</a>
+
         <div class="current-topics">
+
             Current Topics:
             <ul id="currentTopicsList"></ul>
         </div>
-        <input type="text" id="newTopic" placeholder="Enter new topic">
-        <button onclick="addTopic()">Add Topic</button>
-        <ul id="topicsList"></ul>
-        <button onclick="updateTopics()">Update Topics</button>
-        <button onclick="resetTopics()">Reset Topics</button>
+        <div class="container-sm">
+            <div class="form-input"><label for="newTopic">Add Topic</label>
+                <input type="text" id="newTopic" placeholder="Enter new topic">
+            </div>
+            <button class="btn" onclick="addTopic()">Add Topic</button>
+            <ul id="topicsList"></ul>
+            <div class="buttons">
+                <button class="btn-secondary" onclick="updateTopics()">Update Topics</button>
+                <button class="btn-secondary" onclick="resetTopics()">Reset Topics</button>
+            </div>
+        </div>
     </div>
 </body>
+
 </html>
