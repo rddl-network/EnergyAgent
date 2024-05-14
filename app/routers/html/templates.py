@@ -39,7 +39,7 @@ async def resolve_cid(request: Request):
 
 
 def scan_wifi_networks():
-    result = subprocess.run(['iwlist', 'wlan0', 'scan'], capture_output=True, text=True)
+    result = subprocess.run(["iwlist", "wlan0", "scan"], capture_output=True, text=True)
     networks = re.findall(r'ESSID:"([^"]+)"', result.stdout)
     networks = list(set(networks))
     return networks
