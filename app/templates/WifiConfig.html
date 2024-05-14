@@ -1,8 +1,4 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title><!DOCTYPE html>
 <html>
 <head>
     <title>Wi-Fi Configuration</title>
@@ -34,7 +30,7 @@
             margin-bottom: 5px;
             font-weight: bold;
         }
-        input {
+        input, select {
             margin-bottom: 15px;
             padding: 10px;
             border: 1px solid #ccc;
@@ -52,26 +48,55 @@
         button:hover {
             background-color: #218838;
         }
+        .message {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #ff0000;
+        }
     </style>
+    <script>
+        async function configureWifi(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const ssid = formData.get('ssid');
+            const password = formData.get('password');
+
+            const response = await fetch('/configure_wifi/', {
+                method: 'POST',
+                body: new URLSearchParams({ ssid, password })
+            });
+
+            const result = await response.json();
+            const messageElement = document.getElementById('message');
+            if (result.status === 'success') {
+                messageElement.textContent = 'Wi-Fi configuration updated successfully!';
+                messageElement.style.color = 'green';
+            } else {
+                messageElement.textContent = `Error: ${result.message}`;
+                messageElement.style.color = 'red';
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <h1>Configure Wi-Fi</h1>
-        <form action="/configure_wifi/" method="post">
+        <form onsubmit="configureWifi(event)">
             <label for="ssid">SSID:</label>
-            <input type="text" id="ssid" name="ssid" required>
-            
+            <select id="ssid" name="ssid" required>
+                <option value="" disabled selected>Select your Wi-Fi network</option>
+                {% for network in networks %}
+                <option value="{{ network }}">{{ network }}</option>
+                {% endfor %}
+            </select>
+
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required>
-            
+
             <button type="submit">Submit</button>
         </form>
+        <p id="message" class="message"></p>
     </div>
-</body>
-</html>
-</title>
-</head>
-<body>
-
 </body>
 </html>

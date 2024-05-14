@@ -1,7 +1,8 @@
+import subprocess
+import re
+
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
-
-from app.dependencies import config
 
 jinja2_templates = Jinja2Templates(directory="app/templates")
 
@@ -36,6 +37,14 @@ async def create_mqtt_config(request: Request):
 async def resolve_cid(request: Request):
     return jinja2_templates.TemplateResponse("LocalCidResolver.html", {"request": request})
 
+
+def scan_wifi_networks():
+    result = subprocess.run(['sudo', 'iwlist', 'wlan0', 'scan'], capture_output=True, text=True)
+    networks = re.findall(r'ESSID:"([^"]+)"', result.stdout)
+    return networks
+
+
 @router.get("/wifi-config-page")
-async def wifi_config(request: Request):
-    return jinja2_templates.TemplateResponse("WifiConfig.html", {"request": request})
+async def read_root(request: Request):
+    networks = scan_wifi_networks()
+    return jinja2_templates.TemplateResponse("wifi_config.html", {"request": request, "networks": networks})

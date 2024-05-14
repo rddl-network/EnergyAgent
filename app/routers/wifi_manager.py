@@ -1,6 +1,7 @@
 import subprocess
+import re
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Form
 
 router = APIRouter(
     prefix="/wifi",
@@ -10,7 +11,7 @@ router = APIRouter(
 
 
 @router.post("/configure_wifi/")
-async def configure_wifi(ssid: str, password: str):
+async def configure_wifi(ssid: str = Form(...), password: str = Form(...)):
     try:
         config = f"""
         network={{
@@ -21,6 +22,6 @@ async def configure_wifi(ssid: str, password: str):
         with open("/etc/wpa_supplicant/wpa_supplicant.conf", "a") as file:
             file.write(config)
         subprocess.run(["sudo", "systemctl", "restart", "dhcpcd"])
-        return {"status": "Wi-Fi configuration updated"}
+        return {"status": "success", "message": "Wi-Fi configuration updated"}
     except Exception as e:
-        return {"status": "Error", "message": str(e)}
+        return {"status": "error", "message": str(e)}
