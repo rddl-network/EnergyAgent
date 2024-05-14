@@ -39,7 +39,7 @@ async def resolve_cid(request: Request):
 
 
 def scan_wifi_networks():
-    result = subprocess.run(['sudo', 'iwlist', 'wlan0', 'scan'], capture_output=True, text=True)
+    result = subprocess.run(['iwlist', 'wlan0', 'scan'], capture_output=True, text=True)
     networks = re.findall(r'ESSID:"([^"]+)"', result.stdout)
     return networks
 
@@ -47,4 +47,4 @@ def scan_wifi_networks():
 @router.get("/wifi-config-page")
 async def read_root(request: Request):
     networks = scan_wifi_networks()
-    return jinja2_templates.TemplateResponse("wifi_config.html", {"request": request, "networks": networks})
+    return jinja2_templates.TemplateResponse("WifiConfig.html", {"request": request, "networks": networks})
