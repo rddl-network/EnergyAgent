@@ -21,7 +21,7 @@ async def configure_wifi(ssid: str = Form(...), password: str = Form(...)):
         """
         with open("/etc/wpa_supplicant/wpa_supplicant.conf", "a") as file:
             file.write(config)
-        subprocess.run(["sudo", "systemctl", "restart", "dhcpcd"])
+        subprocess.run(["systemctl", "restart", "dhcpcd"])
         return {"status": "success", "message": "Wi-Fi configuration updated"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
