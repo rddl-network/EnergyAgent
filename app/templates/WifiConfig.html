@@ -1,76 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wi-Fi Configuration</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            position: relative;
-        }
-        h1 {
-            margin-bottom: 20px;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-        label {
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input, select {
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        button {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: #28a745;
-            color: #fff;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        .message {
-            margin-top: 20px;
-            font-weight: bold;
-            color: #ff0000;
-        }
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #22a6b3;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            animation: spin 1s linear infinite;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: none;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
     <script>
         async function configureWifi(event) {
             event.preventDefault();
@@ -101,24 +35,33 @@
     </script>
 </head>
 <body>
-    <div class="container">
-        <div id="spinner" class="spinner"></div>
-        <h1>Configure Wi-Fi</h1>
-        <form onsubmit="configureWifi(event)">
-            <label for="ssid">SSID:</label>
-            <select id="ssid" name="ssid" required>
-                <option value="" disabled selected>Select your Wi-Fi network</option>
-                {% for network in networks %}
-                <option value="{{ network }}">{{ network }}</option>
-                {% endfor %}
-            </select>
-
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-
-            <button type="submit">Submit</button>
-        </form>
-        <p id="message" class="message"></p>
+    <div class="header">
+        <div class="center"><h1>Configure Wi-Fi</h1></div>
+    </div>
+    <div class="content">
+        <div class="container-sm">
+            <div id="spinner" class="spinner"></div>
+            <form onsubmit="configureWifi(event)">
+                <div class="form-input">
+                    <label for="ssid">SSID:</label>
+                    <select id="ssid" name="ssid" required>
+                        <option value="" disabled selected>Select your Wi-Fi network</option>
+                        {% for network in networks %}
+                        <option value="{{ network }}">{{ network }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-input">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button class="btn" type="submit">Submit</button>
+            </form>
+            <p id="message" class="message"></p>
+        </div>
+    </div>
+    <div class="spinner-overlay" id="spinner-overlay">
+        <div class="spinner"></div>
     </div>
 </body>
 </html>

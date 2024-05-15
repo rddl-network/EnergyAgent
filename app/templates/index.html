@@ -4,45 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Energy Agent</title>
-    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
 </head>
 <body>
-    <div class="header">
-        <div class="center"><h1>Welcome to your Energy Agent</h1></div>
+<div class="header">
+    <div class="center"><h1>Welcome to your Energy Agent</h1></div>
+</div>
+<div class="content">
+    <p>Here you can start configuring your Energy Agent.</p>
+    <div class="buttons">
+        <a href="/energy-agent">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img/energy-agent.png') }}" alt="Energy Agent">
+                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots">
+                Energy Agent
+            </button>
+        </a>
+        <a href="/trust-wallet">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img/trust-wallet.png') }}" alt="Trust Wallet">
+                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots">
+                Trust Wallet
+            </button>
+        </a>
+        <a href="/mqtt-page">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img/mqtt.png') }}" alt="MQTT">
+                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots">
+                MQTT Config
+            </button>
+        </a>
+        <a href="/resolve-cid-page">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img/cid.png') }}" alt="CID">
+                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots">
+                CID Resolver
+            </button>
+        </a>
+        <a href="/wifi-config-page">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img/wifi.png') }}" alt="WiFi">
+                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots">
+                WiFi Config
+            </button>
+        </a>
     </div>
-    <div class="content ">
-        <p>Here you can start configuring your Energy Agent.</p>
-        <div class="buttons">
-            <a href="/energy-agent">
-                <button class="btn-big" type="button">
-                    <img class="device" src="./img/energy-agent.png" alt="Energy Agent">
-                    <img src="./img/dots.svg" alt="Dots">
-                    Energy Agent
-                </button>
-            </a>
-            <a href="/trust-wallet">
-                <button class="btn-big" type="button">
-                    <img class="device" src="./img/trust-wallet.png" alt="Trust Wallet">
-                    <img src="./img/dots.svg" alt="Dots">
-                    Trust Wallet
-                </button>
-            </a>
-            <a href="/mqtt-page">
-                <button class="btn-big" type="button">
-                    <img class="device" src="./img/mqtt.png" alt="MQTT">
-                    <img src="./img/dots.svg" alt="Dots">
-                    MQTT Config
-                </button>
-            </a>
-            <a href="/resolve-cid-page">
-                <button class="btn-big" type="button">
-                    <img class="device" src="./img/cid.png" alt="CID">
-                    <img src="./img/dots.svg" alt="Dots">
-                  CID Resolver
-                </button>
-            </a>
-        </div>
-    </div>
+</div>
 </body>
 </html>
-

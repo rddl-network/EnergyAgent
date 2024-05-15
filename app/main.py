@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import uvicorn
+from starlette.staticfiles import StaticFiles
 
-from app.dependencies import config
 from app.routers import configuration, cid_resolver, energy_agent_manager, trust_wallet_interaction, manage_smd
 from app.routers.html import templates, trust_wallet_templates
 
@@ -22,6 +22,7 @@ app.add_middleware(
 )
 
 # This routes the API
+app.mount("/static", StaticFiles(directory="app/templates/static"), name="static")
 
 app.include_router(configuration.router)
 app.include_router(cid_resolver.router)
