@@ -1,3 +1,5 @@
+import sys
+import platform
 from osc4py3.oscbuildparse import OSCMessage
 
 from app.RddlInteraction.TrustWallet.osc_message_sender import OSCMessageSender
@@ -5,9 +7,34 @@ from app.helpers.models import PlanetMintKeys
 
 PREFIX_IHW = "/IHW"
 
+#class Singleton(object):
+#  _instance = None
+#  def __new__(cls, *args, **kwargs):
+#    if not cls._instance:
+#      cls._instance = object.__new__(cls, *args, **kwargs)
+#    return cls._instance
+#
 
-class TrustWalletInteraction:
-    def __init__(self, lib_path, port_name):
+class TrustWalletInteraction(object):
+    _instance = None
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls) 
+            cls._instance.__init__(*args, **kwargs)  # Call __init__ manually
+        return cls._instance        
+    
+    def __init__(self,  port_name):             
+        # system pick and optimistic architecture selection
+        if platform.system() == "Linux":
+            if platform.processor() == "x86_64":
+                lib_path = "lib/linux/x86_64/libocc.so"
+            else:
+                lib_path = "lib/linux/x86_64/libocc.so"
+        elif platform.system() == "Darwin":
+            lib_path = "lib/macos/aarch/libpyocc.dylib"
+        else:
+            sys.exit("unsupported OS, cannot load TA Wallet connector")
+        
         self.occ_message_sender = OSCMessageSender(lib_path, port_name)
 
     def valise_get(self) -> str:
@@ -48,6 +75,7 @@ class TrustWalletInteraction:
         plmnt_keys.planetmint_address = occ_message.data[1]
         plmnt_keys.extended_planetmint_pubkey = occ_message.data[2]
         plmnt_keys.extended_liquid_pubkey = occ_message.data[3]
+        plmnt_keys.raw_planetmint_pubkey = occ_message.data[4]
         return plmnt_keys
 
     def sign_hash_with_planetmint(self, data_to_sign: str) -> str:

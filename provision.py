@@ -1,21 +1,10 @@
 import time
-import sys
-import platform
 import hashlib
 from app.RddlInteraction.TrustWallet.occ_messages import TrustWalletInteraction
 import binascii
 
-# system pick and optimistic architecture selection
-if platform.system() == "Linux":
-    if platform.processor() == "x86_64":
-        trust_wallet = TrustWalletInteraction("lib/linux/x86_64/libocc.so", "/dev/ttyACM0")
-    else:
-        trust_wallet = TrustWalletInteraction("lib/linux/armv7/libocc.so", "/dev/ttyACM0")
-elif platform.system() == "Darwin":
-    trust_wallet = TrustWalletInteraction("lib/macos/aarch/libpyocc.dylib", "/dev/ttyACM0")
-else:
-    sys.exit("unsupported OS, cannot load TA Wallet connector")
 
+trust_wallet = TrustWalletInteraction("/dev/ttyACM0")
 
 def getHash(data: bytes) -> bytes:
     hasher = hashlib.sha256()

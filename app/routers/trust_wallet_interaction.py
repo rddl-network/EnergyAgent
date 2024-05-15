@@ -11,16 +11,7 @@ router = APIRouter(
     responses={404: {"detail": "Not found"}},
 )
 
-# system pick and optimistic architecture selection
-if platform.system() == "Linux":
-    if platform.processor() == "x86_64":
-        trust_wallet = TrustWalletInteraction("lib/linux/x86_64/libocc.so", "/dev/ttyACM0")
-    else:
-        trust_wallet = TrustWalletInteraction("lib/linux/armv7/libocc.so", "/dev/ttyACM0")
-elif platform.system() == "Darwin":
-    trust_wallet = TrustWalletInteraction("lib/macos/aarch/libpyocc.dylib", "/dev/ttyACM0")
-else:
-    sys.exit("unsupported OS, cannot load TA Wallet connector")
+trust_wallet = TrustWalletInteraction("/dev/ttyACM0")
 
 
 @router.get("/valise-get")
