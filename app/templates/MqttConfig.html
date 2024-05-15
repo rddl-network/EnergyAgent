@@ -1,110 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Device Configuration</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
-            color: #333;
-            line-height: 1.6;
-        }
+    <link rel="stylesheet" href="css/app.css">
 
-        .container {
-            width: 80%;
-            margin: auto;
-            overflow: hidden;
-            padding: 20px;
-        }
-
-        header {
-            background: #333;
-            color: #fff;
-            padding: 20px;
-            text-align: center;
-            border-radius: 8px;
-        }
-
-        form {
-            background-color: #fff;
-            padding: 20px;
-            margin-top: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        label {
-            display: block;
-            margin: 15px 0 5px;
-        }
-
-        input[type="text"], input[type="number"], input[type="password"], select {
-            width: calc(100% - 22px);
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        button {
-            padding: 10px 15px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        button:hover {
-            background-color: #218838;
-        }
-
-        /* Styles for the loading spinner overlay */
-        .spinner-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .spinner {
-            margin: auto;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        h1, h2 {
-            text-align: center;
-        }
-
-        /* Flexbox style to align radio buttons horizontally */
-        .radio-buttons {
-            display: flex;
-            gap: 10px;
-        }
-    </style>
     <script>
         let shellyDevices = [];
         let tasmotaDevices = [];
@@ -265,53 +166,67 @@
         };
     </script>
 </head>
+
 <body>
-<div class="container">
-    <header>
-        <h1>Configure Shelly and Tasmota Devices</h1>
-        <h2 id="device-ip">IP Address: Fetching...</h2>  <!-- Placeholder for IP address -->
-    </header>
-
-    <form>
-        <h2>MQTT Configuration</h2>
-        <label for="mqtt-host">MQTT Host:</label>
-        <input type="text" id="mqtt-host" value="broker.example.com">
-        <label for="mqtt-port">Port:</label>
-        <input type="number" id="mqtt-port" value="1883">
-        <label for="mqtt-user">User:</label>
-        <input type="text" id="mqtt-user" value="mqtt_user">
-        <label for="mqtt-password">Password:</label>
-        <input type="password" id="mqtt-password" value="mqtt_password">
-        <button type="button" onclick="updateMqttConfig()">Set Energy Agent MQTT</button>
-        <button type="button" onclick="resetMQTTConfig()">Reset Energy Agent MQTT</button>
-
-        <h2>Network Scan</h2>
-        <button type="button" onclick="fetchDevices()">Scan Network</button>
-
-        <h2>Device Selection</h2>
-        <div class="radio-buttons">
-            <label>
-                <input type="radio" name="device-type" value="shelly" checked onchange="handleDeviceTypeChange()">
-                Shelly
-            </label>
-            <label>
-                <input type="radio" name="device-type" value="tasmota" onchange="handleDeviceTypeChange()">
-                Tasmota
-            </label>
+    <div class="header">
+        <div class="center">
+            <h1>Configure Shelly and Tasmota Devices</h1>
+            <h2 id="device-ip">IP Address: Fetching...</h2>
         </div>
-        <select id="device-dropdown"></select>
+    </div>
+    <div class="container">
+        <form>
+            <div class="section">
+                <h2>MQTT Configuration</h2>
+                <label for="mqtt-host">MQTT Host:</label>
+                <input type="text" id="mqtt-host" value="broker.example.com">
+                <label for="mqtt-port">Port:</label>
+                <input type="number" id="mqtt-port" value="1883">
+                <label for="mqtt-user">User:</label>
+                <input type="text" id="mqtt-user" value="mqtt_user">
+                <label for="mqtt-password">Password:</label>
+                <input type="password" id="mqtt-password" value="mqtt_password">
+                <div class="button-container">
+                    <button class="btn" type="button" onclick="updateMqttConfig()">Set Energy Agent MQTT</button>
+                    <button class="btn-secondary" type="button" onclick="resetMQTTConfig()">Reset Energy Agent
+                        MQTT</button>
+                </div>
+            </div>
+            <div class="section">
+                <h2>Network Scan</h2>
+                <button class="btn" type="button" onclick="fetchDevices()">Scan Network</button>
+            </div>
+            <div class="section">
+                <h2>Device Selection</h2>
+                <div class="radio-buttons">
+                    <label>
+                        <input type="radio" name="device-type" value="shelly" checked
+                            onchange="handleDeviceTypeChange()">
+                        Shelly
+                    </label>
+                    <label>
+                        <input type="radio" name="device-type" value="tasmota" onchange="handleDeviceTypeChange()">
+                        Tasmota
+                    </label>
+                </div>
+                <select id="device-dropdown">
+                    <option value="" selected disabled> Select a device</option>
+                </select>
 
-        <h2>Additional Settings</h2>
-        <label for="telemetry-interval">Telemetry Interval (seconds):</label>
-        <input type="number" id="telemetry-interval" value="60">
+                <h2>Additional Settings</h2>
+                <label for="telemetry-interval">Telemetry Interval (seconds):</label>
+                <input type="number" id="telemetry-interval" value="60">
 
-        <button type="button" onclick="applyMqttConfigToDevice()">Apply MQTT Config to IoT Device</button>
-    </form>
-</div>
+                <button class="btn" type="button" onclick="applyMqttConfigToDevice()">Apply MQTT Config to IoT
+                    Device</button>
+            </div>
+        </form>
+    </div>
 
-<!-- Loading spinner overlay -->
-<div id="spinner-overlay" class="spinner-overlay">
-    <div class="spinner"></div>
-</div>
+    <!-- Loading spinner overlay -->
+    <div id="spinner-overlay" class="spinner-overlay">
+        <div class="spinner"></div>
+    </div>
 </body>
+
 </html>

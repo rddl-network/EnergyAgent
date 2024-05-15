@@ -1,94 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CID Resolver</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
-            color: #333;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            margin-top: 40px;
-        }
-
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-
-        label, input, button {
-            display: block;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        label {
-            margin-bottom: 5px;
-        }
-
-        input, button {
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        button {
-            background-color: #007BFF;
-            color: white;
-            cursor: pointer;
-            border: none;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        #output {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #f4f4f4;
-            border: 1px solid #ddd;
-            white-space: pre-wrap;
-        }
-    </style>
+    <link rel="stylesheet" href="css/app.css">
 </head>
+
 <body>
-    <div class="container">
-        <h1>Local CID Resolver</h1>
-        <label for="cidInput">CID to resolve:</label>
-        <input type="text" id="cidInput" placeholder="Enter CID">
-        <button onclick="resolveCID()">Resolve CID</button>
-        <div id="output">Result will appear here...</div>
+    <div class="header">
+        <div class="center"<h1>Local CID Resolver</h1></div>
+      </div>
+      <div>
+        <div class="container-sm">
+          <div class="form-input"><label for="cidInput">CID to resolve:</label>
+            <input type="text" id="cidInput" required placeholder="Enter CID">
+          </div>
+          <button class="btn" onclick="resolveCID()">Resolve CID</button>
+          <div id="output" class="status-indicator">Result will appear here...</div>
+        </div>
     </div>
 
     <script>
         const API_BASE = `/cid_resolver`;
 
-        function resolveCID() {
+        function resolveCID(e) {
             const cid = document.getElementById('cidInput').value;
+            if(!cid.trim().length) {
+                document.getElementById('output').textContent = 'Please add enter CID'
+                return
+            }
             fetch("/cid_resolver?cid=" + cid)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('output').textContent = JSON.stringify(data, null, 2);
-            })
-            .catch(error => {
-                document.getElementById('output').textContent = 'Failed to retrieve data: ' + error;
-            });
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    document.getElementById('output').textContent = 'Failed to retrieve data: ' + error;
+                });
         }
     </script>
 </body>
+
 </html>
