@@ -1,4 +1,3 @@
-/* Existing CSS styles */
 *, *::after, *::before {
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
@@ -224,12 +223,12 @@ label {
   font-size: 14px;
 }
 
-input {
+input,
+select {
   color: white;
 }
 
 select {
-  color: white;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -251,12 +250,10 @@ select {
   max-width: 760px;
   margin: 20px auto;
   width: 100%;
-  display: flex;
   background: linear-gradient(to bottom, #1C1B40 0%, #0F1127 100%);
   border: 1px solid #595C6F;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;  /* Changed to align items to the start */
   color: white;
   border-radius: 12px;
   padding: 20px;
@@ -266,9 +263,9 @@ select {
 
 .form-input {
   display: block;
-  padding-top: 50px;
+  padding-top: 20px; /* Adjust padding as needed */
   width: 100%;
-  margin: 0 auto;
+  margin: 0 0 20px 0; /* Adjust margin as needed */
 }
 
 .container-sm input,
