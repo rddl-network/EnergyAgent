@@ -19,7 +19,6 @@ class Config:
         self.trust_wallet_port = os.environ.get("TRUST_WALLET_PORT") or "/dev/tty.usbmodem1101"
         self.notarize_interval = int(os.environ.get("NOTARIZE_INTERVAL") or 1)
         self.client_id = os.environ.get("CLIENT_ID") or "energy_agent"
-        self.port = os.environ.get("PORT") or 2138
 
         # Database setup
         self.database = os.path.join(self.config_base_path, "energy_agent.db")

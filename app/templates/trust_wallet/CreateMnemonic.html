@@ -4,74 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Mnemonic</title>
-    <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .container {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        #mnemonic {
-            margin-top: 20px;
-            font-family: monospace;
-            background-color: #f4f4f4;
-            border: 1px solid #ccc;
-            padding: 10px;
-            width: 100%;
-            max-width: 600px;
-        }
-        .spinner-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            display: none;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Create Mnemonic</h1>
-        <button onclick="createMnemonic()">Create Mnemonic</button>
-        <div id="mnemonic">Your mnemonic will appear here...</div>
+    <div class="header">
+        <div class="center"><h1>Create Mnemonic</h1></div>
+    </div>
+    <div class="content">
+        <div class="container-sm">
+            <button class="btn" onclick="createMnemonic()">Create Mnemonic</button>
+            <div id="mnemonic" class="status-indicator">Your mnemonic will appear here...</div>
+        </div>
     </div>
     <div class="spinner-overlay" id="spinner-overlay">
         <div class="spinner"></div>

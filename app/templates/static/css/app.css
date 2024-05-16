@@ -4,7 +4,7 @@
   text-rendering: optimizeLegibility;
 }
 
-html,body {
+html, body {
   margin: 0;
   height: 100%;
 }
@@ -26,14 +26,15 @@ body {
   text-align: center;
   padding: 20px;
   display: flex;
-  justify-content: space-between; 
-  align-items: center; 
+  justify-content: space-between;
+  align-items: center;
   z-index: 20;
 }
 
 .center {
   margin: 0 auto;
 }
+
 .header::before {
   background: radial-gradient(37.74% 81.78% at 50% 26.56%, rgba(57, 79, 116, 0.18) 0%, rgba(3, 0, 20, 0) 100%);
   content: '';
@@ -49,7 +50,7 @@ body {
 
 h1 {
   background-clip: text;
-  background-image: linear-gradient(to right, rgba(8,133,223,1) 0%, rgba(91,231,100,1) 50%, rgba(8,133,223,1) 100%);
+  background-image: linear-gradient(to right, rgba(8, 133, 223, 1) 0%, rgba(91, 231, 100, 1) 50%, rgba(8, 133, 223, 1) 100%);
   color: transparent;
   display: inline-block;
 }
@@ -72,6 +73,7 @@ h1 {
   justify-content: center;
   flex-wrap: wrap;
 }
+
 .btn-big {
   background: transparent;
   border-radius: 1rem;
@@ -82,9 +84,10 @@ h1 {
   padding: 1.25rem 1.25rem 0.75rem 1.25rem;
   text-align: center;
   width: 15rem;
-  transition: all 0.3s ease-in-out; 
+  transition: all 0.3s ease-in-out;
   cursor: pointer;
 }
+
 .btn-big:hover {
   background: linear-gradient(to bottom, #1C1B40 0%, #0F1127 100%);
 }
@@ -110,7 +113,7 @@ h1 {
   font-weight: bold;
   padding: 12px 30px;
   text-transform: uppercase;
-  transition: all 0.3s ease-in-out; 
+  transition: all 0.3s ease-in-out;
 }
 
 .btn-secondary {
@@ -123,13 +126,13 @@ h1 {
   font-weight: bold;
   padding: 12px 30px;
   text-transform: uppercase;
-  transition: all 0.3s ease-in-out; 
+  transition: all 0.3s ease-in-out;
   background-color: transparent;
   border: 1px solid rgb(89, 92, 111);
 }
 
 .btn:hover,
-.btn-secondary:hover  {
+.btn-secondary:hover {
   transform: scale(1.02);
 }
 
@@ -145,6 +148,7 @@ h1 {
 .running {
   color: #14AE5C;
 }
+
 .stopped {
   color: #E3507A;
 }
@@ -153,11 +157,13 @@ label {
   display: block;
   margin-bottom: 5px;
 }
+
 .description {
   font-size: 0.9em;
   color: #666;
   margin-bottom: 10px;
 }
+
 .container {
   width: 80%;
   margin: auto;
@@ -167,14 +173,16 @@ label {
   flex-direction: column;
   height: 100%;
 }
+
 .section:not(:first-child) {
   margin-top: 20px;
 }
+
 .section {
   background: linear-gradient(to bottom, #1C1B40 0%, #0F1127 100%);
   border-radius: 8px;
   border: 1px solid rgb(89, 92, 111);
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   color: white;
   padding: 20px;
 }
@@ -184,7 +192,10 @@ label {
   display: block;
 }
 
-input[type="text"], input[type="password"], input[type="number"] {
+input[type="text"],
+input[type="password"],
+input[type="number"],
+select {
   background-color: rgb(24, 26, 51);
   border-radius: 8px;
   border: 1px solid rgb(78, 93, 116);
@@ -194,10 +205,15 @@ input[type="text"], input[type="password"], input[type="number"] {
   padding: 0.75rem 0.5rem;
   width: 100%;
 }
+
 @media (min-width: 768px) {
-  input[type="text"], input[type="password"], input[type="number"] {
+  input[type="text"],
+  input[type="password"],
+  input[type="number"],
+  select {
     width: 50%;
   }
+
   .form-input {
     width: 50%;
   }
@@ -207,8 +223,20 @@ label {
   font-size: 14px;
 }
 
-input {
+input,
+select {
   color: white;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem top 50%;
+  background-size: 1.25rem 1.25rem;
+  padding-right: 2rem;
 }
 
 .button-container {
@@ -222,12 +250,10 @@ input {
   max-width: 760px;
   margin: 20px auto;
   width: 100%;
-  display: flex;
   background: linear-gradient(to bottom, #1C1B40 0%, #0F1127 100%);
   border: 1px solid #595C6F;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;  /* Changed to align items to the start */
   color: white;
   border-radius: 12px;
   padding: 20px;
@@ -237,18 +263,20 @@ input {
 
 .form-input {
   display: block;
-  padding-top: 50px;
+  padding-top: 20px; /* Adjust padding as needed */
   width: 100%;
-  margin: 0 auto;
+  margin: 0 0 20px 0; /* Adjust margin as needed */
 }
 
-.container-sm input {
+.container-sm input,
+.container-sm select {
   width: 100%;
 }
 
 .container-sm button {
   margin-top: 30px;
 }
+
 .radio-buttons {
   display: flex;
   gap: 10px;
@@ -283,13 +311,13 @@ input {
 
 @keyframes spin {
   0% {
-      transform: rotate(0deg);
+    transform: rotate(0deg);
   }
+
   100% {
-      transform: rotate(360deg);
+    transform: rotate(360deg);
   }
 }
-
 
 #device-dropdown {
   padding: 12px 20px;
@@ -310,7 +338,8 @@ li {
   padding: 8px;
 }
 
-.status, .current-topics {
+.status,
+.current-topics {
   padding: 15px;
   background-color: rgb(24, 26, 51);
   border-radius: 8px;
