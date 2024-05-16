@@ -10,7 +10,7 @@ router = APIRouter(
 )
 
 
-@router.post("/configure_wifi/")
+@router.post("/configure_wifi")
 async def configure_wifi(ssid: str = Form(...), password: str = Form(...)):
     try:
         config = f"""
