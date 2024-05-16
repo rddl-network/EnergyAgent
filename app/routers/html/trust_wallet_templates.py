@@ -19,13 +19,9 @@ async def twi(request: Request):
 
 @router.get("/create-mnemonic")
 async def get_der_subscription(request: Request):
-    return jinja2_templates.TemplateResponse(
-        "trust_wallet/CreateMnemonic.html", {"request": request}
-    )
+    return jinja2_templates.TemplateResponse("trust_wallet/CreateMnemonic.html", {"request": request})
 
 
 @router.get("/recover-mnemonic")
 async def create_der_smart_meter(request: Request):
-    return jinja2_templates.TemplateResponse(
-        "trust_wallet/RecoverMnemonic.html", {"request": request}
-    )
+    return jinja2_templates.TemplateResponse("trust_wallet/RecoverMnemonic.html", {"request": request})
