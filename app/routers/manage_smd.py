@@ -48,7 +48,7 @@ def scan_network(ip_range):
 # Identify and return information about a Shelly device, including its name
 def identify_shelly(ip_address):
     try:
-        response = requests.get(f"http://{ip_address}/status", timeout=3)
+        response = requests.get(f"http://{ip_address}/shelly", timeout=3)
         if "shelly" in response.text.lower():
             status_data = response.json()
             device_name = status_data.get("device", {}).get("name", "Unknown Shelly Device")
