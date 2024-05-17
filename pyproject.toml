@@ -40,3 +40,16 @@ black = "24.4.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+force-exclude = '''
+/(
+| amino
+| cosmos
+| cosmos_proto
+| gogoproto
+| google
+| planetmintgo
+| tendermint
+)/
+'''

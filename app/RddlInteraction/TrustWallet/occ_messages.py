@@ -7,7 +7,7 @@ from app.helpers.models import PlanetMintKeys
 
 PREFIX_IHW = "/IHW"
 
-#class Singleton(object):
+# class Singleton(object):
 #  _instance = None
 #  def __new__(cls, *args, **kwargs):
 #    if not cls._instance:
@@ -15,15 +15,17 @@ PREFIX_IHW = "/IHW"
 #    return cls._instance
 #
 
+
 class TrustWalletInteraction(object):
     _instance = None
+
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super().__new__(cls) 
+            cls._instance = super().__new__(cls)
             cls._instance.__init__(*args, **kwargs)  # Call __init__ manually
-        return cls._instance        
-    
-    def __init__(self,  port_name):             
+        return cls._instance
+
+    def __init__(self, port_name):
         # system pick and optimistic architecture selection
         if platform.system() == "Linux":
             if platform.processor() == "x86_64":
@@ -34,7 +36,7 @@ class TrustWalletInteraction(object):
             lib_path = "lib/macos/aarch/libpyocc.dylib"
         else:
             sys.exit("unsupported OS, cannot load TA Wallet connector")
-        
+
         self.occ_message_sender = OSCMessageSender(lib_path, port_name)
 
     def valise_get(self) -> str:
@@ -125,8 +127,8 @@ class TrustWalletInteraction(object):
         signature = occ_message.data[1]
         return signature
 
-    def unwrapPublicKey(self, public_key: str ) -> tuple[bool, str]:
-        if len(public_key) == 136 :
+    def unwrapPublicKey(self, public_key: str) -> tuple[bool, str]:
+        if len(public_key) == 136:
             return True, public_key[-128:]
         elif len(public_key) == 128:
             return True, public_key

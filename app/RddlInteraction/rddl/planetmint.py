@@ -8,21 +8,22 @@ from cosmos.crypto.secp256k1 import keys_pb2
 from hashlib import sha256
 
 
+# def attestMachine():
 
-#def attestMachine():
-    
-#def PoPResult():
+# def PoPResult():
 
-def getCoin( denom: str, amount: str) -> coin_pb2.Coin:
+
+def getCoin(denom: str, amount: str) -> coin_pb2.Coin:
     coin = coin_pb2.Coin()
-    coin.denom= "plmnt"
+    coin.denom = "plmnt"
     coin.amount = amount
-    
+
+
 def getAnyAsset(creator: str, cid: str) -> any_pb2.Any:
     testmsg = AsstTx.MsgNotarizeAsset()
     testmsg.creator = creator
     testmsg.cid = cid
-    
+
     message_data = testmsg.SerializeToString()
 
     # Construct the Any message
@@ -30,8 +31,8 @@ def getAnyAsset(creator: str, cid: str) -> any_pb2.Any:
     any_message.type_url = "/planetmintgo.asset.MsgNotarizeAsset"
     any_message.value = message_data
     return any_message
-    
-    
+
+
 def getAnyMachineAttestation(msg: MachineTx.MsgAttestMachine) -> any_pb2.Any:
     message_data = msg.SerializeToString()
 
@@ -40,10 +41,10 @@ def getAnyMachineAttestation(msg: MachineTx.MsgAttestMachine) -> any_pb2.Any:
     any_message.type_url = "/planetmintgo.machine.MsgAttestMachine"
     any_message.value = message_data
     return any_message
-    
-    
-#def redeemClaims():
-    
+
+
+# def redeemClaims():
+
 # attestMachine
 # PopResult
 # notarizeCID
@@ -52,8 +53,6 @@ def getAnyMachineAttestation(msg: MachineTx.MsgAttestMachine) -> any_pb2.Any:
 
 def getRawTx(anyMsg: any_pb2.Any, coin: coin_pb2.Coin, public_key: bytes, sequence: int) -> cosmosTx.TxRaw:
 
-    
-    
     pubKey = keys_pb2.PubKey()
     pubKey.key = public_key
     anyPubKey = any_pb2.Any()
@@ -66,38 +65,37 @@ def getRawTx(anyMsg: any_pb2.Any, coin: coin_pb2.Coin, public_key: bytes, sequen
     signerInfo = cosmosTx.SignerInfo()
     signerInfo.public_key.type_url = anyPubKey.type_url
     signerInfo.public_key.value = anyPubKey.value
-    #signerInfo.mode_info.sum = 1 #SIGN_MODE_DIRECT
-    signerInfo.mode_info.single.mode = 1 #SIGN_MODE_DIRECT
+    # signerInfo.mode_info.sum = 1 #SIGN_MODE_DIRECT
+    signerInfo.mode_info.single.mode = 1  # SIGN_MODE_DIRECT
     signerInfo.sequence = sequence
-    
-    #fees = cosmosTx.Fee()
-    #fees.amount.append( coin )
-    #fees.gas_limit = 200000
-    
+
+    # fees = cosmosTx.Fee()
+    # fees.amount.append( coin )
+    # fees.gas_limit = 200000
+
     coin2 = coin_pb2.Coin()
-    coin2.denom= "token"
+    coin2.denom = "token"
     coin2.amount = "2"
-    
+
     tx = cosmosTx.Tx()
     tx.body.messages.append(anyMsg)
     tx.body.timeout_height = 0
-    tx.auth_info.signer_infos.append( signerInfo )
+    tx.auth_info.signer_infos.append(signerInfo)
     tx.auth_info.fee.gas_limit = 200000
-    tx.auth_info.fee.amount.append( coin2 )
-    #tx.auth_info.tip.
-    
+    tx.auth_info.fee.amount.append(coin2)
+    # tx.auth_info.tip.
+
     txRaw = cosmosTx.TxRaw()
-    
+
     txRaw.body_bytes = tx.body.SerializeToString()
     txRaw.auth_info_bytes = tx.auth_info.SerializeToString()
     return txRaw
-    
 
-def getSignDoc( rawTx: cosmosTx.TxRaw, chainID: str, accountID: int) -> cosmosTx.SignDoc:
+
+def getSignDoc(rawTx: cosmosTx.TxRaw, chainID: str, accountID: int) -> cosmosTx.SignDoc:
     signDoc = cosmosTx.SignDoc()
     signDoc.body_bytes = rawTx.body_bytes
     signDoc.auth_info_bytes = rawTx.auth_info_bytes
     signDoc.chain_id = chainID
     signDoc.account_number = accountID
     return signDoc
-
