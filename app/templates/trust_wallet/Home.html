@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trust Wallet</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="center"><h1>Welcome to your Trust Wallet</h1></div>
+    </div>
+    <div class="content">
+        <p>Here is the Home of your Trust Wallet</p>
+        <div class="container">
+            <div class="section">
+                <h2>Wallet Details</h2>
+                <div class="key">Planetmint Address:</div>
+                <div class="value" id="planetmintAddress">Loading...</div>
+                <div class="key">Planetmint Public Key:</div>
+                <div class="value" id="planetmintPubKey">Loading...</div>
+                <div class="key">Rddl Public Key:</div>
+                <div class="value" id="rddlPubKey">Loading...</div>
+            </div>
+            <div class="buttons">
+                <a href="/create-mnemonic">
+                    <button class="btn" type="button">Create Mnemonic</button>
+                </a>
+                <a href="/recover-mnemonic">
+                    <button class="btn" type="button">Recover Mnemonic</button>
+                </a>
+            </div>
+        </div>
+    </div>
+    <script>
+        window.onload = function () {
+            fetch('/twi/get-planetmint-keys')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('planetmintAddress').textContent = data.planetmint_address;
+                    document.getElementById('planetmintPubKey').textContent = data.extended_planetmint_pubkey;
+                    document.getElementById('rddlPubKey').textContent = data.extended_liquid_pubkey;
+                })
+                .catch(error => {
+                    console.error('Failed to fetch keys:', error);
+                    document.getElementById('planetmintAddress').textContent = 'Failed to load';
+                    document.getElementById('planetmintPubKey').textContent = 'Failed to load';
+                    document.getElementById('rddlPubKey').textContent = 'Failed to load';
+                });
+        };
+    </script>
+</body>
+</html>

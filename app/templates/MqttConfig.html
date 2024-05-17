@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Device Configuration</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+
+    <script>
+        let shellyDevices = [];
+        let tasmotaDevices = [];
+
+        async function fetchDevices() {
+            toggleSpinner(true);
+            try {
+                let response = await fetch('/smd/scan-devices');
+                if (!response.ok) {
+                    alert('Error fetching devices');
+                    return;
+                }
+                let data = await response.json();
+                shellyDevices = data.shelly_devices;
+                tasmotaDevices = data.tasmota_devices;
+                populateDropdown('shelly');
+            } finally {
+                toggleSpinner(false);
+            }
+        }
+
+        function populateDropdown(type) {
+            let dropdown = document.getElementById('device-dropdown');
+            dropdown.innerHTML = '<option value="">Select a device</option>';
+            let devices = type === 'shelly' ? shellyDevices : tasmotaDevices;
+            devices.forEach(device => {
+                let option = document.createElement('option');
+                option.value = device.ip;
+                option.text = `${device.name} (${device.ip})`;
+                dropdown.appendChild(option);
+            });
+        }
+
+        function toggleSpinner(visible) {
+            let overlay = document.getElementById('spinner-overlay');
+            overlay.style.display = visible ? 'flex' : 'none';
+        }
+
+        async function fetchMQTTConfig() {
+            const response = await fetch('/config/mqtt');
+            const data = await response.json();
+            document.getElementById('mqtt-host').value = data.mqtt_host || '';
+            document.getElementById('mqtt-port').value = data.mqtt_port || '';
+            document.getElementById('mqtt-user').value = data.mqtt_username || '';
+            document.getElementById('mqtt-password').value = data.mqtt_password || '';
+        }
+
+        async function updateMqttConfig() {
+            let mqttHost = document.getElementById('mqtt-host').value;
+            let mqttPort = document.getElementById('mqtt-port').value;
+            let mqttUser = document.getElementById('mqtt-user').value;
+            let mqttPassword = document.getElementById('mqtt-password').value;
+
+            let response = await fetch('/config/mqtt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    mqtt_host: mqttHost,
+                    mqtt_port: parseInt(mqttPort),
+                    mqtt_user: mqttUser,
+                    mqtt_password: mqttPassword
+                })
+            });
+
+            if (!response.ok) {
+                let errorData = await response.json();
+                alert('Error publishing MQTT config: ' + errorData.detail);
+            } else {
+                alert('MQTT config published successfully!');
+            }
+        }
+
+        async function resetMQTTConfig() {
+            const response = await fetch('/config/mqtt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    mqtt_host: '',
+                    mqtt_port: 0,
+                    mqtt_username: '',
+                    mqtt_password: '',
+                })
+            });
+            const data = await response.json();
+            alert(data.message);
+            await fetchMQTTConfig();
+        }
+
+        async function applyMqttConfigToDevice() {
+            let deviceType = document.querySelector('input[name="device-type"]:checked').value;
+            let deviceIp = document.getElementById('device-dropdown').value;
+            let telemetryInterval = document.getElementById('telemetry-interval').value;
+            let mqttHost = document.getElementById('mqtt-host').value;
+            let mqttPort = document.getElementById('mqtt-port').value;
+            let mqttUser = document.getElementById('mqtt-user').value;
+            let mqttPassword = document.getElementById('mqtt-password').value;
+            let topic = "rddl/SMD/";
+
+            if (!deviceIp) {
+                alert('Select a device first.');
+                return;
+            }
+
+            let response = await fetch('/smd/configure-device', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    device_type: deviceType,
+                    device_ip: deviceIp,
+                    mqtt_host: mqttHost,
+                    mqtt_port: parseInt(mqttPort),
+                    mqtt_user: mqttUser,
+                    mqtt_password: mqttPassword,
+                    topic: topic,
+                    telemetry_interval: parseInt(telemetryInterval)
+                })
+            });
+
+            if (!response.ok) {
+                let errorData = await response.json();
+                alert('Error configuring device: ' + errorData.detail);
+            } else {
+                alert('Device configured successfully!');
+            }
+        }
+
+        function handleDeviceTypeChange() {
+            let selectedType = document.querySelector('input[name="device-type"]:checked').value;
+            populateDropdown(selectedType);
+        }
+
+        async function fetchIPAddress() {
+            try {
+                const response = await fetch('/smd/ip-address');
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+                const data = await response.json();
+                document.getElementById('device-ip').textContent = `IP Address: ${data.ip}`;
+            } catch (error) {
+                document.getElementById('device-ip').textContent = 'IP Address: Error fetching IP';
+                console.error('Failed to fetch IP address:', error);
+            }
+        }
+
+        window.onload = function () {
+            fetchMQTTConfig();
+            fetchIPAddress();
+        };
+    </script>
+</head>
+
+<body>
+    <div class="header">
+        <div class="center">
+            <h1>Configure Shelly and Tasmota Devices</h1>
+            <h2 id="device-ip">IP Address: Fetching...</h2>
+        </div>
+    </div>
+    <div class="content">
+        <div class="container-sm">
+            <form>
+                <div class="section">
+                    <h2>MQTT Configuration</h2>
+                    <div class="form-input">
+                        <label for="mqtt-host">MQTT Host:</label>
+                        <input type="text" id="mqtt-host" value="broker.example.com">
+                    </div>
+                    <div class="form-input">
+                        <label for="mqtt-port">Port:</label>
+                        <input type="number" id="mqtt-port" value="1883">
+                    </div>
+                    <div class="form-input">
+                        <label for="mqtt-user">User:</label>
+                        <input type="text" id="mqtt-user" value="mqtt_user">
+                    </div>
+                    <div class="form-input">
+                        <label for="mqtt-password">Password:</label>
+                        <input type="password" id="mqtt-password" value="mqtt_password">
+                    </div>
+                    <div class="button-container">
+                        <button class="btn" type="button" onclick="updateMqttConfig()">Set Energy Agent MQTT</button>
+                        <button class="btn-secondary" type="button" onclick="resetMQTTConfig()">Reset Energy Agent MQTT</button>
+                    </div>
+                </div>
+                <div class="section">
+                    <h2>Network Scan</h2>
+                    <button class="btn" type="button" onclick="fetchDevices()">Scan Network</button>
+                </div>
+                <div class="section">
+                    <h2>Device Selection</h2>
+                    <div class="radio-buttons">
+                        <label>
+                            <input type="radio" name="device-type" value="shelly" checked onchange="handleDeviceTypeChange()">
+                            Shelly
+                        </label>
+                        <label>
+                            <input type="radio" name="device-type" value="tasmota" onchange="handleDeviceTypeChange()">
+                            Tasmota
+                        </label>
+                    </div>
+                    <div class="form-input">
+                        <label for="device-dropdown">Select a Device:</label>
+                        <select id="device-dropdown">
+                            <option value="" selected disabled>Select a device</option>
+                        </select>
+                    </div>
+                    <div class="form-input">
+                        <label for="telemetry-interval">Telemetry Interval (seconds):</label>
+                        <input type="number" id="telemetry-interval" value="60">
+                    </div>
+                    <button class="btn" type="button" onclick="applyMqttConfigToDevice()">Apply MQTT Config to IoT Device</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading spinner overlay -->
+    <div id="spinner-overlay" class="spinner-overlay">
+        <div class="spinner"></div>
+    </div>
+</body>
+
+</html>

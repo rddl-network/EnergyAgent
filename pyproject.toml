@@ -30,6 +30,9 @@ starkbank-ecdsa = "^2.2.0"
 protobuf = "^5.26.1"
 asn1crypto = "^1.5.1"
 requests = "^2.31.0"
+gmqtt = "^0.6.16"
+scapy = "^2.5.0"
+netifaces = "^0.11.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.1.1"

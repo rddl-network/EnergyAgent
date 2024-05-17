@@ -1,29 +1,34 @@
-version: "3.8"
 services:
-  timescaledb:
-    extends:
-      file: ./my-power-base.yaml
-      service: timescaledb
-  app:
-    extends:
-      file: ./my-power-base.yaml
-      service: app
-    depends_on:
-      - timescaledb
-  test:
-    build:
-      context: .
-      dockerfile: docker/DockerFile
-    profiles: [ "test" ]
-    container_name: rddl-energy-agent-tests
-    environment:
-      DB_USER: postgres
-      DB_PASSWORD: password
-    ports:
-      - '8080:8080'
-    volumes:
-      - ./app:/app
-      - ./tests:/tests
-    command: sh -c "pytest /tests -k 'test' -vv "
-#    depends_on:
-#      - timescaledb
+    mqtt:
+      container_name: mqtt
+      image: eclipse-mosquitto:2.0.18
+      restart: unless-stopped
+      volumes:
+        - "./mosquitto-data:/mosquitto"
+      ports:
+        - "1883:1883"
+        - "9001:9001"
+      command: "mosquitto -c /mosquitto-no-auth.conf"
+    energy-agent:
+        build:
+          context: .
+          dockerfile: docker/Dockerfile
+        container_name: energy-agent
+        depends_on:
+            - mqtt
+        environment:
+            CONFIG_PATH: "/data"
+            RDDL_TOPIC: "rddl/SMD/#"
+            TRUST_WALLET_PORT: "/dev/ttyACM0"
+            NOTARIZE_INTERVAL: 1
+            CLIENT_ID: "energy_agent"
+            PORT: 2138
+        ports:
+          - 2138:2138
+        privileged: true
+        volumes:
+            -   ./energy-agent-data:/data
+        restart: always
+        network_mode: "host"  # Share host network
+        cap_add:
+          - NET_RAW  # Add raw socket capability

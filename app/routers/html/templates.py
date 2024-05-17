@@ -1,8 +1,12 @@
+import subprocess
+import re
+
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
 
+from app.dependencies import config
 
-jinja2_templates = Jinja2Templates(directory="templates")
+jinja2_templates = Jinja2Templates(directory="app/templates")
 
 router = APIRouter(
     prefix="",
@@ -33,12 +37,17 @@ async def create_mqtt_config(request: Request):
 
 @router.get("/resolve-cid-page")
 async def resolve_cid(request: Request):
-    return jinja2_templates.TemplateResponse("ResolveCid.html", {"request": request})
+    return jinja2_templates.TemplateResponse("LocalCidResolver.html", {"request": request})
 
 
-@router.get("/wallet-interaction-page")
-async def wallet_interaction(request: Request):
-    return jinja2_templates.TemplateResponse("TrustWalletInteraction.html", {"request": request})
+def scan_wifi_networks():
+    result = subprocess.run(["iwlist", "wlan0", "scan"], capture_output=True, text=True)
+    networks = re.findall(r'ESSID:"([^"]+)"', result.stdout)
+    networks = list(set(networks))
+    return networks
 
 
-# trust wallet interaction
+@router.get("/wifi-config-page")
+async def read_root(request: Request):
+    networks = scan_wifi_networks()
+    return jinja2_templates.TemplateResponse("WifiConfig.html", {"request": request, "networks": networks})

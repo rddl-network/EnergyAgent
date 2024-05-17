@@ -1,7 +1,4 @@
-from app.energy_meter_interaction.energy_decrypter import (
-    decrypt_aes_gcm_landis_and_gyr,
-    decrypt_sagemcom,
-)
+from app.energy_agent.energy_decrypter import decrypt_aes_gcm_landis_and_gyr, decrypt_sagemcom
 
 
 # db084c475a67737c7e

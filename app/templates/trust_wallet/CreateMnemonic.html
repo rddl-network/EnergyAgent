@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Mnemonic</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="center"><h1>Create Mnemonic</h1></div>
+    </div>
+    <div class="content">
+        <div class="container-sm">
+            <button class="btn" onclick="createMnemonic()">Create Mnemonic</button>
+            <div id="mnemonic" class="status-indicator">Your mnemonic will appear here...</div>
+        </div>
+    </div>
+    <div class="spinner-overlay" id="spinner-overlay">
+        <div class="spinner"></div>
+    </div>
+    <script>
+        function createMnemonic() {
+            document.getElementById('spinner-overlay').style.display = 'flex';  // Show spinner
+
+            fetch(`/twi/mnemonic`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('mnemonic').textContent = data.mnemonic;
+                document.getElementById('spinner-overlay').style.display = 'none';  // Hide spinner
+            })
+            .catch(error => {
+                document.getElementById('mnemonic').textContent = 'Failed to retrieve mnemonic: ' + error;
+                document.getElementById('spinner-overlay').style.display = 'none';  // Hide spinner even on error
+            });
+        }
+    </script>
+</body>
+</html>

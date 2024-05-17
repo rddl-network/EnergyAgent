@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CID Resolver</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+</head>
+
+<body>
+    <div class="header">
+        <div class="center"<h1>Local CID Resolver</h1></div>
+      </div>
+      <div>
+        <div class="container-sm">
+          <div class="form-input"><label for="cidInput">CID to resolve:</label>
+            <input type="text" id="cidInput" required placeholder="Enter CID">
+          </div>
+          <button class="btn" onclick="resolveCID()">Resolve CID</button>
+          <div id="output" class="status-indicator">Result will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = `/cid_resolver`;
+
+        function resolveCID(e) {
+            const cid = document.getElementById('cidInput').value;
+            if(!cid.trim().length) {
+                document.getElementById('output').textContent = 'Please add enter CID'
+                return
+            }
+            fetch("/cid_resolver?cid=" + cid)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    document.getElementById('output').textContent = 'Failed to retrieve data: ' + error;
+                });
+        }
+    </script>
+</body>
+
+</html>

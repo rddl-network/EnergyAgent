@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Agent</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+</head>
+<body>
+<div class="header">
+    <div class="center"><h1>Welcome to your Energy Agent</h1></div>
+</div>
+<div class="content">
+    <p>Here you can start configuring your Energy Agent.</p>
+    <div class="buttons">
+        <button class="btn" class="btn" onclick="startAgent()">Start Agent</button>
+        <button class="btn" onclick="stopAgent()">Stop Agent</button>
+        <button class="btn" onclick="restartAgent()">Restart Agent</button>
+    </div>
+    <div id="status" class="status-indicator">Status: <span id="statusText">Checking...</span></div>
+</div>
+<script>
+    const API_BASE = `/energy_agent`;
+
+    function updateStatus() {
+        fetch(`${API_BASE}/status`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const statusSpan = document.getElementById('statusText');
+                    statusSpan.textContent = `${data.status}`;
+                    statusSpan.className = data.status === 'running' ? 'running' : 'stopped';
+                })
+                .catch(error => {
+                    console.error('Failed to fetch status:', error);
+                    document.getElementById('statusText').textContent = 'Status: Failed to fetch';
+                });
+    }
+
+    function startAgent() {
+        fetch(`${API_BASE}/start`)
+                .then(response => response.json())
+                .then(data => updateStatus())
+                .catch(error => console.error('Failed to start agent:', error));
+    }
+
+    function stopAgent() {
+        fetch(`${API_BASE}/stop`)
+                .then(response => response.json())
+                .then(data => updateStatus())
+                .catch(error => console.error('Failed to stop agent:', error));
+    }
+
+    function restartAgent() {
+        fetch(`${API_BASE}/restart`)
+                .then(response => response.json())
+                .then(data => updateStatus())
+                .catch(error => console.error('Failed to restart agent:', error));
+    }
+
+    window.onload = updateStatus; // Check status when the page loads
+</script>
+</body>
+</html>
