@@ -9,44 +9,33 @@ router = APIRouter(
 )
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
+WPA_SUPPLICANT_CONF = "/etc/wpa_supplicant/wpa_supplicant.conf"
 
-def connect_to_wifi(ssid: str, psk: str):
+def update_wpa_supplicant(ssid: str, psk: str):
     try:
-        # Ensure the wlan0 interface is up
-        subprocess.run(["ifconfig", "wlan0", "up"], check=True)
+        # Backup the current wpa_supplicant.conf
+        subprocess.run(["cp", WPA_SUPPLICANT_CONF, f"{WPA_SUPPLICANT_CONF}.bak"], check=True)
 
-        # Add a new network
-        network_id = subprocess.check_output(["wpa_cli", "-i", "wlan0", "add_network"]).strip()
+        # Append the new network configuration
+        with open(WPA_SUPPLICANT_CONF, "a") as wpa_conf:
+            wpa_conf.write(f'\nnetwork={{\n    ssid="{ssid}"\n    psk="{psk}"\n}}\n')
 
-        # Set the SSID
-        subprocess.run(["wpa_cli", "-i", "wlan0", "set_network", network_id, "ssid", f'"{ssid}"'], check=True)
+        # Restart the wpa_supplicant service to apply changes
+        subprocess.run(["systemctl", "restart", "wpa_supplicant"], check=True)
 
-        # Set the PSK
-        subprocess.run(["wpa_cli", "-i", "wlan0", "set_network", network_id, "psk", f'"{psk}"'], check=True)
-
-        # Enable the network
-        subprocess.run(["wpa_cli", "-i", "wlan0", "enable_network", network_id], check=True)
-
-        # Select the network
-        subprocess.run(["wpa_cli", "-i", "wlan0", "select_network", network_id], check=True)
-
-        # Save the configuration
-        subprocess.run(["wpa_cli", "-i", "wlan0", "save_config"], check=True)
-
-    except subprocess.CalledProcessError as e:
+    except Exception as e:
         logger.error(f"Error configuring Wi-Fi: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to configure Wi-Fi: {e}")
-
 
 @router.post("/configure_wifi")
 async def configure_wifi(ssid: str = Form(...), password: str = Form(...)):
     try:
-        connect_to_wifi(ssid, password)
+        update_wpa_supplicant(ssid, password)
         return {
             "status": "success",
             "message": "Wi-Fi configuration updated. Please manually restart the Raspberry Pi to apply the changes."
         }
     except HTTPException as e:
         return {"status": "error", "message": str(e.detail)}
-
