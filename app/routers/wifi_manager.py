@@ -13,6 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 WPA_SUPPLICANT_CONF = "/etc/wpa_supplicant/wpa_supplicant.conf"
 
+
 def update_wpa_supplicant(ssid: str, psk: str):
     try:
         # Backup the current wpa_supplicant.conf
@@ -29,13 +30,14 @@ def update_wpa_supplicant(ssid: str, psk: str):
         logger.error(f"Error configuring Wi-Fi: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to configure Wi-Fi: {e}")
 
+
 @router.post("/configure_wifi")
 async def configure_wifi(ssid: str = Form(...), password: str = Form(...)):
     try:
         update_wpa_supplicant(ssid, password)
         return {
             "status": "success",
-            "message": "Wi-Fi configuration updated. Please manually restart the Raspberry Pi to apply the changes."
+            "message": "Wi-Fi configuration updated. Please manually restart the Raspberry Pi to apply the changes.",
         }
     except HTTPException as e:
         return {"status": "error", "message": str(e.detail)}

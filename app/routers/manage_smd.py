@@ -4,6 +4,8 @@ import netifaces
 from scapy.all import ARP, Ether, srp
 import requests
 
+from app.dependencies import config
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
@@ -41,7 +43,7 @@ def scan_network(ip_range):
     ether = Ether(dst="ff:ff:ff:ff:ff:ff")
     packet = ether / arp
     try:
-        result = srp(packet, timeout=10, verbose=0)[0]
+        result = srp(packet, timeout=120, verbose=0)[0]
     except Exception as e:
         logger.error(f"Error scanning network: {e}")
         return []
@@ -54,7 +56,7 @@ def identify_shelly(ip_address):
         response = requests.get(f"http://{ip_address}/shelly", timeout=3)
         if response.ok:
             status_data = response.json()
-            device_name = status_data.get("name", f"Unknown Shelly Device (ID: {status_data.get('id', 'Unknown')})")
+            device_name = status_data.get("id", f"Unknown Shelly Device (ID: {status_data.get('id', 'Unknown')})")
             return {"ip": ip_address, "name": device_name}
     except requests.RequestException as e:
         logger.error(f"Error identifying Shelly device at {ip_address}: {e}")
@@ -102,26 +104,38 @@ def scan_and_identify_devices():
 def configure_shelly_mqtt(
     device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, report_interval=60, custom_topic="shelly"
 ):
-    url = f"http://{device_ip}/rpc/MQTT.SetConfig"
+    config_url = f"http://{device_ip}/rpc/MQTT.SetConfig"
+    reboot_url = f"http://{device_ip}/rpc/Sys.Reboot"
     payload = {
-        "enable": True,
-        "server": f"{mqtt_host}:{mqtt_port}",
-        "user": mqtt_user,
-        "pass": mqtt_password,
-        "clean_session": True,
-        "retain": False,
-        "qos": 0,
-        "keep_alive": 60,
-        "status_ntf": True,
-        "rpc_ntf": True,
-        "update_period": report_interval,
-        "custom_topic": custom_topic,
+        "config": {
+            "enable": True,
+            "server": f"{mqtt_host}:{mqtt_port}",
+            "user": mqtt_user,
+            "pass": mqtt_password,
+            "clean_session": True,
+            "retain": False,
+            "qos": 0,
+            "keep_alive": 60,
+            "status_ntf": True,
+            "rpc_ntf": True,
+            "update_period": report_interval,
+            "custom_topic": custom_topic,
+        }
     }
+
+    logger.info(f"Configuring MQTT on Shelly device at {device_ip} with payload: {payload}")
+
     try:
-        response = requests.post(url, json=payload, timeout=5)
+        response = requests.post(config_url, json=payload, timeout=10)
         response.raise_for_status()
+        logger.info(f"Successfully configured MQTT on Shelly device {device_ip}: {response.json()}")
+
+        # Reboot the device to apply the new configuration
+        reboot_response = requests.post(reboot_url, timeout=10)
+        reboot_response.raise_for_status()
+        logger.info(f"Successfully rebooted Shelly device {device_ip}")
     except requests.RequestException as e:
-        logger.error(f"Error configuring MQTT on Shelly device {device_ip}: {e}")
+        logger.error(f"Error configuring MQTT on Shelly device {device_ip}: {e}, Response: {response.text}")
         raise HTTPException(status_code=500, detail=f"Error configuring MQTT on Shelly device {device_ip}: {e}")
 
 
@@ -134,8 +148,7 @@ def configure_tasmota_mqtt(
         requests.get(f"{base_url}?cmnd=MqttPort {mqtt_port}")
         requests.get(f"{base_url}?cmnd=MqttUser {mqtt_user}")
         requests.get(f"{base_url}?cmnd=MqttPassword {mqtt_password}")
-        requests.get(f"{base_url}?cmnd=Topic {topic}")
-        requests.get(f"{base_url}?cmnd=FullTopic %prefix%/%topic%/")
+        requests.get(f"{base_url}?cmnd=FullTopic {topic}")
         requests.get(f"{base_url}?cmnd=TelePeriod {telemetry_interval}")
     except requests.RequestException as e:
         logger.error(f"Error configuring MQTT on Tasmota device {device_ip}: {e}")
@@ -150,13 +163,17 @@ def configure_device(
     mqtt_port: int = Body(...),
     mqtt_user: str = Body(...),
     mqtt_password: str = Body(...),
-    topic: str = Body(default=""),
     telemetry_interval: int = Body(default=60),
 ):
     if device_type.lower() == "shelly":
-        configure_shelly_mqtt(device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, telemetry_interval, topic)
+        logger.info(f"Configuring Shelly device at {device_ip}")
+        configure_shelly_mqtt(
+            device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, telemetry_interval, config.rddl_topic
+        )
     elif device_type.lower() == "tasmota":
-        configure_tasmota_mqtt(device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, topic, telemetry_interval)
+        configure_tasmota_mqtt(
+            device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, config.rddl_topic, telemetry_interval
+        )
     else:
         raise HTTPException(status_code=400, detail="Unsupported device type")
     return {"detail": f"{device_type} device at {device_ip} configured successfully."}
