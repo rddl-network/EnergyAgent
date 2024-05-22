@@ -26,8 +26,11 @@ def update_wpa_supplicant(ssid: str, psk: str):
         # Restart the wpa_supplicant service to apply changes
         subprocess.run(["systemctl", "restart", "wpa_supplicant"], check=True)
 
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Subprocess error configuring Wi-Fi: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to configure Wi-Fi: {e}")
     except Exception as e:
-        logger.error(f"Error configuring Wi-Fi: {e}")
+        logger.error(f"General error configuring Wi-Fi: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to configure Wi-Fi: {e}")
 
 
