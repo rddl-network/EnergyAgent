@@ -66,10 +66,6 @@ def attestMachine(
     accountID: int,
     sequence: int,
 ) -> str:
-
-    trust_wallet = TrustWalletInteraction("/dev/ttyACM0")
-    PlanetmintKeys = trust_wallet.get_planetmint_keys()
-
     attestMachine = MachineTx.MsgAttestMachine()
     attestMachine.creator = plmnt_address
     attestMachine.machine.name = name
@@ -92,8 +88,17 @@ def attestMachine(
 
     anyMsg = planetmint.getAnyMachineAttestation(attestMachine)
     mycoin4Fee = planetmint.getCoin("plmnt", "1")
+
+    txString = createAndSignEnvelopeMessage(anyMsg, mycoin4Fee, chainID, accountID, sequence)
+    return txString
+
+
+def createAndSignEnvelopeMessage(anyMsg: any, coin: any, chainID: str, accountID: int, sequence: int) -> str:
+    trust_wallet = TrustWalletInteraction("/dev/ttyACM0")
+    PlanetmintKeys = trust_wallet.get_planetmint_keys()
+
     pubKeyBytes = binascii.unhexlify(PlanetmintKeys.raw_planetmint_pubkey)
-    rawTx = planetmint.getRawTx(anyMsg, mycoin4Fee, pubKeyBytes, sequence)
+    rawTx = planetmint.getRawTx(anyMsg, coin, pubKeyBytes, sequence)
     signDoc = planetmint.getSignDoc(rawTx, chainID, accountID)
     signDocBytes = signDoc.SerializeToString()
 
@@ -106,3 +111,14 @@ def attestMachine(
     encoded_string = base64.b64encode(rawTxBytes)
     finalString = encoded_string.decode("utf-8")
     return finalString
+    
+
+def notarizeAsset( cid: str, chainID: str, accountID: int, sequence: int ) -> str:
+    trust_wallet = TrustWalletInteraction("/dev/ttyACM0")
+    PlanetmintKeys = trust_wallet.get_planetmint_keys()
+    
+    coin4Fee = planetmint.getCoin("plmnt", "1")
+    anyMsg = planetmint.getAnyAsset( PlanetmintKeys.planetmint_address, cid)
+    
+    txString = createAndSignEnvelopeMessage(anyMsg, coin4Fee, chainID, accountID, sequence)
+    return txString

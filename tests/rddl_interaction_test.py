@@ -1,4 +1,4 @@
-from app.RddlInteraction.planetmint_interaction import createAccountOnNetwork, getAccountInfo, attestMachine
+from app.RddlInteraction.planetmint_interaction import createAccountOnNetwork, getAccountInfo, attestMachine, notarizeAsset
 from app.RddlInteraction.TrustWallet.occ_messages import TrustWalletInteraction
 import binascii
 
@@ -108,3 +108,16 @@ def test_attestMachine_valid():
         sequence,
     )
     assert expected_result == tx
+
+def test_notarize_asset_valid():
+    trust_wallet = TrustWalletInteraction("/dev/ttyACM0")
+    recoverPhrase = 'penalty police pool orphan snack faith educate syrup skill picnic prepare mystery dune control near nation report evolve ethics genius elite tool rigid crane'
+    result = trust_wallet.recover_from_mnemonic(recoverPhrase)
+    assert recoverPhrase == result
+    
+    PlanetmintKeys = trust_wallet.get_planetmint_keys()
+    accountID, sequence, statusText = getAccountInfo("http://localhost:1317", PlanetmintKeys.planetmint_address)
+    assert "" == statusText # on failure: account does not yet exist on chain
+    
+    tx = notarizeAsset("cid", "planetmintgo", accountID, sequence)
+    assert "Cl0KWwokL3BsYW5ldG1pbnRnby5hc3NldC5Nc2dOb3Rhcml6ZUFzc2V0EjMKLHBsbW50MTk5emYwdmttZWhocjJoaGR0M2U0MjVyNWR4NDc0OWRtZW5tMzV3EgNjaWQSZApQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAuuTwelk3VjYYRk78BWwdDgdRDIoIaecVKILRVtMV8HGEgQKAggBGAISEAoKCgVwbG1udBIBMRDAmgwaQMWakNURssQsAKf3eDUGr29/WUbN1gLRFhoDfSflSdMfbTSVb9YaxXBlnS6ElLwuh7Qc/xB3+K2OmdomyMW1EFE=" == tx
