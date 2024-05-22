@@ -51,6 +51,7 @@ def getAccountInfo(apiURL: str, address: str) -> Tuple[int, int, str]:
     return (accountID, sequence, statusMsg)
 
 
+
 def attestMachine(
     plmnt_address: str,
     name: str,
@@ -70,36 +71,35 @@ def attestMachine(
     PlanetmintKeys = trust_wallet.get_planetmint_keys()
 
     attestMachine = MachineTx.MsgAttestMachine()
-    attestMachine.creator = PlanetmintKeys.planetmint_address
+    attestMachine.creator = plmnt_address
     attestMachine.machine.name = name
-    attestMachine.machine.issuerPlanetmint = (
-        PlanetmintKeys.extended_planetmint_pubkey
-    )  # "02328de87896b9cbb5101c335f40029e4be898988b470abbf683f1a0b318d73470"
-    attestMachine.machine.issuerLiquid = (
-        PlanetmintKeys.extended_liquid_pubkey
-    )  # "xpub661MyMwAqRbcEigRSGNjzqsUbkoxRHTDYXDQ6o5kq6EQTSYuXxwD5zNbEXFjCG3hDmYZqCE4HFtcPAi3V3MW9tTYwqzLDUt9BmHv7fPcWaB"
-    attestMachine.machine.machineId = machineID  # "02328de87896b9cbb5101c335f40029e4be898988b470abbf683f1a0b318d73470"
+    attestMachine.machine.ticker = ""
+    attestMachine.machine.domain = ""
+    attestMachine.machine.reissue = False
+    attestMachine.machine.amount = 0
+    attestMachine.machine.precision = 0
+    attestMachine.machine.issuerPlanetmint = issuerPlanetmint
+    attestMachine.machine.issuerLiquid = issuerLiquid
+    attestMachine.machine.machineId = machineID 
     attestMachine.machine.metadata.additionalDataCID = additionalCID
-    attestMachine.machine.metadata.gps = gps  # "{\"Latitude\":\"-48.876667\",\"Longitude\":\"-123.393333\"}"
-    attestMachine.machine.metadata.assetDefinition = '{"Version": "0.1"}'
-    attestMachine.machine.metadata.device = deviceDefinition  # "{\"Manufacturer\": \"RDDL\",\"Serial\":\"AdnT2uyt\"}"
+    attestMachine.machine.metadata.gps = gps  
+    attestMachine.machine.metadata.assetDefinition = "{\"Version\": \"0.1\"}"
+    attestMachine.machine.metadata.device = deviceDefinition  
     attestMachine.machine.type = 1  # RDDL_MACHINE_POWER_SWITCH
+    attestMachine.machine.address = plmnt_address
     attestMachine.machine.machineIdSignature = signature
-    attestMachine.machine.address = PlanetmintKeys.planetmint_address
+    
 
     anyMsg = planetmint.getAnyMachineAttestation(attestMachine)
-    coin4Fee = planetmint.getCoin("plmnt", "0")
-
+    mycoin4Fee = planetmint.getCoin("plmnt", "0")
     pubKeyBytes = binascii.unhexlify(PlanetmintKeys.raw_planetmint_pubkey)
-    rawTx = planetmint.getRawTx(anyMsg, coin4Fee, pubKeyBytes, sequence)
+    rawTx = planetmint.getRawTx(anyMsg, mycoin4Fee, pubKeyBytes, sequence)
     signDoc = planetmint.getSignDoc(rawTx, chainID, accountID)
     signDocBytes = signDoc.SerializeToString()
 
     hash = signing.getHash(signDocBytes)
     hash_string = binascii.hexlify(hash).decode("utf-8")
     signature_hexed_string = trust_wallet.sign_hash_with_planetmint(hash_string)
-    # keybytes = bytes(reference_private_key[-32:])
-    # signature_bytes = signing.signBytesWithKey( signDocBytes, keybytes )
     sig_bytes = binascii.unhexlify(signature_hexed_string.encode("utf-8"))
     rawTx.signatures.append(sig_bytes)
     rawTxBytes = rawTx.SerializeToString()

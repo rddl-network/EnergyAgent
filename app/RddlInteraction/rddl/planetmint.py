@@ -74,8 +74,8 @@ def getRawTx(anyMsg: any_pb2.Any, coin: coin_pb2.Coin, public_key: bytes, sequen
     # fees.gas_limit = 200000
 
     coin2 = coin_pb2.Coin()
-    coin2.denom = "token"
-    coin2.amount = "2"
+    coin2.denom = "plmnt"
+    coin2.amount = "1"
 
     tx = cosmosTx.Tx()
     tx.body.messages.append(anyMsg)
