@@ -15,8 +15,9 @@ from hashlib import sha256
 
 def getCoin(denom: str, amount: str) -> coin_pb2.Coin:
     coin = coin_pb2.Coin()
-    coin.denom = "plmnt"
+    coin.denom = denom
     coin.amount = amount
+    return coin
 
 
 def getAnyAsset(creator: str, cid: str) -> any_pb2.Any:
@@ -59,31 +60,18 @@ def getRawTx(anyMsg: any_pb2.Any, coin: coin_pb2.Coin, public_key: bytes, sequen
     anyPubKey.type_url = "/cosmos.crypto.secp256k1.PubKey"
     anyPubKey.value = pubKey.SerializeToString()
 
-    # modeInfo = cosmosTx.ModeInfo()
-    # modeInfo.Single.mode = 1 #SIGN_MODE_DIRECT
-
     signerInfo = cosmosTx.SignerInfo()
     signerInfo.public_key.type_url = anyPubKey.type_url
     signerInfo.public_key.value = anyPubKey.value
-    # signerInfo.mode_info.sum = 1 #SIGN_MODE_DIRECT
     signerInfo.mode_info.single.mode = 1  # SIGN_MODE_DIRECT
     signerInfo.sequence = sequence
-
-    # fees = cosmosTx.Fee()
-    # fees.amount.append( coin )
-    # fees.gas_limit = 200000
-
-    coin2 = coin_pb2.Coin()
-    coin2.denom = "plmnt"
-    coin2.amount = "1"
 
     tx = cosmosTx.Tx()
     tx.body.messages.append(anyMsg)
     tx.body.timeout_height = 0
     tx.auth_info.signer_infos.append(signerInfo)
     tx.auth_info.fee.gas_limit = 200000
-    tx.auth_info.fee.amount.append(coin2)
-    # tx.auth_info.tip.
+    tx.auth_info.fee.amount.append(coin)
 
     txRaw = cosmosTx.TxRaw()
 

@@ -91,7 +91,7 @@ def attestMachine(
     
 
     anyMsg = planetmint.getAnyMachineAttestation(attestMachine)
-    mycoin4Fee = planetmint.getCoin("plmnt", "0")
+    mycoin4Fee = planetmint.getCoin("plmnt", "1")
     pubKeyBytes = binascii.unhexlify(PlanetmintKeys.raw_planetmint_pubkey)
     rawTx = planetmint.getRawTx(anyMsg, mycoin4Fee, pubKeyBytes, sequence)
     signDoc = planetmint.getSignDoc(rawTx, chainID, accountID)
