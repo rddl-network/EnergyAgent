@@ -106,7 +106,11 @@
             let mqttPort = document.getElementById('mqtt-port').value;
             let mqttUser = document.getElementById('mqtt-user').value;
             let mqttPassword = document.getElementById('mqtt-password').value;
-            let topic = "rddl/SMD/";
+
+            let dropdown = document.getElementById('device-dropdown');
+            let selectedText = dropdown.options[dropdown.selectedIndex].text;
+            let deviceName = getDeviceName(selectedText);
+
 
             if (!deviceIp) {
                 alert('Select a device first.');
@@ -121,11 +125,11 @@
                 body: JSON.stringify({
                     device_type: deviceType,
                     device_ip: deviceIp,
+                    device_name: deviceName,
                     mqtt_host: mqttHost,
                     mqtt_port: parseInt(mqttPort),
                     mqtt_user: mqttUser,
                     mqtt_password: mqttPassword,
-                    topic: topic,
                     telemetry_interval: parseInt(telemetryInterval)
                 })
             });
@@ -137,6 +141,19 @@
                 alert('Device configured successfully!');
             }
         }
+
+        function getDeviceName(str) {
+            str = str.trim();
+            const spaceIndex = str.indexOf(' (');
+            if (spaceIndex !== -1) {
+                return str.substring(0, spaceIndex);
+            }
+            return null;
+        }
+
+        // Example usage:
+        const inputStr = '            shelly-sfasfas-asdasd (172.168.68.120)';
+        const deviceName = getDeviceName(inputStr);
 
         function handleDeviceTypeChange() {
             let selectedType = document.querySelector('input[name="device-type"]:checked').value;
@@ -165,74 +182,77 @@
 </head>
 
 <body>
-    <div class="header">
-        <div class="center">
-            <h1>Configure Shelly and Tasmota Devices</h1>
-            <h2 id="device-ip">IP Address: Fetching...</h2>
-        </div>
+<div class="header">
+    <div class="center">
+        <h1>Configure Shelly and Tasmota Devices</h1>
+        <h2 id="device-ip">IP Address: Fetching...</h2>
     </div>
-    <div class="content">
-        <div class="container-sm">
-            <form>
-                <div class="section">
-                    <h2>MQTT Configuration</h2>
-                    <div class="form-input">
-                        <label for="mqtt-host">MQTT Host:</label>
-                        <input type="text" id="mqtt-host" value="broker.example.com">
-                    </div>
-                    <div class="form-input">
-                        <label for="mqtt-port">Port:</label>
-                        <input type="number" id="mqtt-port" value="1883">
-                    </div>
-                    <div class="form-input">
-                        <label for="mqtt-user">User:</label>
-                        <input type="text" id="mqtt-user" value="mqtt_user">
-                    </div>
-                    <div class="form-input">
-                        <label for="mqtt-password">Password:</label>
-                        <input type="password" id="mqtt-password" value="mqtt_password">
-                    </div>
-                    <div class="button-container">
-                        <button class="btn" type="button" onclick="updateMqttConfig()">Set Energy Agent MQTT</button>
-                        <button class="btn-secondary" type="button" onclick="resetMQTTConfig()">Reset Energy Agent MQTT</button>
-                    </div>
+</div>
+<div class="content">
+    <div class="container-sm">
+        <form>
+            <div class="section">
+                <h2>MQTT Configuration</h2>
+                <div class="form-input">
+                    <label for="mqtt-host">MQTT Host:</label>
+                    <input type="text" id="mqtt-host" value="broker.example.com">
                 </div>
-                <div class="section">
-                    <h2>Network Scan</h2>
-                    <button class="btn" type="button" onclick="fetchDevices()">Scan Network</button>
+                <div class="form-input">
+                    <label for="mqtt-port">Port:</label>
+                    <input type="number" id="mqtt-port" value="1883">
                 </div>
-                <div class="section">
-                    <h2>Device Selection</h2>
-                    <div class="radio-buttons">
-                        <label>
-                            <input type="radio" name="device-type" value="shelly" checked onchange="handleDeviceTypeChange()">
-                            Shelly
-                        </label>
-                        <label>
-                            <input type="radio" name="device-type" value="tasmota" onchange="handleDeviceTypeChange()">
-                            Tasmota
-                        </label>
-                    </div>
-                    <div class="form-input">
-                        <label for="device-dropdown">Select a Device:</label>
-                        <select id="device-dropdown">
-                            <option value="" selected disabled>Select a device</option>
-                        </select>
-                    </div>
-                    <div class="form-input">
-                        <label for="telemetry-interval">Telemetry Interval (seconds):</label>
-                        <input type="number" id="telemetry-interval" value="60">
-                    </div>
-                    <button class="btn" type="button" onclick="applyMqttConfigToDevice()">Apply MQTT Config to IoT Device</button>
+                <div class="form-input">
+                    <label for="mqtt-user">User:</label>
+                    <input type="text" id="mqtt-user" value="mqtt_user">
                 </div>
-            </form>
-        </div>
+                <div class="form-input">
+                    <label for="mqtt-password">Password:</label>
+                    <input type="password" id="mqtt-password" value="mqtt_password">
+                </div>
+                <div class="button-container">
+                    <button class="btn" type="button" onclick="updateMqttConfig()">Set Energy Agent MQTT</button>
+                    <button class="btn-secondary" type="button" onclick="resetMQTTConfig()">Reset Energy Agent MQTT
+                    </button>
+                </div>
+            </div>
+            <div class="section">
+                <h2>Network Scan</h2>
+                <button class="btn" type="button" onclick="fetchDevices()">Scan Network</button>
+            </div>
+            <div class="section">
+                <h2>Device Selection</h2>
+                <div class="radio-buttons">
+                    <label>
+                        <input type="radio" name="device-type" value="shelly" checked
+                               onchange="handleDeviceTypeChange()">
+                        Shelly
+                    </label>
+                    <label>
+                        <input type="radio" name="device-type" value="tasmota" onchange="handleDeviceTypeChange()">
+                        Tasmota
+                    </label>
+                </div>
+                <div class="form-input">
+                    <label for="device-dropdown">Select a Device:</label>
+                    <select id="device-dropdown">
+                        <option value="" selected disabled>Select a device</option>
+                    </select>
+                </div>
+                <div class="form-input">
+                    <label for="telemetry-interval">Telemetry Interval (seconds):</label>
+                    <input type="number" id="telemetry-interval" value="60">
+                </div>
+                <button class="btn" type="button" onclick="applyMqttConfigToDevice()">Apply MQTT Config to IoT Device
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <!-- Loading spinner overlay -->
-    <div id="spinner-overlay" class="spinner-overlay">
-        <div class="spinner"></div>
-    </div>
+<!-- Loading spinner overlay -->
+<div id="spinner-overlay" class="spinner-overlay">
+    <div class="spinner"></div>
+</div>
 </body>
 
 </html>
