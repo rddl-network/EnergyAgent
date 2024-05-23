@@ -13,7 +13,7 @@
             const ssid = formData.get('ssid');
             const password = formData.get('password');
 
-            const response = await fetch('/configure_wifi/', {
+            const response = await fetch('/wifi/configure_wifi', {
                 method: 'POST',
                 body: new URLSearchParams({ ssid, password })
             });

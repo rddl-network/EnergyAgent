@@ -2,13 +2,13 @@ import json
 import asyncio
 from gmqtt import Client as MQTTClient
 from gmqtt.mqtt.constants import MQTTv311
+
 from app.RddlInteraction.cid_tool import store_cid
 from app.RddlInteraction.planetmint_interaction import create_tx_notarize_data
-from app.dependencies import config, logger
+from app.dependencies import config, logger, trust_wallet
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.config_helper import load_config
 from app.helpers.models import SmartMeterConfig, MQTTConfig
-from app.routers.trust_wallet_interaction import trust_wallet
 
 
 class DataAgent:

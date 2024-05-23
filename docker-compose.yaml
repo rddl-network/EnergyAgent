@@ -27,8 +27,9 @@ services:
           - 2138:2138
         privileged: true
         volumes:
-            -   ./energy-agent-data:/data
+            - ./energy-agent-data:/data
+            - /etc/wpa_supplicant:/etc/wpa_supplicant
         restart: always
-        network_mode: "host"  # Share host network
+        network_mode: "host"
         cap_add:
-          - NET_RAW  # Add raw socket capability
+          - NET_RAW

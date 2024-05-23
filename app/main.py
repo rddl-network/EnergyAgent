@@ -4,7 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from starlette.staticfiles import StaticFiles
 
-from app.routers import configuration, cid_resolver, energy_agent_manager, trust_wallet_interaction, manage_smd
+from app.routers import (
+    configuration,
+    cid_resolver,
+    energy_agent_manager,
+    trust_wallet_interaction,
+    manage_smd,
+    wifi_manager,
+)
 from app.routers.html import templates, trust_wallet_templates
 
 app = FastAPI(
@@ -29,6 +36,7 @@ app.include_router(cid_resolver.router)
 app.include_router(energy_agent_manager.router)
 app.include_router(trust_wallet_interaction.router)
 app.include_router(manage_smd.router)
+app.include_router(wifi_manager.router)
 
 # This routes the HTML
 app.include_router(templates.router)
