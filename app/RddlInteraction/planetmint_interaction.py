@@ -23,11 +23,12 @@ def create_tx_notarize_data(cid: str, address: str) -> str:
     return f"notarize data {cid} to {address}"
 
 
-def computeMachineIDSignature( publicKey: str ) -> str :
+def computeMachineIDSignature(publicKey: str) -> str:
     hashBytes = getHash(binascii.unhexlify(publicKey))
     signature = trust_wallet_instance.sign_with_optega(2, hashBytes.hex(), publicKey)
     signature = "30" + hex(int(len(signature) / 2))[2:] + signature
     return signature
+
 
 def createAccountOnNetwork(
     ta_service_base_url: str, machineId: str, plmnt_address: str, signature: str
@@ -107,15 +108,15 @@ def attestMachine(
     attestMachine.machine.precision = 0
     attestMachine.machine.issuerPlanetmint = issuerPlanetmint
     attestMachine.machine.issuerLiquid = issuerLiquid
-    attestMachine.machine.machineId = machineID 
+    attestMachine.machine.machineId = machineID
     attestMachine.machine.metadata.additionalDataCID = additionalCID
-    attestMachine.machine.metadata.gps = gps  
-    attestMachine.machine.metadata.assetDefinition = "{\"Version\": \"0.1\"}"
-    attestMachine.machine.metadata.device = deviceDefinition  
+    attestMachine.machine.metadata.gps = gps
+    attestMachine.machine.metadata.assetDefinition = '{"Version": "0.1"}'
+    attestMachine.machine.metadata.device = deviceDefinition
     attestMachine.machine.type = 1  # RDDL_MACHINE_POWER_SWITCH
     attestMachine.machine.address = plmnt_address
     attestMachine.machine.machineIdSignature = signature
-    
+
     anyMsg = planetmint.getAnyMachineAttestation(attestMachine)
     mycoin4Fee = planetmint.getCoin("plmnt", "0")
 
@@ -142,21 +143,22 @@ def createAndSignEnvelopeMessage(anyMsg: any, coin: any, chainID: str, accountID
     finalString = encoded_string.decode("utf-8")
 
     return finalString
-    
 
-def notarizeAsset( cid: str, chainID: str, accountID: int, sequence: int ) -> str:
+
+def notarizeAsset(cid: str, chainID: str, accountID: int, sequence: int) -> str:
     PlanetmintKeys = trust_wallet_instance.get_planetmint_keys()
-    
+
     coin4Fee = planetmint.getCoin("plmnt", "1")
-    anyMsg = planetmint.getAnyAsset( PlanetmintKeys.planetmint_address, cid)
-    
+    anyMsg = planetmint.getAnyAsset(PlanetmintKeys.planetmint_address, cid)
+
     txString = createAndSignEnvelopeMessage(anyMsg, coin4Fee, chainID, accountID, sequence)
     return txString
 
-def broadcastTX( tx_bytes: str ) -> requests.Response :
+
+def broadcastTX(tx_bytes: str) -> requests.Response:
     url = config.planetmint_api + "/cosmos/tx/v1beta1/txs"
-    
-    data = { "tx_bytes": tx_bytes, "mode": "BROADCAST_MODE_SYNC" }
+
+    data = {"tx_bytes": tx_bytes, "mode": "BROADCAST_MODE_SYNC"}
 
     # Set headers
     headers = {"Content-Type": "application/json"}

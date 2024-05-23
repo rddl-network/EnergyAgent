@@ -23,6 +23,7 @@ class TrustWalletInteraction(object):
     _instance = None
     occ_message_sender = None
     _lock = threading.Lock()
+
     def __new__(cls, *args, **kwargs):
         print("TrustWallet Demand")
         if not getattr(cls, "_instance", None):
@@ -41,7 +42,7 @@ class TrustWalletInteraction(object):
             lib_path = "lib/macos/aarch/libpyocc.dylib"
         else:
             sys.exit("unsupported OS, cannot load TA Wallet connector")
-        
+
         if self.occ_message_sender == None and len(port_name) > 0:
             print("New OSC Message Connector: " + port_name)
             self.occ_message_sender = OSCMessageSender(lib_path, port_name)
@@ -94,7 +95,7 @@ class TrustWalletInteraction(object):
                 self.plmnt_keys.extended_planetmint_pubkey = occ_message.data[2]
                 self.plmnt_keys.extended_liquid_pubkey = occ_message.data[3]
                 self.plmnt_keys.raw_planetmint_pubkey = occ_message.data[4]
-            
+
             return self.plmnt_keys
 
     def sign_hash_with_planetmint(self, data_to_sign: str) -> str:

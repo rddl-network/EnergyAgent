@@ -26,6 +26,7 @@ async def get_der_subscription(request: Request):
 async def create_der_smart_meter(request: Request):
     return jinja2_templates.TemplateResponse("trust_wallet/RecoverMnemonic.html", {"request": request})
 
+
 @router.get("/create-account")
 async def create_der_smart_meter(request: Request):
     return jinja2_templates.TemplateResponse("trust_wallet/CreateAccount.html", {"request": request})
