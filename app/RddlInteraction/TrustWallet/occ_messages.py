@@ -23,7 +23,7 @@ class TrustWalletInteraction:
             if platform.processor() == "x86_64":
                 lib_path = "app/lib/linux/x86_64/libocc.so"
             else:
-                lib_path = "app/lib/linux/x86_64/libocc.so"
+                lib_path = "app/lib/linux/armv7/libocc.so"
         elif platform.system() == "Darwin":
             lib_path = "app/lib/macos/aarch/libpyocc.dylib"
         else:
