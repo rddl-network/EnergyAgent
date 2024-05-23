@@ -21,14 +21,12 @@
                 <div class="value" id="accountid">Loading...</div>
                 <div class="key">Sequence:</div>
                 <div class="value" id="sequence">Loading...</div>
+                <div class="key">Machine Attestation:</div>
+                <div class="value" id="attestation">Loading...</div>
             </div>
             <div class="buttons">
-                <a href="/create-mnemonic">
-                    <button class="btn" type="button">Create on-chain Account</button>
-                </a>
-                <a href="/recover-mnemonic">
-                    <button class="btn" type="button">Recover Mnemonic</button>
-                </a>
+                <button class="btn" onclick="createMnemonic()" id="attestButton">Attest Machine</button>
+                <button class="btn" type="button">Recover Mnemonic</button>
             </div>
         </div>
     </div>
@@ -52,8 +50,30 @@
                 .catch(error => {
                     document.getElementById('accountid').textContent = 'Failed to load: ' + error;
                     document.getElementById('sequence').textContent = 'Failed to load: ' + error;
-                }); 
+                });
+                fetch(`/rddl/machine`)
+                 .then(response => response.json())
+                .then(data => {
+                    document.getElementById('attestation').textContent = JSON.parse(data.message).message
+                })
+                .catch(error => {
+                    document.getElementById('attestation').textContent = 'Failed to load: ' + error;
+                });
+                updateButtonState();
         };
+        function updateButtonState() {
+            const attestButton = document.getElementById("attestButton");
+            const attestationValue = document.getElementById("attestation").textContent;
+            const disabledValue = "machine not found"; // Replace with your desired value
+            if (attestationValue.textContent === disabledValue) {
+              attestButton.disabled = true;
+            } else {
+              attestButton.disabled = false;
+            }
+          }
+        // Update button state initially (optional)
+        attestationValue.addEventListener("DOMContentLoaded", updateButtonState); // For initial load
+        attestationValue.addEventListener("change", updateButtonState); // For any future changes
     </script>
 </body>
 </html>

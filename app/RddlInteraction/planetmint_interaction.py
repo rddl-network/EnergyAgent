@@ -65,6 +65,23 @@ def getAccountInfo(apiURL: str, address: str) -> Tuple[int, int, str]:
     return (accountID, sequence, statusMsg)
 
 
+def getMachineInfo(apiURL: str, address: str) -> Tuple[str, str]:
+    queryURL = apiURL + "/planetmint/machine/address/" + address
+    headers = {"Content-Type": "application/json"}
+
+    # Send POST request with JSON data and headers
+    response = requests.get(queryURL, headers=headers)
+
+    machinedata = ""
+    statusMsg = ""
+    if response.status_code != 200:
+        statusMsg = response.text
+    else:
+        machinedata = json.loads(response.text)
+        statusMsg = ""
+
+    return (machinedata, statusMsg)
+
 
 def attestMachine(
     plmnt_address: str,

@@ -1,6 +1,13 @@
 import subprocess
 import re
-from app.RddlInteraction.planetmint_interaction import createAccountOnNetwork, getAccountInfo, attestMachine, notarizeAsset, computeMachineIDSignature
+from app.RddlInteraction.planetmint_interaction import (
+    createAccountOnNetwork,
+    getAccountInfo,
+    attestMachine,
+    notarizeAsset,
+    computeMachineIDSignature,
+    getMachineInfo
+)
 from app.dependencies import trust_wallet_instance
 from fastapi import APIRouter, Form
 
@@ -36,5 +43,18 @@ async def getAccount():
             return {"status": "error", "error": status, "message": status}
         else:
             return {"status": "success", "accountinfo": {"accountid": str(accountID), "sequence": str(sequence)} }
+    except Exception as e:
+        return {"status": "error", "error": str(e), "message": str(e)}
+    
+    
+@router.get("/machine")
+async def getMachineAttestation():
+    try:
+        keys = trust_wallet_instance.get_planetmint_keys()
+        machine_data, status = getMachineInfo("http://localhost:1317", keys.planetmint_address)
+        if status != "":
+            return {"status": "error", "error": status, "message": status}
+        else:
+            return {"status": "success", "machine": machine_data }
     except Exception as e:
         return {"status": "error", "error": str(e), "message": str(e)}
