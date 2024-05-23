@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trust Wallet</title>
+    <title>RDDL Network</title>
     <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
 </head>
 <body>
     <div class="header">
-        <div class="center"><h1>Welcome to your Trust Wallet</h1></div>
+        <div class="center"><h1>RDDL Network participation</h1></div>
     </div>
     <div class="content">
-        <p>Here is the Home of your Trust Wallet</p>
+        <p>The entrypoint to start interacting with the RDDL network.</p>
         <div class="container">
             <div class="section">
                 <h2>RDDL Network</h2>
@@ -23,10 +23,12 @@
                 <div class="value" id="sequence">Loading...</div>
                 <div class="key">Machine Attestation:</div>
                 <div class="value" id="attestation">Loading...</div>
+                <div class="key">Log:</div>
+                <div class="value" id="log">Logging...</div>
             </div>
             <div class="buttons">
-                <button class="btn" onclick="createMnemonic()" id="attestButton">Attest Machine</button>
-                <button class="btn" type="button">Recover Mnemonic</button>
+                <button class="btn" onclick="attestMachine()" id="attestButton" type="button">Attest Machine</button>
+                <button class="btn" onclick="notarize()" id="notarizeButton" type="button">Notarize</button>
             </div>
         </div>
     </div>
@@ -71,6 +73,26 @@
               attestButton.disabled = false;
             }
           }
+        function attestMachine() {
+            fetch(`/rddl/attestmachine`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('log').textContent = JSON.parse(data.message).tx_response.txhash
+            })
+            .catch(error => {
+                document.getElementById('log').textContent = 'Failed to load: ' + error;
+            });    
+        }
+        function notarize() {
+            fetch(`/rddl/notarize`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('log').textContent = JSON.parse(data.message).tx_response.txhash
+            })
+            .catch(error => {
+                document.getElementById('log').textContent = 'Failed to load: ' + error;
+            });    
+        }
         // Update button state initially (optional)
         attestationValue.addEventListener("DOMContentLoaded", updateButtonState); // For initial load
         attestationValue.addEventListener("change", updateButtonState); // For any future changes

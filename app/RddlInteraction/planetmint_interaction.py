@@ -7,7 +7,7 @@ from typing import Tuple
 from planetmintgo.machine import tx_pb2 as MachineTx
 from app.RddlInteraction.rddl import planetmint
 from app.RddlInteraction.rddl import signing
-from app.dependencies import trust_wallet_instance
+from app.dependencies import trust_wallet_instance, config
 import binascii
 
 
@@ -116,9 +116,8 @@ def attestMachine(
     attestMachine.machine.address = plmnt_address
     attestMachine.machine.machineIdSignature = signature
     
-
     anyMsg = planetmint.getAnyMachineAttestation(attestMachine)
-    mycoin4Fee = planetmint.getCoin("plmnt", "1")
+    mycoin4Fee = planetmint.getCoin("plmnt", "0")
 
     txString = createAndSignEnvelopeMessage(anyMsg, mycoin4Fee, chainID, accountID, sequence)
     return txString
@@ -138,8 +137,10 @@ def createAndSignEnvelopeMessage(anyMsg: any, coin: any, chainID: str, accountID
     sig_bytes = binascii.unhexlify(signature_hexed_string.encode("utf-8"))
     rawTx.signatures.append(sig_bytes)
     rawTxBytes = rawTx.SerializeToString()
+
     encoded_string = base64.b64encode(rawTxBytes)
     finalString = encoded_string.decode("utf-8")
+
     return finalString
     
 
@@ -151,3 +152,17 @@ def notarizeAsset( cid: str, chainID: str, accountID: int, sequence: int ) -> st
     
     txString = createAndSignEnvelopeMessage(anyMsg, coin4Fee, chainID, accountID, sequence)
     return txString
+
+def broadcastTX( tx_bytes: str ) -> requests.Response :
+    url = config.planetmint_api + "/cosmos/tx/v1beta1/txs"
+    
+    data = { "tx_bytes": tx_bytes, "mode": "BROADCAST_MODE_SYNC" }
+
+    # Set headers
+    headers = {"Content-Type": "application/json"}
+
+    # Send POST request with JSON data and headers
+    response = requests.post(url, json=data, headers=headers)
+    print(response.status_code)
+    print(response.text)
+    return response

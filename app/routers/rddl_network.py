@@ -6,9 +6,10 @@ from app.RddlInteraction.planetmint_interaction import (
     attestMachine,
     notarizeAsset,
     computeMachineIDSignature,
-    getMachineInfo
+    getMachineInfo,
+    broadcastTX
 )
-from app.dependencies import trust_wallet_instance
+from app.dependencies import trust_wallet_instance, config
 from fastapi import APIRouter, Form
 
 router = APIRouter(
@@ -21,11 +22,12 @@ router = APIRouter(
 @router.get("/createaccount")
 async def createAccount():
     try:
-        machine_id = "af837636231cf339f9e991ef37e12f56b04b824914acc2f04417e3894181c152ff2c2e9d785104301b2ee2a6d10578324de92cdf5f8d952f6fe1497d59c096e8"
+        machine_id = config.machine_id
         address = trust_wallet_instance.get_planetmint_keys().planetmint_address
         signature = computeMachineIDSignature( machine_id )
 
-        response = createAccountOnNetwork("http://localhost:8080",machine_id, address, signature)
+        response = createAccountOnNetwork(config.ta_base_url,machine_id, address, signature)
+        print( response)
         return {"status": "success", "message": str(response)}
     except Exception as e:
         return {"status": "error", "message": str(e)}
@@ -36,7 +38,7 @@ async def getAccount():
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
         print( keys.planetmint_address)
-        accountID, sequence, status = getAccountInfo("http://localhost:1317", keys.planetmint_address)
+        accountID, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
         print( accountID)
         print( sequence)
         if status != "":
@@ -51,10 +53,52 @@ async def getAccount():
 async def getMachineAttestation():
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
-        machine_data, status = getMachineInfo("http://localhost:1317", keys.planetmint_address)
+        machine_data, status = getMachineInfo(config.planetmint_api, keys.planetmint_address)
         if status != "":
             return {"status": "error", "error": status, "message": status}
         else:
             return {"status": "success", "machine": machine_data }
+    except Exception as e:
+        return {"status": "error", "error": str(e), "message": str(e)}
+    
+@router.get("/attestmachine")
+async def getAttestMachine():
+    try:
+        
+        keys = trust_wallet_instance.get_planetmint_keys()
+        accountID, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
+        additionalCID = ""
+        machineIDSig = computeMachineIDSignature( config.machine_id )
+        print(machineIDSig)
+        gps_data = "{\"Latitude\":\"-48.876667\",\"Longitude\":\"-123.393333\"}"
+        deviceDefinition = "{\"Manufacturer\": \"RDDL\",\"Serial\":\"AdnT2uyt\"}"
+    
+
+        machine_attestation_tx = attestMachine(keys.planetmint_address, "EnergyAgent0", 
+                                             keys.extended_planetmint_pubkey, keys.extended_liquid_pubkey,
+                                             gps_data, deviceDefinition, config.machine_id, machineIDSig, 
+                                             additionalCID, config.chain_id, accountID, sequence)
+        response = broadcastTX(machine_attestation_tx)
+        
+        if response.status_code != 200:
+            return {"status": "error", "error": response.reason, "message": response.text}
+        else:
+            return {"status": "success", "message": response.text }
+    except Exception as e:
+        return {"status": "error", "error": str(e), "message": str(e)}
+
+@router.get("/notarize")
+async def notarize():
+    try:
+        
+        keys = trust_wallet_instance.get_planetmint_keys()
+        accountID, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
+        notarize_tx = notarizeAsset("cidstr", config.chain_id, accountID, sequence )
+        response = broadcastTX(notarize_tx)
+        
+        if response.status_code != 200:
+            return {"status": "error", "error": response.reason, "message": response.text}
+        else:
+            return {"status": "success", "message": response.text }
     except Exception as e:
         return {"status": "error", "error": str(e), "message": str(e)}
