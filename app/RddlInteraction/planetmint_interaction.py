@@ -1,19 +1,33 @@
 import requests
 import json
 import base64
+import hashlib
 from typing import Tuple
 
 from planetmintgo.machine import tx_pb2 as MachineTx
 from app.RddlInteraction.rddl import planetmint
 from app.RddlInteraction.rddl import signing
-from app.RddlInteraction.TrustWallet.occ_messages import TrustWalletInteraction
+from app.dependencies import trust_wallet_instance
 import binascii
+
+
+def getHash(data: bytes) -> bytes:
+    hasher = hashlib.sha256()
+    hasher.update(data)
+    digest = hasher.digest()
+    return digest
 
 
 def create_tx_notarize_data(cid: str, address: str) -> str:
     # TODO: implement this function
     return f"notarize data {cid} to {address}"
 
+
+def computeMachineIDSignature( publicKey: str ) -> str :
+    hashBytes = getHash(binascii.unhexlify(publicKey))
+    signature = trust_wallet_instance.sign_with_optega(2, hashBytes.hex(), publicKey)
+    signature = "30" + hex(int(len(signature) / 2))[2:] + signature
+    return signature
 
 def createAccountOnNetwork(
     ta_service_base_url: str, machineId: str, plmnt_address: str, signature: str
@@ -94,8 +108,7 @@ def attestMachine(
 
 
 def createAndSignEnvelopeMessage(anyMsg: any, coin: any, chainID: str, accountID: int, sequence: int) -> str:
-    trust_wallet = TrustWalletInteraction("/dev/ttyACM0")
-    PlanetmintKeys = trust_wallet.get_planetmint_keys()
+    PlanetmintKeys = trust_wallet_instance.get_planetmint_keys()
 
     pubKeyBytes = binascii.unhexlify(PlanetmintKeys.raw_planetmint_pubkey)
     rawTx = planetmint.getRawTx(anyMsg, coin, pubKeyBytes, sequence)
@@ -104,7 +117,7 @@ def createAndSignEnvelopeMessage(anyMsg: any, coin: any, chainID: str, accountID
 
     hash = signing.getHash(signDocBytes)
     hash_string = binascii.hexlify(hash).decode("utf-8")
-    signature_hexed_string = trust_wallet.sign_hash_with_planetmint(hash_string)
+    signature_hexed_string = trust_wallet_instance.sign_hash_with_planetmint(hash_string)
     sig_bytes = binascii.unhexlify(signature_hexed_string.encode("utf-8"))
     rawTx.signatures.append(sig_bytes)
     rawTxBytes = rawTx.SerializeToString()
@@ -114,8 +127,7 @@ def createAndSignEnvelopeMessage(anyMsg: any, coin: any, chainID: str, accountID
     
 
 def notarizeAsset( cid: str, chainID: str, accountID: int, sequence: int ) -> str:
-    trust_wallet = TrustWalletInteraction("/dev/ttyACM0")
-    PlanetmintKeys = trust_wallet.get_planetmint_keys()
+    PlanetmintKeys = trust_wallet_instance.get_planetmint_keys()
     
     coin4Fee = planetmint.getCoin("plmnt", "1")
     anyMsg = planetmint.getAnyAsset( PlanetmintKeys.planetmint_address, cid)

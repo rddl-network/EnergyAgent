@@ -1,5 +1,6 @@
 import sys
 import platform
+import threading
 from osc4py3.oscbuildparse import OSCMessage
 
 from app.RddlInteraction.TrustWallet.osc_message_sender import OSCMessageSender
@@ -18,11 +19,15 @@ PREFIX_IHW = "/IHW"
 
 class TrustWalletInteraction(object):
     _instance = None
-
+    _lock = threading.Lock()
+    
     def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super().__new__(cls)
-            cls._instance.__init__(*args, **kwargs)  # Call __init__ manually
+        print("TrustWallet Demand")
+        if not getattr(cls, "_instance", None):
+            with cls._lock:     
+                if not getattr(cls, "_instance", None):
+                    cls._instance = super().__new__(cls)
+                    cls._instance.__init__(*args, **kwargs)  # Call __init__ manually
         return cls._instance
 
     def __init__(self, port_name):
@@ -36,8 +41,9 @@ class TrustWalletInteraction(object):
             lib_path = "lib/macos/aarch/libpyocc.dylib"
         else:
             sys.exit("unsupported OS, cannot load TA Wallet connector")
-
+        print("New OSC Message Connector")
         self.occ_message_sender = OSCMessageSender(lib_path, port_name)
+        self.plmnt_keys = None
 
     def valise_get(self) -> str:
         """
@@ -54,6 +60,7 @@ class TrustWalletInteraction(object):
         """
         @brief: Derives the private key from the mnemonic seed
         """
+        self.plmnt_keys == None
         msg = OSCMessage(f"{PREFIX_IHW}/mnemonicToSeed", ",i", [0])
         occ_message = self.occ_message_sender.send_message(msg)
         return occ_message.data[1]
@@ -62,6 +69,7 @@ class TrustWalletInteraction(object):
         """
         @brief: Derives the private key from the mnemonic seed
         """
+        self.plmnt_keys == None
         msg = OSCMessage(f"{PREFIX_IHW}/mnemonicToSeed", ",is", [0, mnemonic])
         occ_message = self.occ_message_sender.send_message(msg)
         return occ_message.data[1]
@@ -71,14 +79,16 @@ class TrustWalletInteraction(object):
         @brief: Gets the seed
         @return: return seed
         """
-        msg = OSCMessage(f"{PREFIX_IHW}/getPlntmntKeys", ",", [])
-        occ_message = self.occ_message_sender.send_message(msg)
-        plmnt_keys = PlanetMintKeys()
-        plmnt_keys.planetmint_address = occ_message.data[1]
-        plmnt_keys.extended_planetmint_pubkey = occ_message.data[2]
-        plmnt_keys.extended_liquid_pubkey = occ_message.data[3]
-        plmnt_keys.raw_planetmint_pubkey = occ_message.data[4]
-        return plmnt_keys
+        if self.plmnt_keys == None:
+            msg = OSCMessage(f"{PREFIX_IHW}/getPlntmntKeys", ",", [])
+            occ_message = self.occ_message_sender.send_message(msg)
+            self.plmnt_keys = PlanetMintKeys()
+            self.plmnt_keys.planetmint_address = occ_message.data[1]
+            self.plmnt_keys.extended_planetmint_pubkey = occ_message.data[2]
+            self.plmnt_keys.extended_liquid_pubkey = occ_message.data[3]
+            self.plmnt_keys.raw_planetmint_pubkey = occ_message.data[4]
+        
+        return self.plmnt_keys
 
     def sign_hash_with_planetmint(self, data_to_sign: str) -> str:
         """
