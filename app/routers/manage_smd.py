@@ -118,8 +118,7 @@ def configure_shelly_mqtt(
             "keep_alive": 60,
             "status_ntf": True,
             "rpc_ntf": True,
-            "update_period": report_interval,
-            "custom_topic": custom_topic,
+            "topic_prefix": custom_topic,
         }
     }
 
