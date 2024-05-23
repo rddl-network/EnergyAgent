@@ -165,9 +165,7 @@ def configure_device(
     custom_topic = build_mqtt_topic(remove_hashtag_from_topic(config.rddl_topic), device_name)
     if device_type.lower() == "shelly":
         logger.info(f"Configuring Shelly device at {device_ip}")
-        configure_shelly_mqtt(
-            device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, custom_topic
-        )
+        configure_shelly_mqtt(device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, custom_topic)
     elif device_type.lower() == "tasmota":
         configure_tasmota_mqtt(
             device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, custom_topic, telemetry_interval
@@ -182,10 +180,10 @@ def remove_hashtag_from_topic(topic):
 
 
 def build_mqtt_topic(base_topic, device_name):
-    if base_topic.endswith('/'):
+    if base_topic.endswith("/"):
         base_topic = base_topic[:-1]
 
-    if device_name.startswith('/'):
+    if device_name.startswith("/"):
         device_name = device_name[1:]
 
     mqtt_topic = f"{base_topic}/{device_name}"
