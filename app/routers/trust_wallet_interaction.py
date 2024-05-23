@@ -1,8 +1,6 @@
-import platform
-import sys
 from fastapi import APIRouter
 
-from app.RddlInteraction.TrustWallet.occ_messages import TrustWalletInteraction
+from app.dependencies import trust_wallet
 from app.helpers.models import PlanetMintKeys
 
 router = APIRouter(
@@ -10,8 +8,6 @@ router = APIRouter(
     tags=["twi"],
     responses={404: {"detail": "Not found"}},
 )
-
-trust_wallet = TrustWalletInteraction()
 
 
 @router.get("/valise-get")

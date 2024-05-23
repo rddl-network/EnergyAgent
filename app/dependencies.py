@@ -2,6 +2,7 @@ import logging
 import os
 import sqlite3
 
+from app.RddlInteraction.TrustWallet.occ_messages import TrustWalletInteraction
 from app.helpers.config_helper import build_config_path
 
 FILE_SMART_METER_CONFIG = "smart_meter_config.json"
@@ -53,6 +54,7 @@ class Config:
 
 
 config = Config()
+trust_wallet = TrustWalletInteraction(config.trust_wallet_port)
 
 numeric_level = getattr(logging, config.log_level.upper(), None)
 if not isinstance(numeric_level, int):

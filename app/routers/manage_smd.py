@@ -101,9 +101,7 @@ def scan_and_identify_devices():
     }
 
 
-def configure_shelly_mqtt(
-    device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, report_interval=60, custom_topic="shelly"
-):
+def configure_shelly_mqtt(device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, custom_topic="shelly"):
     config_url = f"http://{device_ip}/rpc/MQTT.SetConfig"
     reboot_url = f"http://{device_ip}/rpc/Sys.Reboot"
     payload = {
@@ -138,9 +136,7 @@ def configure_shelly_mqtt(
         raise HTTPException(status_code=500, detail=f"Error configuring MQTT on Shelly device {device_ip}: {e}")
 
 
-def configure_tasmota_mqtt(
-    device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, topic="tasmota", telemetry_interval=60
-):
+def configure_tasmota_mqtt(device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, topic, telemetry_interval=60):
     base_url = f"http://{device_ip}/cm"
     try:
         requests.get(f"{base_url}?cmnd=MqttHost {mqtt_host}")
@@ -164,18 +160,23 @@ def configure_device(
     mqtt_password: str = Body(...),
     telemetry_interval: int = Body(default=60),
 ):
+    custom_topic = remove_hashtag_from_topic(config.rddl_topic)
     if device_type.lower() == "shelly":
         logger.info(f"Configuring Shelly device at {device_ip}")
         configure_shelly_mqtt(
-            device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, telemetry_interval, config.rddl_topic
+            device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, telemetry_interval, custom_topic
         )
     elif device_type.lower() == "tasmota":
         configure_tasmota_mqtt(
-            device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, config.rddl_topic, telemetry_interval
+            device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, custom_topic, telemetry_interval
         )
     else:
         raise HTTPException(status_code=400, detail="Unsupported device type")
     return {"detail": f"{device_type} device at {device_ip} configured successfully."}
+
+
+def remove_hashtag_from_topic(topic):
+    return topic.replace("#", "")
 
 
 @router.get("/ip-address")

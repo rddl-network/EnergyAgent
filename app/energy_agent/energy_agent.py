@@ -3,15 +3,12 @@ import asyncio
 from gmqtt import Client as MQTTClient
 from gmqtt.mqtt.constants import MQTTv311
 
-from app.RddlInteraction.TrustWallet.occ_messages import TrustWalletInteraction
 from app.RddlInteraction.cid_tool import store_cid
 from app.RddlInteraction.planetmint_interaction import create_tx_notarize_data
-from app.dependencies import config, logger
+from app.dependencies import config, logger, trust_wallet
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.config_helper import load_config
 from app.helpers.models import SmartMeterConfig, MQTTConfig
-import platform
-import sys
 
 
 class DataAgent:
@@ -79,7 +76,6 @@ class DataAgent:
                 data = json.dumps(self.data_buffer)
                 notarize_cid = store_cid(data)
                 logger.debug(f"Notarize CID transaction: {notarize_cid}, {data}")
-                trust_wallet = TrustWalletInteraction()
                 planetmint_keys = trust_wallet.get_planetmint_keys()
                 planetmint_tx = create_tx_notarize_data(notarize_cid, planetmint_keys.planetmint_address)
                 logger.info(f"Planetmint transaction: {planetmint_tx}")
