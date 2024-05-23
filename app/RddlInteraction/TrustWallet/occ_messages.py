@@ -1,14 +1,34 @@
 from osc4py3.oscbuildparse import OSCMessage
 
 from app.RddlInteraction.TrustWallet.osc_message_sender import OSCMessageSender
+from app.dependencies import config
 from app.helpers.models import PlanetMintKeys
+import platform
+import sys
 
 PREFIX_IHW = "/IHW"
 
 
 class TrustWalletInteraction:
-    def __init__(self, lib_path, port_name):
-        self.occ_message_sender = OSCMessageSender(lib_path, port_name)
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+            cls._instance.__init__(*args, **kwargs)
+        return cls._instance
+
+    def __init__(self):
+        if platform.system() == "Linux":
+            if platform.processor() == "x86_64":
+                lib_path = "app/lib/linux/x86_64/libocc.so"
+            else:
+                lib_path = "app/lib/linux/x86_64/libocc.so"
+        elif platform.system() == "Darwin":
+            lib_path = "app/lib/macos/aarch/libpyocc.dylib"
+        else:
+            sys.exit("unsupported OS, cannot load TA Wallet connector")
+        self.occ_message_sender = OSCMessageSender(lib_path, config.trust_wallet_port)
 
     def valise_get(self) -> str:
         """

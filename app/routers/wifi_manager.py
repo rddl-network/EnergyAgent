@@ -18,13 +18,9 @@ def update_wpa_supplicant(ssid: str, psk: str):
     try:
         # Backup the current wpa_supplicant.conf
         subprocess.run(["cp", WPA_SUPPLICANT_CONF, f"{WPA_SUPPLICANT_CONF}.bak"], check=True)
-
         # Append the new network configuration
         with open(WPA_SUPPLICANT_CONF, "a") as wpa_conf:
             wpa_conf.write(f'\nnetwork={{\n    ssid="{ssid}"\n    psk="{psk}"\n}}\n')
-
-        # Restart the wpa_supplicant service to apply changes
-        subprocess.run(["systemctl", "restart", "wpa_supplicant"], check=True)
 
     except subprocess.CalledProcessError as e:
         logger.error(f"Subprocess error configuring Wi-Fi: {e}")

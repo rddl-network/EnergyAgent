@@ -3,7 +3,6 @@ import sys
 from fastapi import APIRouter
 
 from app.RddlInteraction.TrustWallet.occ_messages import TrustWalletInteraction
-from app.dependencies import config
 from app.helpers.models import PlanetMintKeys
 
 router = APIRouter(
@@ -12,16 +11,7 @@ router = APIRouter(
     responses={404: {"detail": "Not found"}},
 )
 
-# system pick and optimistic architecture selection
-if platform.system() == "Linux":
-    if platform.processor() == "x86_64":
-        trust_wallet = TrustWalletInteraction("app/lib/linux/x86_64/libocc.so", "/dev/ttyACM0")
-    else:
-        trust_wallet = TrustWalletInteraction("app/lib/linux/armv7/libocc.so", "/dev/ttyACM0")
-elif platform.system() == "Darwin":
-    trust_wallet = TrustWalletInteraction("app/lib/macos/aarch/libpyocc.dylib", "/dev/tty.usbmodem1101")
-else:
-    sys.exit("unsupported OS, cannot load TA Wallet connector")
+trust_wallet = TrustWalletInteraction()
 
 
 @router.get("/valise-get")
