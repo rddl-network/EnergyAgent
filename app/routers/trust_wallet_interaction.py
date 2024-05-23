@@ -1,13 +1,12 @@
 from fastapi import APIRouter
-from app.helpers.models import PlanetMintKeys
 from app.dependencies import trust_wallet_instance
+from app.helpers.models import PlanetMintKeys
 
 router = APIRouter(
     prefix="/twi",
     tags=["twi"],
     responses={404: {"detail": "Not found"}},
 )
-
 
 
 @router.get("/valise-get")

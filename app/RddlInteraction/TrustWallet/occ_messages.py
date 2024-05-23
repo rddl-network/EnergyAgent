@@ -5,6 +5,8 @@ from osc4py3.oscbuildparse import OSCMessage
 
 from app.RddlInteraction.TrustWallet.osc_message_sender import OSCMessageSender
 from app.helpers.models import PlanetMintKeys
+import platform
+import sys
 
 PREFIX_IHW = "/IHW"
 
@@ -34,7 +36,7 @@ class TrustWalletInteraction(object):
             if platform.processor() == "x86_64":
                 lib_path = "lib/linux/x86_64/libocc.so"
             else:
-                lib_path = "lib/linux/x86_64/libocc.so"
+                lib_path = "lib/linux/armv7/libocc.so"
         elif platform.system() == "Darwin":
             lib_path = "lib/macos/aarch/libpyocc.dylib"
         else:

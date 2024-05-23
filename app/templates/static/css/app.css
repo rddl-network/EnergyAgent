@@ -49,8 +49,10 @@ body {
 }
 
 h1 {
+  background: linear-gradient(to right, rgba(8, 133, 223, 1) 0%, rgba(91, 231, 100, 1) 50%, rgba(8, 133, 223, 1) 100%);
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
   background-clip: text;
-  background-image: linear-gradient(to right, rgba(8, 133, 223, 1) 0%, rgba(91, 231, 100, 1) 50%, rgba(8, 133, 223, 1) 100%);
   color: transparent;
   display: inline-block;
 }
