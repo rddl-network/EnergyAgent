@@ -62,7 +62,6 @@ class Config:
 
 
 config = Config()
-trust_wallet = TrustWalletInteraction(config.trust_wallet_port)
 
 numeric_level = getattr(logging, config.log_level.upper(), None)
 if not isinstance(numeric_level, int):
