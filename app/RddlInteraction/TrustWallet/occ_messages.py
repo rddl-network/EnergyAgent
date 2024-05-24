@@ -27,11 +27,11 @@ class TrustWalletInteraction(object):
         # system pick and optimistic architecture selection
         if platform.system() == "Linux":
             if platform.processor() == "x86_64":
-                lib_path = "lib/linux/x86_64/libocc.so"
+                lib_path = "app/lib/linux/x86_64/libocc.so"
             else:
-                lib_path = "lib/linux/armv7/libocc.so"
+                lib_path = "app/lib/linux/armv7/libocc.so"
         elif platform.system() == "Darwin":
-            lib_path = "lib/macos/aarch/libpyocc.dylib"
+            lib_path = "app/lib/macos/aarch/libpyocc.dylib"
         else:
             sys.exit("unsupported OS, cannot load TA Wallet connector")
 

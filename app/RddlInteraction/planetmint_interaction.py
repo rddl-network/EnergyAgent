@@ -4,7 +4,7 @@ import base64
 import hashlib
 from typing import Tuple
 
-from planetmintgo.machine import tx_pb2 as MachineTx
+from app.proto.planetmintgo.machine import tx_pb2 as MachineTx
 from app.RddlInteraction.rddl import planetmint
 from app.RddlInteraction.rddl import signing
 from app.dependencies import trust_wallet_instance, config

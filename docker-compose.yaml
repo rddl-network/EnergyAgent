@@ -23,6 +23,8 @@ services:
             NOTARIZE_INTERVAL: 1
             CLIENT_ID: "energy_agent"
             PORT: 2138
+            PLANETMINT_API: "https://testnet-api.rddl.io"
+            TA_BASE_URL: "https://testnet-ta.rddl.io"
         ports:
           - 2138:2138
         privileged: true

@@ -11,14 +11,14 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from planetmintgo.machine import machine_pb2 as planetmintgo_dot_machine_dot_machine__pb2
-from planetmintgo.machine import trust_anchor_pb2 as planetmintgo_dot_machine_dot_trust__anchor__pb2
-from planetmintgo.machine import liquid_asset_pb2 as planetmintgo_dot_machine_dot_liquid__asset__pb2
-from planetmintgo.machine import params_pb2 as planetmintgo_dot_machine_dot_params__pb2
-from amino import amino_pb2 as amino_dot_amino__pb2
-from gogoproto import gogo_pb2 as gogoproto_dot_gogo__pb2
-from cosmos_proto import cosmos_pb2 as cosmos__proto_dot_cosmos__pb2
-from cosmos.msg.v1 import msg_pb2 as cosmos_dot_msg_dot_v1_dot_msg__pb2
+from app.proto.planetmintgo.machine import machine_pb2 as planetmintgo_dot_machine_dot_machine__pb2
+from app.proto.planetmintgo.machine import trust_anchor_pb2 as planetmintgo_dot_machine_dot_trust__anchor__pb2
+from app.proto.planetmintgo.machine import liquid_asset_pb2 as planetmintgo_dot_machine_dot_liquid__asset__pb2
+from app.proto.planetmintgo.machine import params_pb2 as planetmintgo_dot_machine_dot_params__pb2
+from app.proto.amino import amino_pb2 as amino_dot_amino__pb2
+from app.proto.gogoproto import gogo_pb2 as gogoproto_dot_gogo__pb2
+from app.proto.cosmos_proto import cosmos_pb2 as cosmos__proto_dot_cosmos__pb2
+from app.proto.cosmos.msg.v1 import msg_pb2 as cosmos_dot_msg_dot_v1_dot_msg__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1dplanetmintgo/machine/tx.proto\x12\x14planetmintgo.machine\x1a\"planetmintgo/machine/machine.proto\x1a\'planetmintgo/machine/trust_anchor.proto\x1a\'planetmintgo/machine/liquid_asset.proto\x1a!planetmintgo/machine/params.proto\x1a\x11\x61mino/amino.proto\x1a\x14gogoproto/gogo.proto\x1a\x19\x63osmos_proto/cosmos.proto\x1a\x17\x63osmos/msg/v1/msg.proto\"S\n\x10MsgAttestMachine\x12\x0f\n\x07\x63reator\x18\x01 \x01(\t\x12.\n\x07machine\x18\x02 \x01(\x0b\x32\x1d.planetmintgo.machine.Machine\"\x1a\n\x18MsgAttestMachineResponse\"a\n\x16MsgRegisterTrustAnchor\x12\x0f\n\x07\x63reator\x18\x01 \x01(\t\x12\x36\n\x0btrustAnchor\x18\x02 \x01(\x0b\x32!.planetmintgo.machine.TrustAnchor\" \n\x1eMsgRegisterTrustAnchorResponse\"b\n\x16MsgNotarizeLiquidAsset\x12\x0f\n\x07\x63reator\x18\x01 \x01(\t\x12\x37\n\x0cnotarization\x18\x02 \x01(\x0b\x32!.planetmintgo.machine.LiquidAsset\" \n\x1eMsgNotarizeLiquidAssetResponse\"\x87\x01\n\x0fMsgUpdateParams\x12+\n\tauthority\x18\x01 \x01(\tB\x18\xd2\xb4-\x14\x63osmos.AddressString\x12\x37\n\x06params\x18\x02 \x01(\x0b\x32\x1c.planetmintgo.machine.ParamsB\t\xc8\xde\x1f\x00\xa8\xe7\xb0*\x01:\x0e\x82\xe7\xb0*\tauthority\"\x19\n\x17MsgUpdateParamsResponse2\xca\x03\n\x03Msg\x12g\n\rAttestMachine\x12&.planetmintgo.machine.MsgAttestMachine\x1a..planetmintgo.machine.MsgAttestMachineResponse\x12y\n\x13RegisterTrustAnchor\x12,.planetmintgo.machine.MsgRegisterTrustAnchor\x1a\x34.planetmintgo.machine.MsgRegisterTrustAnchorResponse\x12y\n\x13NotarizeLiquidAsset\x12,.planetmintgo.machine.MsgNotarizeLiquidAsset\x1a\x34.planetmintgo.machine.MsgNotarizeLiquidAssetResponse\x12\x64\n\x0cUpdateParams\x12%.planetmintgo.machine.MsgUpdateParams\x1a-.planetmintgo.machine.MsgUpdateParamsResponseB5Z3github.com/planetmint/planetmint-go/x/machine/typesb\x06proto3')
