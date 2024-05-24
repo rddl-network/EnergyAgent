@@ -11,6 +11,7 @@ from app.routers import (
     trust_wallet_interaction,
     manage_smd,
     wifi_manager,
+    rddl_network,
 )
 from app.routers.html import templates, trust_wallet_templates
 
@@ -35,6 +36,7 @@ app.include_router(configuration.router)
 app.include_router(cid_resolver.router)
 app.include_router(energy_agent_manager.router)
 app.include_router(trust_wallet_interaction.router)
+app.include_router(rddl_network.router)
 app.include_router(manage_smd.router)
 app.include_router(wifi_manager.router)
 

@@ -1,6 +1,5 @@
 from fastapi import APIRouter
-
-from app.dependencies import trust_wallet
+from app.dependencies import trust_wallet_instance
 from app.helpers.models import PlanetMintKeys
 
 router = APIRouter(
@@ -12,22 +11,22 @@ router = APIRouter(
 
 @router.get("/valise-get")
 def valise_get():
-    return trust_wallet.valise_get()
+    return trust_wallet_instance.valise_get()
 
 
 @router.get("/mnemonic")
 def mnemonic_to_private_key():
-    mnemonic = trust_wallet.create_mnemonic()
+    mnemonic = trust_wallet_instance.create_mnemonic()
     return {"mnemonic": mnemonic}
 
 
 @router.get("/recover-mnemonic/")
 def recover_mnemonic(mnemonic: str):
-    mnemonic = trust_wallet.recover_from_mnemonic(mnemonic)
+    mnemonic = trust_wallet_instance.recover_from_mnemonic(mnemonic)
     return {"mnemonic": mnemonic}
 
 
 @router.get("/get-planetmint-keys")
 def get_planetmint_keys() -> PlanetMintKeys:
-    planetmint_keys = trust_wallet.get_planetmint_keys()
+    planetmint_keys = trust_wallet_instance.get_planetmint_keys()
     return planetmint_keys

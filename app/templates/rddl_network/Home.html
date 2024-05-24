@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDDL Network</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="center"><h1>RDDL Network participation</h1></div>
+    </div>
+    <div class="content">
+        <p>The entrypoint to start interacting with the RDDL network.</p>
+        <div class="container">
+            <div class="section">
+                <h2>RDDL Network</h2>
+                <div class="key">Planetmint Address:</div>
+                <div class="value" id="planetmintAddress">Loading...</div>
+                <div class="key">Account ID:</div>
+                <div class="value" id="accountid">Loading...</div>
+                <div class="key">Sequence:</div>
+                <div class="value" id="sequence">Loading...</div>
+                <div class="key">Machine Attestation:</div>
+                <div class="value" id="attestation">Loading...</div>
+                <div class="key">Log:</div>
+                <div class="value" id="log">Logging...</div>
+            </div>
+            <div class="buttons">
+                <button class="btn" onclick="attestMachine()" id="attestButton" type="button">Attest Machine</button>
+                <button class="btn" onclick="notarize()" id="notarizeButton" type="button">Notarize</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        window.onload = function () {
+            fetch('/twi/get-planetmint-keys')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('planetmintAddress').textContent = data.planetmint_address;
+                })
+                .catch(error => {
+                    console.error('Failed to fetch keys:', error);
+                    document.getElementById('planetmintAddress').textContent = 'Failed to load';
+                });
+                fetch(`/rddl/account`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('accountid').textContent = data.accountinfo.accountid
+                    document.getElementById('sequence').textContent = data.accountinfo.sequence
+                })
+                .catch(error => {
+                    document.getElementById('accountid').textContent = 'Failed to load: ' + error;
+                    document.getElementById('sequence').textContent = 'Failed to load: ' + error;
+                });
+                fetch(`/rddl/machine`)
+                 .then(response => response.json())
+                .then(data => {
+                    document.getElementById('attestation').textContent = JSON.parse(data.message).message
+                })
+                .catch(error => {
+                    document.getElementById('attestation').textContent = 'Failed to load: ' + error;
+                });
+                updateButtonState();
+        };
+        function updateButtonState() {
+            const attestButton = document.getElementById("attestButton");
+            const attestationValue = document.getElementById("attestation").textContent;
+            const disabledValue = "machine not found"; // Replace with your desired value
+            if (attestationValue.textContent === disabledValue) {
+              attestButton.disabled = true;
+            } else {
+              attestButton.disabled = false;
+            }
+          }
+        function attestMachine() {
+            fetch(`/rddl/attestmachine`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('log').textContent = JSON.parse(data.message).tx_response.txhash
+            })
+            .catch(error => {
+                document.getElementById('log').textContent = 'Failed to load: ' + error;
+            });    
+        }
+        function notarize() {
+            fetch(`/rddl/notarize`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('log').textContent = JSON.parse(data.message).tx_response.txhash
+            })
+            .catch(error => {
+                document.getElementById('log').textContent = 'Failed to load: ' + error;
+            });    
+        }
+        // Update button state initially (optional)
+        attestationValue.addEventListener("DOMContentLoaded", updateButtonState); // For initial load
+        attestationValue.addEventListener("change", updateButtonState); // For any future changes
+    </script>
+</body>
+</html>

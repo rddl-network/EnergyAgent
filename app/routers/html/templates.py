@@ -51,3 +51,8 @@ def scan_wifi_networks():
 async def read_root(request: Request):
     networks = scan_wifi_networks()
     return jinja2_templates.TemplateResponse("WifiConfig.html", {"request": request, "networks": networks})
+
+
+@router.get("/rddl-page")
+async def resolve_cid(request: Request):
+    return jinja2_templates.TemplateResponse("rddl_network/Home.html", {"request": request})

@@ -9,6 +9,7 @@ from app.dependencies import config, logger, trust_wallet
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.config_helper import load_config
 from app.helpers.models import SmartMeterConfig, MQTTConfig
+from app.dependencies import trust_wallet_instance
 
 
 class DataAgent:
@@ -76,7 +77,7 @@ class DataAgent:
                 data = json.dumps(self.data_buffer)
                 notarize_cid = store_cid(data)
                 logger.debug(f"Notarize CID transaction: {notarize_cid}, {data}")
-                planetmint_keys = trust_wallet.get_planetmint_keys()
+                planetmint_keys = trust_wallet_instance.get_planetmint_keys()
                 planetmint_tx = create_tx_notarize_data(notarize_cid, planetmint_keys.planetmint_address)
                 logger.info(f"Planetmint transaction: {planetmint_tx}")
                 self.data_buffer.clear()

@@ -4,6 +4,7 @@ import sqlite3
 
 from app.RddlInteraction.TrustWallet.occ_messages import TrustWalletInteraction
 from app.helpers.config_helper import build_config_path
+from app.RddlInteraction.TrustWallet.occ_messages import TrustWalletInteraction
 
 FILE_SMART_METER_CONFIG = "smart_meter_config.json"
 FILE_MQTT_CONFIG = "mqtt_config.json"
@@ -20,6 +21,13 @@ class Config:
         self.trust_wallet_port = os.environ.get("TRUST_WALLET_PORT") or "/dev/tty.usbmodem1101"
         self.notarize_interval = int(os.environ.get("NOTARIZE_INTERVAL") or 1)
         self.client_id = os.environ.get("CLIENT_ID") or "energy_agent"
+        self.machine_id = (
+            os.environ.get("MACHINE_ID")
+            or "af837636231cf339f9e991ef37e12f56b04b824914acc2f04417e3894181c152ff2c2e9d785104301b2ee2a6d10578324de92cdf5f8d952f6fe1497d59c096e8"
+        )
+        self.chain_id = os.environ.get("CHAIN_ID") or "planetmintgo"
+        self.planetmint_api = os.environ.get("PLANETMINT_API") or "http://localhost:1317"
+        self.ta_base_url = os.environ.get("TA_BASE_URL") or "http://localhost:8080"
 
         # Database setup
         self.database = os.path.join(self.config_base_path, "energy_agent.db")
@@ -62,3 +70,5 @@ if not isinstance(numeric_level, int):
 logging.basicConfig(level=numeric_level)
 
 logger = logging.getLogger(__name__)
+
+trust_wallet_instance = TrustWalletInteraction(config.trust_wallet_port)
