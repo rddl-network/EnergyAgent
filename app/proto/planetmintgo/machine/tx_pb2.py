@@ -15,7 +15,7 @@ from app.proto.planetmintgo.machine import machine_pb2 as planetmintgo_dot_machi
 from app.proto.planetmintgo.machine import trust_anchor_pb2 as planetmintgo_dot_machine_dot_trust__anchor__pb2
 from app.proto.planetmintgo.machine import liquid_asset_pb2 as planetmintgo_dot_machine_dot_liquid__asset__pb2
 from app.proto.planetmintgo.machine import params_pb2 as planetmintgo_dot_machine_dot_params__pb2
-from amino import amino_pb2 as amino_dot_amino__pb2
+from app.proto.amino import amino_pb2 as amino_dot_amino__pb2
 from app.proto.gogoproto import gogo_pb2 as gogoproto_dot_gogo__pb2
 from app.proto.cosmos_proto import cosmos_pb2 as cosmos__proto_dot_cosmos__pb2
 from app.proto.cosmos.msg.v1 import msg_pb2 as cosmos_dot_msg_dot_v1_dot_msg__pb2
