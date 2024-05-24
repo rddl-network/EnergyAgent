@@ -8,11 +8,6 @@ from cosmos.crypto.secp256k1 import keys_pb2
 from hashlib import sha256
 
 
-# def attestMachine():
-
-# def PoPResult():
-
-
 def getCoin(denom: str, amount: str) -> coin_pb2.Coin:
     coin = coin_pb2.Coin()
     coin.denom = denom
@@ -42,14 +37,6 @@ def getAnyMachineAttestation(msg: MachineTx.MsgAttestMachine) -> any_pb2.Any:
     any_message.type_url = "/planetmintgo.machine.MsgAttestMachine"
     any_message.value = message_data
     return any_message
-
-
-# def redeemClaims():
-
-# attestMachine
-# PopResult
-# notarizeCID
-# redeemClaims
 
 
 def getRawTx(anyMsg: any_pb2.Any, coin: coin_pb2.Coin, public_key: bytes, sequence: int) -> cosmosTx.TxRaw:
