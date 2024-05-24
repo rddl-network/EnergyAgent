@@ -1,6 +1,6 @@
-import subprocess
 from fastapi import APIRouter, Form, HTTPException
 import logging
+from wifi import Cell, Scheme
 
 router = APIRouter(
     prefix="/wifi",
@@ -14,29 +14,28 @@ logging.basicConfig(level=logging.INFO)
 WPA_SUPPLICANT_CONF = "/etc/wpa_supplicant/wpa_supplicant.conf"
 
 
-def update_wpa_supplicant(ssid: str, psk: str):
+def configure_wifi_with_wifi_package(ssid: str, psk: str):
     try:
-        # Backup the current wpa_supplicant.conf
-        subprocess.run(["cp", WPA_SUPPLICANT_CONF, f"{WPA_SUPPLICANT_CONF}.bak"], check=True)
-        # Append the new network configuration
-        with open(WPA_SUPPLICANT_CONF, "a") as wpa_conf:
-            wpa_conf.write(f'\nnetwork={{\n    ssid="{ssid}"\n    psk="{psk}"\n}}\n')
+        cells = Cell.all('wlan0')
+        target_cell = next((cell for cell in cells if cell.ssid == ssid), None)
+        if target_cell is None:
+            raise HTTPException(status_code=404, detail=f"SSID '{ssid}' not found.")
 
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Subprocess error configuring Wi-Fi: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to configure Wi-Fi: {e}")
+        scheme = Scheme.for_cell('wlan0', 'home', target_cell, psk)
+        scheme.save()
+        scheme.activate()
     except Exception as e:
-        logger.error(f"General error configuring Wi-Fi: {e}")
+        logger.error(f"Error configuring Wi-Fi: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to configure Wi-Fi: {e}")
 
 
 @router.post("/configure_wifi")
 async def configure_wifi(ssid: str = Form(...), password: str = Form(...)):
     try:
-        update_wpa_supplicant(ssid, password)
+        configure_wifi_with_wifi_package(ssid, password)
         return {
             "status": "success",
-            "message": "Wi-Fi configuration updated. Please manually restart the Raspberry Pi to apply the changes.",
+            "message": "Wi-Fi configuration updated. The connection should be active now.",
         }
     except HTTPException as e:
         return {"status": "error", "message": str(e.detail)}
