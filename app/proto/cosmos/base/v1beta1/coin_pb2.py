@@ -11,8 +11,8 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from gogoproto import gogo_pb2 as gogoproto_dot_gogo__pb2
-from cosmos_proto import cosmos_pb2 as cosmos__proto_dot_cosmos__pb2
+from app.proto.gogoproto import gogo_pb2 as gogoproto_dot_gogo__pb2
+from app.proto.cosmos_proto import cosmos_pb2 as cosmos__proto_dot_cosmos__pb2
 from amino import amino_pb2 as amino_dot_amino__pb2
 
 
