@@ -84,8 +84,8 @@ class TrustWalletInteraction(object):
                 occ_message = self.occ_message_sender.send_message(msg)
                 self.plmnt_keys = PlanetMintKeys()
                 self.plmnt_keys.planetmint_address = occ_message.data[1]
-                self.plmnt_keys.extended_planetmint_pubkey = occ_message.data[2]
-                self.plmnt_keys.extended_liquid_pubkey = occ_message.data[3]
+                self.plmnt_keys.extended_liquid_pubkey = occ_message.data[2]
+                self.plmnt_keys.extended_planetmint_pubkey = occ_message.data[3]
                 self.plmnt_keys.raw_planetmint_pubkey = occ_message.data[4]
 
             return self.plmnt_keys
