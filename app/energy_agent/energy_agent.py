@@ -5,11 +5,10 @@ from gmqtt.mqtt.constants import MQTTv311
 
 from app.RddlInteraction.cid_tool import store_cid
 from app.RddlInteraction.planetmint_interaction import create_tx_notarize_data
-from app.dependencies import config, logger, trust_wallet
+from app.dependencies import config, logger, trust_wallet_instance
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.config_helper import load_config
 from app.helpers.models import SmartMeterConfig, MQTTConfig
-from app.dependencies import trust_wallet_instance
 
 
 class DataAgent:
