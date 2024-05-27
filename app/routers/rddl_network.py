@@ -8,6 +8,7 @@ from app.RddlInteraction.planetmint_interaction import (
     computeMachineIDSignature,
     getMachineInfo,
     broadcastTX,
+    getBalance,
 )
 from app.dependencies import trust_wallet_instance, config
 from fastapi import APIRouter, Form
@@ -113,3 +114,12 @@ async def notarize():
             return {"status": "success", "message": response.text}
     except Exception as e:
         return {"status": "error", "error": str(e), "message": str(e)}
+
+
+@router.get("/balance/{address}")
+async def get_balance(address: str):
+    try:
+        balance = getBalance(address)
+        return {"status": "success", "balance": balance}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}

@@ -168,3 +168,17 @@ def broadcastTX(tx_bytes: str) -> requests.Response:
     print(response.status_code)
     print(response.text)
     return response
+
+
+def getBalance(address: str) -> dict:
+    url = f"{config.planetmint_api}/cosmos/bank/v1beta1/balances/{address}"
+    headers = {"Content-Type": "application/json"}
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code != 200:
+        raise Exception(f"Failed to get balance: {response.text}")
+
+    data = json.loads(response.text)
+    balance = data["balances"]
+    return balance
