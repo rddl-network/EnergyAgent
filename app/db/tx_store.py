@@ -16,9 +16,7 @@ def execute_sql_command(sql_command, params, fetch_data=False):
 
 
 def insert_tx(txhash, cid):
-    execute_sql_command(
-        "INSERT INTO transactions (txhash, cid) VALUES (?, ?, CURRENT_TIMESTAMP)", (txhash, cid)
-    )
+    execute_sql_command("INSERT INTO transactions (txhash, cid) VALUES (?, ?)", (txhash, cid))
     config.db_connection.commit()
     logger.debug("Transaction added.")
 

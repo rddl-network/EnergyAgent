@@ -5,6 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transactions</title>
     <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 18px;
+            text-align: left;
+            color: white; /* Ensure the text color is always white */
+        }
+        table thead tr {
+            background-color: #009879;
+            color: white;
+            text-align: left;
+            font-weight: bold;
+        }
+        table th, table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        table tbody tr:nth-of-type(even) {
+            background-color: #2c3e50;
+        }
+        table tbody tr:nth-of-type(odd) {
+            background-color: #34495e;
+        }
+        table tbody tr:hover {
+            background-color: #1abc9c;
+            color: white; /* Keep the text color white on hover */
+        }
+    </style>
 </head>
 <body>
 <div class="header">
@@ -28,7 +58,7 @@
     </table>
 </div>
 <script>
-    const API_BASE = `/tx_resolver`;
+    const API_BASE = `/tx_resolver/txs`;
 
     function fetchTransactions() {
         fetch(`${API_BASE}`)

@@ -60,4 +60,4 @@ async def resolve_cid(request: Request):
 
 @router.get("/tx-page")
 async def resolve_cid(request: Request):
-    return jinja2_templates.TemplateResponse("tx_resolver/Home.html", {"request": request})
+    return jinja2_templates.TemplateResponse("TransactionTable.html", {"request": request})
