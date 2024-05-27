@@ -133,6 +133,14 @@ h1 {
   border: 1px solid rgb(89, 92, 111);
 }
 
+.btn:disabled {
+  background-image: linear-gradient(to right, rgb(192, 192, 192), rgb(128, 128, 128));
+  box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(255, 0, 0, 0.19) 0px 4px 14px 0px;
+  border: none;
+  cursor: not-allowed;
+  color: #ffffff;
+}
+
 .btn:hover,
 .btn-secondary:hover {
   transform: scale(1.02);
@@ -145,6 +153,22 @@ h1 {
   font-size: 16px;
   margin-top: 40px;
   padding: 0.75rem;
+}
+
+.status-indicator.stopped {
+  color: red;
+}
+
+.status-indicator.running {
+  color: green;
+}
+
+#attestationStatus.attested {
+  color: green;
+}
+
+#attestationStatus.not-attested {
+  color: red;
 }
 
 .running {
