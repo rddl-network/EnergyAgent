@@ -1,10 +1,10 @@
 import time
 import hashlib
-from app.RddlInteraction.TrustWallet.occ_messages import TrustWalletInteraction
+from app.RddlInteraction.TrustWallet.TrustWalletConnector import TrustWalletConnector
 import binascii
 
 
-trust_wallet = TrustWalletInteraction("/dev/ttyACM0")
+trust_wallet = TrustWalletConnector("/dev/ttyACM0")
 
 
 def getHash(data: bytes) -> bytes:
