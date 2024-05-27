@@ -36,10 +36,23 @@
 </div>
 <script>
     window.onload = function () {
+        let planetmintAddress = '';
         fetch('/twi/get-planetmint-keys')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('planetmintAddress').textContent = data.planetmint_address;
+                    planetmintAddress = data.planetmint_address;
+                    document.getElementById('planetmintAddress').textContent = planetmintAddress;
+                })
+                .then(() => {
+                    fetch(`/rddl/balance/` + planetmintAddress)
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('balance').textContent = JSON.stringify(data.balance);
+                            })
+                            .catch(error => {
+                                console.error('Failed to fetch balance:', error);
+                                document.getElementById('balance').textContent = 'Failed to load';
+                            });
                 })
                 .catch(error => {
                     console.error('Failed to fetch keys:', error);
@@ -62,15 +75,6 @@
                 })
                 .catch(error => {
                     document.getElementById('attestation').textContent = 'Failed to load: ' + error;
-                });
-        fetch(`/rddl/balance/{address}`)  // replace {address} with the actual address
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('balance').textContent = JSON.stringify(data.balance);
-                })
-                .catch(error => {
-                    console.error('Failed to fetch balance:', error);
-                    document.getElementById('balance').textContent = 'Failed to load';
                 });
         updateButtonState();
     };
