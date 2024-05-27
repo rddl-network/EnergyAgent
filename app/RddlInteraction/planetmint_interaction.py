@@ -18,9 +18,12 @@ def getHash(data: bytes) -> bytes:
     return digest
 
 
-def create_tx_notarize_data(cid: str, address: str) -> str:
-    # TODO: implement this function
-    return f"notarize data {cid} to {address}"
+def create_tx_notarize_data(cid: str) -> str:
+    keys = trust_wallet_instance.get_planetmint_keys()
+    account_id, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
+    notarize_tx = notarizeAsset(cid, config.chain_id, account_id, sequence)
+    response = broadcastTX(notarize_tx)
+    return f"notarize data {cid} to {keys.planetmint_address} with response {response.text}"
 
 
 def computeMachineIDSignature(publicKey: str) -> str:
