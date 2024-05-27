@@ -71,7 +71,7 @@
         fetch(`/rddl/machine`)
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('attestation').textContent = JSON.parse(data.message).message
+                    document.getElementById('attestation').textContent = JSON.stringify(data, null, 2);
                 })
                 .catch(error => {
                     document.getElementById('attestation').textContent = 'Failed to load: ' + error;
