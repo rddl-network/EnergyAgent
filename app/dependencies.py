@@ -32,8 +32,7 @@ class Config:
         # Database setup
         self.database = os.path.join(self.config_base_path, "energy_agent.db")
         self.db_connection = self.create_db_connection()
-        self.create_table()
-        self.create_tx_table()
+        self.init_tables()
 
     def create_db_connection(self):
         """Create a database connection to the SQLite database"""
@@ -44,39 +43,38 @@ class Config:
             logger.error(f"Unable to connect to database: {e}")
             return None
 
-    def create_table(self):
-        """Create the table if it does not exist"""
+    def init_tables(self):
+        """Initialize the tables if they do not exist"""
         if self.db_connection:
             try:
                 cursor = self.db_connection.cursor()
-                cursor.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS key_value_store (
-                        cid TEXT PRIMARY KEY,
-                        json_value TEXT NOT NULL
-                    )
-                """
-                )
-                self.db_connection.commit()
-            except sqlite3.Error as e:
-                logger.error(f"Failed to create table: {e}")
 
-    def create_tx_table(self):
-        """Create the transactions table if it does not exist"""
-        if self.db_connection:
-            try:
-                cursor = self.db_connection.cursor()
-                create_table_sql = """
+                # SQL for creating key_value_store table
+                create_key_value_store_table_sql = """
+                CREATE TABLE IF NOT EXISTS key_value_store (
+                    cid TEXT PRIMARY KEY,
+                    json_value TEXT NOT NULL
+                );
+                """
+
+                # SQL for creating transactions table
+                create_transactions_table_sql = """
                 CREATE TABLE IF NOT EXISTS transactions (
                     txhash TEXT NOT NULL,
                     cid TEXT NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
                 """
-                cursor.execute(create_table_sql)
+
+                # Execute SQL statements
+                cursor.execute(create_key_value_store_table_sql)
+                cursor.execute(create_transactions_table_sql)
+
+                # Commit the changes
                 self.db_connection.commit()
+
             except sqlite3.Error as e:
-                logger.error(f"Failed to create transactions table: {e}")
+                logger.error(f"Failed to create tables: {e}")
 
 
 config = Config()
