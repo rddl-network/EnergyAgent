@@ -33,6 +33,7 @@ class Config:
         self.database = os.path.join(self.config_base_path, "energy_agent.db")
         self.db_connection = self.create_db_connection()
         self.create_table()
+        self.create_tx_table()
 
     def create_db_connection(self):
         """Create a database connection to the SQLite database"""
@@ -59,6 +60,23 @@ class Config:
                 self.db_connection.commit()
             except sqlite3.Error as e:
                 logger.error(f"Failed to create table: {e}")
+
+    def create_tx_table(self):
+        """Create the transactions table if it does not exist"""
+        if self.db_connection:
+            try:
+                cursor = self.db_connection.cursor()
+                create_table_sql = """
+                CREATE TABLE IF NOT EXISTS transactions (
+                    txhash TEXT NOT NULL,
+                    cid TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+                """
+                cursor.execute(create_table_sql)
+                self.db_connection.commit()
+            except sqlite3.Error as e:
+                logger.error(f"Failed to create transactions table: {e}")
 
 
 config = Config()

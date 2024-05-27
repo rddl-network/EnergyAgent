@@ -23,7 +23,8 @@ def create_tx_notarize_data(cid: str) -> str:
     account_id, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
     notarize_tx = notarizeAsset(cid, config.chain_id, account_id, sequence)
     response = broadcastTX(notarize_tx)
-    return f"notarize data {cid} to {keys.planetmint_address} with response {response.text}"
+    tx_hash = json.loads(response.text)["tx_response"]["txhash"]
+    return tx_hash
 
 
 def computeMachineIDSignature(publicKey: str) -> str:

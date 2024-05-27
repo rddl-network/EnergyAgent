@@ -56,3 +56,8 @@ async def read_root(request: Request):
 @router.get("/rddl-page")
 async def resolve_cid(request: Request):
     return jinja2_templates.TemplateResponse("rddl_network/Home.html", {"request": request})
+
+
+@router.get("/tx-page")
+async def resolve_cid(request: Request):
+    return jinja2_templates.TemplateResponse("tx_resolver/Home.html", {"request": request})
