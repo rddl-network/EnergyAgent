@@ -1,37 +1,38 @@
 services:
-    mqtt:
-      container_name: mqtt
-      image: eclipse-mosquitto:2.0.18
-      restart: unless-stopped
-      volumes:
-        - "./mosquitto-data:/mosquitto"
-      ports:
-        - "1883:1883"
-        - "9001:9001"
-      command: "mosquitto -c /mosquitto-no-auth.conf"
-    energy-agent:
-        build:
-          context: .
-          dockerfile: docker/Dockerfile
-        container_name: energy-agent
-        depends_on:
-            - mqtt
-        environment:
-            CONFIG_PATH: "/data"
-            RDDL_TOPIC: "rddl/SMD/#"
-            TRUST_WALLET_PORT: "/dev/ttyACM0"
-            NOTARIZE_INTERVAL: 1
-            CLIENT_ID: "energy_agent"
-            PORT: 2138
-            PLANETMINT_API: "https://testnet-api.rddl.io"
-            TA_BASE_URL: "https://testnet-ta.rddl.io"
-        ports:
-          - 2138:2138
-        privileged: true
-        volumes:
-            - ./energy-agent-data:/data
-            - /etc/wpa_supplicant:/etc/wpa_supplicant
-        restart: always
-        network_mode: "host"
-        cap_add:
-          - NET_RAW
+  mqtt:
+    container_name: mqtt
+    image: eclipse-mosquitto:2.0.18
+    restart: unless-stopped
+    volumes:
+      - "./mosquitto-data:/mosquitto"
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    command: "mosquitto -c /mosquitto-no-auth.conf"
+  energy-agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: energy-agent
+    depends_on:
+      - mqtt
+    environment:
+      CONFIG_PATH: "/data"
+      RDDL_TOPIC: "rddl/SMD/#"
+      TRUST_WALLET_PORT: "/dev/ttyACM0"
+      NOTARIZE_INTERVAL: 1
+      CLIENT_ID: "energy_agent"
+      PORT: 2138
+      PLANETMINT_API: "https://testnet-api.rddl.io"
+      TA_BASE_URL: "https://testnet-ta.rddl.io"
+      CHAIN_ID: "planetmint-testnet-1"
+    ports:
+      - 2138:2138
+    privileged: true
+    volumes:
+      - ./energy-agent-data:/data
+      - /etc/wpa_supplicant:/etc/wpa_supplicant
+    restart: always
+    network_mode: "host"
+    cap_add:
+      - NET_RAW

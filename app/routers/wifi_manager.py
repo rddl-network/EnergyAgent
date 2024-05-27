@@ -16,12 +16,12 @@ WPA_SUPPLICANT_CONF = "/etc/wpa_supplicant/wpa_supplicant.conf"
 
 def configure_wifi_with_wifi_package(ssid: str, psk: str):
     try:
-        cells = Cell.all('wlan0')
+        cells = Cell.all("wlan0")
         target_cell = next((cell for cell in cells if cell.ssid == ssid), None)
         if target_cell is None:
             raise HTTPException(status_code=404, detail=f"SSID '{ssid}' not found.")
 
-        scheme = Scheme.for_cell('wlan0', 'home', target_cell, psk)
+        scheme = Scheme.for_cell("wlan0", "home", target_cell, psk)
         scheme.save()
         scheme.activate()
     except Exception as e:
