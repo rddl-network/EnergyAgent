@@ -5,6 +5,7 @@ from gmqtt.mqtt.constants import MQTTv311
 
 from app.RddlInteraction.cid_tool import store_cid
 from app.RddlInteraction.planetmint_interaction import create_tx_notarize_data
+from app.db.tx_store import insert_tx
 from app.dependencies import config, logger, trust_wallet_instance
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.config_helper import load_config
@@ -75,8 +76,9 @@ class DataAgent:
                 data = json.dumps(self.data_buffer)
                 notarize_cid = store_cid(data)
                 logger.debug(f"Notarize CID transaction: {notarize_cid}, {data}")
-                response = create_tx_notarize_data(notarize_cid)
-                logger.info(f"Planetmint transaction response: {response}")
+                tx_hash = create_tx_notarize_data(notarize_cid)
+                insert_tx(tx_hash, notarize_cid)
+                logger.info(f"Planetmint transaction response: {tx_hash}")
                 self.data_buffer.clear()
                 break
             except Exception as e:

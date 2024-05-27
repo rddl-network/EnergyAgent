@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+</head>
+<body>
+<div class="header">
+    <div class="center"><h1>Transactions</h1></div>
+</div>
+<div class="content">
+    <div class="description">
+        <p>Below is the list of all transactions with their respective hash, CID, and creation time.</p>
+    </div>
+    <table id="transactionsTable">
+        <thead>
+            <tr>
+                <th>Transaction Hash</th>
+                <th>CID</th>
+                <th>Creation Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be populated here by JavaScript -->
+        </tbody>
+    </table>
+</div>
+<script>
+    const API_BASE = `/tx_resolver`;
+
+    function fetchTransactions() {
+        fetch(`${API_BASE}`)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('#transactionsTable tbody');
+                tableBody.innerHTML = ''; // Clear existing data
+                data.forEach(tx => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${tx.txhash}</td>
+                        <td>${tx.cid}</td>
+                        <td>${new Date(tx.created_at).toLocaleString()}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Failed to fetch transactions:', error));
+    }
+
+    window.onload = function() {
+        fetchTransactions();
+    };
+</script>
+</body>
+</html>
