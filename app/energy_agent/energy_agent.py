@@ -24,7 +24,6 @@ class DataAgent:
     def setup(self):
         try:
             self.update_mqtt_connection_params()
-            # self.update_smart_meter_topic()
             self.initialize_mqtt_client()
         except Exception as e:
             logger.error(f"Setup error: {e}")
@@ -76,9 +75,8 @@ class DataAgent:
                 data = json.dumps(self.data_buffer)
                 notarize_cid = store_cid(data)
                 logger.debug(f"Notarize CID transaction: {notarize_cid}, {data}")
-                planetmint_keys = trust_wallet_instance.get_planetmint_keys()
-                planetmint_tx = create_tx_notarize_data(notarize_cid, planetmint_keys.planetmint_address)
-                logger.info(f"Planetmint transaction: {planetmint_tx}")
+                response = create_tx_notarize_data(notarize_cid)
+                logger.info(f"Planetmint transaction response: {response}")
                 self.data_buffer.clear()
                 break
             except Exception as e:

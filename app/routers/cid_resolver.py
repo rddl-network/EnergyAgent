@@ -17,8 +17,7 @@ async def resolve_cid(cid: str) -> dict:
     data = get_value(cid)
     if not data:
         return {"cid": cid, "data": "Not found"}
-    data_dict = json.loads(data)
-    return {"cid": cid, "data": data_dict}
+    return {"cid": cid, "data": data}
 
 
 @router.post("")
