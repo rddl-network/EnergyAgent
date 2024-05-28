@@ -4,18 +4,18 @@ from app.RddlInteraction.planetmint_interaction import (
     attestMachine,
     notarizeAsset,
 )
-from app.RddlInteraction.TrustWallet.occ_messages import TrustWalletInteraction
+from app.RddlInteraction.TrustWallet.TrustWalletConnector import TrustWalletConnector
 import binascii
 
 
 def test_createMnemonic():
-    trust_wallet = TrustWalletInteraction("/dev/ttyACM0")
+    trust_wallet = TrustWalletConnector("/dev/ttyACM0")
     mnemonic = trust_wallet.create_mnemonic()
     print(mnemonic)
 
 
 def test_recoverMnemonic():
-    trust_wallet = TrustWalletInteraction("/dev/ttyACM0")
+    trust_wallet = TrustWalletConnector("/dev/ttyACM0")
     recoverPhrase = "penalty police pool orphan snack faith educate syrup skill picnic prepare mystery dune control near nation report evolve ethics genius elite tool rigid crane"
     result = trust_wallet.recover_from_mnemonic(recoverPhrase)
     assert recoverPhrase == result
@@ -99,7 +99,7 @@ reference_pub_key = bytearray(
 
 def test_attestMachine_valid():
 
-    trust_wallet = TrustWalletInteraction("/dev/ttyACM0")
+    trust_wallet = TrustWalletConnector("/dev/ttyACM0")
     recoverPhrase = "penalty police pool orphan snack faith educate syrup skill picnic prepare mystery dune control near nation report evolve ethics genius elite tool rigid crane"
     result = trust_wallet.recover_from_mnemonic(recoverPhrase)
     assert recoverPhrase == result
@@ -158,7 +158,7 @@ def test_attestMachine_valid():
 
 
 def test_notarize_asset_valid():
-    trust_wallet = TrustWalletInteraction("/dev/ttyACM0")
+    trust_wallet = TrustWalletConnector("/dev/ttyACM0")
     recoverPhrase = "penalty police pool orphan snack faith educate syrup skill picnic prepare mystery dune control near nation report evolve ethics genius elite tool rigid crane"
     result = trust_wallet.recover_from_mnemonic(recoverPhrase)
     assert recoverPhrase == result

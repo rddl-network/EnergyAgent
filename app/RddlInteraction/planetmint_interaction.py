@@ -18,9 +18,13 @@ def getHash(data: bytes) -> bytes:
     return digest
 
 
-def create_tx_notarize_data(cid: str, address: str) -> str:
-    # TODO: implement this function
-    return f"notarize data {cid} to {address}"
+def create_tx_notarize_data(cid: str) -> str:
+    keys = trust_wallet_instance.get_planetmint_keys()
+    account_id, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
+    notarize_tx = notarizeAsset(cid, config.chain_id, account_id, sequence)
+    response = broadcastTX(notarize_tx)
+    tx_hash = json.loads(response.text)["tx_response"]["txhash"]
+    return tx_hash
 
 
 def computeMachineIDSignature(publicKey: str) -> str:
@@ -168,3 +172,17 @@ def broadcastTX(tx_bytes: str) -> requests.Response:
     print(response.status_code)
     print(response.text)
     return response
+
+
+def getBalance(address: str) -> dict:
+    url = f"{config.planetmint_api}/cosmos/bank/v1beta1/balances/{address}"
+    headers = {"Content-Type": "application/json"}
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code != 200:
+        raise Exception(f"Failed to get balance: {response.text}")
+
+    data = json.loads(response.text)
+    balance = data["balances"]
+    return balance

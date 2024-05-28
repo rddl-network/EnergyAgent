@@ -11,7 +11,7 @@ import sys
 PREFIX_IHW = "/IHW"
 
 
-class TrustWalletInteraction(object):
+class TrustWalletConnector(object):
     _instance = None
     occ_message_sender = None
     _lock = threading.Lock()

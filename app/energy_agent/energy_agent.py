@@ -5,11 +5,11 @@ from gmqtt.mqtt.constants import MQTTv311
 
 from app.RddlInteraction.cid_tool import store_cid
 from app.RddlInteraction.planetmint_interaction import create_tx_notarize_data
-from app.dependencies import config, logger, trust_wallet
+from app.db.tx_store import insert_tx
+from app.dependencies import config, logger, trust_wallet_instance
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.config_helper import load_config
 from app.helpers.models import SmartMeterConfig, MQTTConfig
-from app.dependencies import trust_wallet_instance
 
 
 class DataAgent:
@@ -25,7 +25,6 @@ class DataAgent:
     def setup(self):
         try:
             self.update_mqtt_connection_params()
-            # self.update_smart_meter_topic()
             self.initialize_mqtt_client()
         except Exception as e:
             logger.error(f"Setup error: {e}")
@@ -77,9 +76,9 @@ class DataAgent:
                 data = json.dumps(self.data_buffer)
                 notarize_cid = store_cid(data)
                 logger.debug(f"Notarize CID transaction: {notarize_cid}, {data}")
-                planetmint_keys = trust_wallet_instance.get_planetmint_keys()
-                planetmint_tx = create_tx_notarize_data(notarize_cid, planetmint_keys.planetmint_address)
-                logger.info(f"Planetmint transaction: {planetmint_tx}")
+                tx_hash = create_tx_notarize_data(notarize_cid)
+                insert_tx(tx_hash, notarize_cid)
+                logger.info(f"Planetmint transaction response: {tx_hash}")
                 self.data_buffer.clear()
                 break
             except Exception as e:

@@ -13,31 +13,27 @@
 <div class="content">
     <p>Here you can start configuring your Energy Agent.</p>
     <div class="buttons">
-        <button class="btn" class="btn" onclick="startAgent()">Start Agent</button>
-        <button class="btn" onclick="stopAgent()">Stop Agent</button>
-        <button class="btn" onclick="restartAgent()">Restart Agent</button>
+        <button class="btn" id="startButton" onclick="startAgent()">Start Agent</button>
+        <button class="btn" id="stopButton" onclick="stopAgent()">Stop Agent</button>
+        <button class="btn" id="restartButton" onclick="restartAgent()">Restart Agent</button>
     </div>
     <div id="status" class="status-indicator">Status: <span id="statusText">Checking...</span></div>
+    <div id="attestationStatus"></div> <!-- New element for displaying the attestation status -->
 </div>
 <script>
     const API_BASE = `/energy_agent`;
 
     function updateStatus() {
         fetch(`${API_BASE}/status`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP Error: ${response.status}`);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    const statusSpan = document.getElementById('statusText');
-                    statusSpan.textContent = `${data.status}`;
-                    statusSpan.className = data.status === 'running' ? 'running' : 'stopped';
+                    // Update the status text
+                    document.getElementById('statusText').textContent = data.status;
+                    // Update the status color
+                    document.getElementById('status').className = `status-indicator ${data.status}`;
                 })
                 .catch(error => {
                     console.error('Failed to fetch status:', error);
-                    document.getElementById('statusText').textContent = 'Status: Failed to fetch';
                 });
     }
 
@@ -62,7 +58,37 @@
                 .catch(error => console.error('Failed to restart agent:', error));
     }
 
-    window.onload = updateStatus; // Check status when the page loads
+    function checkAttestation() {
+        fetch(`/rddl/machine`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "error") {
+                        // Disable the buttons if the status is "error"
+                        document.getElementById('startButton').disabled = true;
+                        document.getElementById('stopButton').disabled = true;
+                        document.getElementById('restartButton').disabled = true;
+                        // Update the attestation status
+                        document.getElementById('attestationStatus').textContent = 'Machine not attested';
+                        document.getElementById('attestationStatus').className = 'not-attested';
+                    } else {
+                        // Enable the buttons if the status is not "error"
+                        document.getElementById('startButton').disabled = false;
+                        document.getElementById('stopButton').disabled = false;
+                        document.getElementById('restartButton').disabled = false;
+                        // Update the attestation status
+                        document.getElementById('attestationStatus').textContent = 'Machine ready';
+                        document.getElementById('attestationStatus').className = 'attested';
+                    }
+                })
+                .catch(error => {
+                    console.error('Failed to fetch attestation:', error);
+                });
+    }
+
+    window.onload = function() {
+        updateStatus();
+        checkAttestation();
+    };
 </script>
 </body>
 </html>

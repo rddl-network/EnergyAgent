@@ -12,6 +12,7 @@ from app.routers import (
     manage_smd,
     wifi_manager,
     rddl_network,
+    tx_resolver,
 )
 from app.routers.html import templates, trust_wallet_templates
 
@@ -39,6 +40,7 @@ app.include_router(trust_wallet_interaction.router)
 app.include_router(rddl_network.router)
 app.include_router(manage_smd.router)
 app.include_router(wifi_manager.router)
+app.include_router(tx_resolver.router)
 
 # This routes the HTML
 app.include_router(templates.router)
