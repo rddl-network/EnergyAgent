@@ -1,5 +1,3 @@
-import sys
-import platform
 import threading
 from osc4py3.oscbuildparse import OSCMessage
 

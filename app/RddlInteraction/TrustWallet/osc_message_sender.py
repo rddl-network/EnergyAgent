@@ -1,6 +1,7 @@
 import ctypes
-from osc4py3.oscbuildparse import *
+import os
 
+from osc4py3.oscbuildparse import *
 from app.helpers.models import OSCResponse
 
 
@@ -88,3 +89,7 @@ def extract_information(response_bytes):
     except UnicodeDecodeError as e:
         # Return an empty OSCResponse with an error in data field if there is a decoding error.
         return OSCResponse(data=[f"Error decoding the response: {str(e)}"])
+
+
+def is_not_connected(wallet_port):
+    return not os.path.exists(wallet_port)

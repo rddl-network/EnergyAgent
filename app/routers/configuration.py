@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from app.dependencies import config
 from app.helpers.config_helper import save_config, load_config
-from app.helpers.models import SmartMeterConfig, TopicConfig, MQTTConfig
+from app.helpers.models import MQTTConfig
 
 router = APIRouter(
     prefix="/config",
