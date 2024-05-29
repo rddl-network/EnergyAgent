@@ -2,7 +2,6 @@ import logging
 import os
 import sqlite3
 
-from app.RddlInteraction.TrustWallet.TrustWalletConnector import TrustWalletConnector
 from app.helpers.config_helper import build_config_path
 from app.RddlInteraction.TrustWallet.TrustWalletConnector import TrustWalletConnector
 

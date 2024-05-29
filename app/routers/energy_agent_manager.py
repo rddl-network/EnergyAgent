@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 import asyncio
 import logging
+
+from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
+from app.dependencies import config
 from app.energy_agent.energy_agent import DataAgent
 
 logger = logging.getLogger(__name__)
@@ -68,6 +71,8 @@ router = APIRouter(
 
 @router.get("/start")
 async def start_data_agent(manager: EnergyAgentManager = Depends(get_manager)):
+    if is_not_connected(config.trust_wallet_port):
+        raise HTTPException(status_code=400, detail="wallet not connected")
     await manager.start()
     return {"status": manager.get_status()}
 
@@ -85,5 +90,7 @@ async def data_agent_status(manager: EnergyAgentManager = Depends(get_manager)):
 
 @router.get("/restart")
 async def restart_data_agent(manager: EnergyAgentManager = Depends(get_manager)):
+    if is_not_connected(config.trust_wallet_port):
+        raise HTTPException(status_code=400, detail="wallet not connected")
     await manager.restart()
     return {"status": manager.get_status()}

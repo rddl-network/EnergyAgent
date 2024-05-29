@@ -1,5 +1,4 @@
-import subprocess
-import re
+from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
 from app.RddlInteraction.planetmint_interaction import (
     createAccountOnNetwork,
     getAccountInfo,
@@ -11,7 +10,8 @@ from app.RddlInteraction.planetmint_interaction import (
     getBalance,
 )
 from app.dependencies import trust_wallet_instance, config
-from fastapi import APIRouter, Form
+from fastapi import APIRouter, HTTPException
+
 
 router = APIRouter(
     prefix="/rddl",
@@ -22,6 +22,8 @@ router = APIRouter(
 
 @router.get("/createaccount")
 async def createAccount():
+    if is_not_connected(config.trust_wallet_port):
+        raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         machine_id = config.machine_id
         address = trust_wallet_instance.get_planetmint_keys().planetmint_address
@@ -36,6 +38,8 @@ async def createAccount():
 
 @router.get("/account")
 async def getAccount():
+    if is_not_connected(config.trust_wallet_port):
+        raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
         print(keys.planetmint_address)
@@ -52,6 +56,8 @@ async def getAccount():
 
 @router.get("/machine")
 async def getMachineAttestation():
+    if is_not_connected(config.trust_wallet_port):
+        raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
         machine_data, status = getMachineInfo(config.planetmint_api, keys.planetmint_address)
@@ -65,8 +71,9 @@ async def getMachineAttestation():
 
 @router.get("/attestmachine")
 async def getAttestMachine():
+    if is_not_connected(config.trust_wallet_port):
+        raise HTTPException(status_code=400, detail="wallet not connected")
     try:
-
         keys = trust_wallet_instance.get_planetmint_keys()
         accountID, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
         additionalCID = ""
@@ -101,8 +108,9 @@ async def getAttestMachine():
 
 @router.get("/notarize")
 async def notarize():
+    if is_not_connected(config.trust_wallet_port):
+        raise HTTPException(status_code=400, detail="wallet not connected")
     try:
-
         keys = trust_wallet_instance.get_planetmint_keys()
         accountID, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
         notarize_tx = notarizeAsset("cidstr", config.chain_id, accountID, sequence)
