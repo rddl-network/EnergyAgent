@@ -4,7 +4,7 @@ import logging
 
 from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
 from app.dependencies import config
-from app.energy_agent.energy_agent import DataAgent
+from app.energy_agent.energy_agent import EnergyAgent
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class EnergyAgentManager:
 
     async def start(self):
         if not self.is_running():
-            self.data_agent = DataAgent()
+            self.data_agent = EnergyAgent()
             self.data_agent.setup()
             self.task = asyncio.create_task(self.data_agent.run())
             logger.info("Async data agent started")
