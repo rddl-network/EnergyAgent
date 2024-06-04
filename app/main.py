@@ -30,13 +30,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get('/favicon.ico', include_in_schema=False)
+
+@app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
-    favicon_path = 'app/templates/static/img/favicon.png'
-    with open(favicon_path, 'rb') as f:
+    favicon_path = "app/templates/static/img/favicon.png"
+    with open(favicon_path, "rb") as f:
         content = f.read()
-    response = Response(content=content, media_type='image/vnd.microsoft.icon')
+    response = Response(content=content, media_type="image/vnd.microsoft.icon")
     return response
+
 
 # This routes the API
 app.mount("/static", StaticFiles(directory="app/templates/static"), name="static")
