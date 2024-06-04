@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 import uvicorn
@@ -29,6 +29,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    favicon_path = "app/templates/static/img/favicon.png"
+    with open(favicon_path, "rb") as f:
+        content = f.read()
+    response = Response(content=content, media_type="image/vnd.microsoft.icon")
+    return response
+
 
 # This routes the API
 app.mount("/static", StaticFiles(directory="app/templates/static"), name="static")
