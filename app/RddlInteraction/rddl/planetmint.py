@@ -1,11 +1,9 @@
+from google.protobuf import any_pb2
 from app.proto.planetmintgo.asset import tx_pb2 as AsstTx
 from app.proto.planetmintgo.machine import tx_pb2 as MachineTx
-from google.protobuf import any_pb2
 from app.proto.cosmos.base.v1beta1 import coin_pb2
 from app.proto.cosmos.tx.v1beta1 import tx_pb2 as cosmosTx
 from app.proto.cosmos.crypto.secp256k1 import keys_pb2
-
-from hashlib import sha256
 
 
 def getCoin(denom: str, amount: str) -> coin_pb2.Coin:
