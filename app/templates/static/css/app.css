@@ -468,6 +468,30 @@ table tbody tr:hover {
   color: white; /* Keep the text color white on hover */
 }
 
+.status-indicator {
+  background-color: rgb(41, 42, 68);
+  border-radius: 4px;
+  display: inline-block;
+  font-size: 16px;
+  margin-top: 40px;
+  padding: 0.75rem;
+}
+
+.status-indicator.stopped {
+  color: red;
+}
+
+.status-indicator.running {
+  color: green;
+}
+
+#attestationStatus.attested {
+  color: green;
+}
+
+#attestationStatus.not-attested {
+  color: red;
+}
 
 ::-webkit-scrollbar {
   height: 6px; 
