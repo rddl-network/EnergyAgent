@@ -469,12 +469,10 @@ table tbody tr:hover {
 }
 
 .status-indicator {
-  background-color: rgb(41, 42, 68);
   border-radius: 4px;
   display: inline-block;
   font-size: 16px;
-  margin-top: 40px;
-  padding: 0.75rem;
+
 }
 
 .status-indicator.stopped {
