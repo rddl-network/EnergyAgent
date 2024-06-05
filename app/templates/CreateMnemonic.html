@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="wrapper">
+  <div class="section">
+    <p class="section-title">Mnemonic backup</p>
+    <small class="center block">Immediately write down your mnemonic key on paper. Do not store it digitally (e.g., in a text file, email, or cloud storage), as digital storage methods are vulnerable to hacking and data loss.<br>Treat it as confidential information, just like your bank PIN or password. </small>
+    <div class="col">
+      <code id="mnemonic" class="status-indicator">Your mnemonic will appear here...</code>
+    </div>
+
+  </div>
+  <div class="buttons">
+    <button class="btn inline-block" onclick="createMnemonic()">Create Mnemonic</button>
+  </div>
+</div>
+<div class="spinner-overlay" id="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+  function createMnemonic() {
+      document.getElementById('spinner-overlay').style.display = 'flex';  // Show spinner
+
+      fetch(`/twi/mnemonic`)
+      .then(response => response.json())
+      .then(data => {
+          document.getElementById('mnemonic').textContent = data.mnemonic;
+          document.getElementById('spinner-overlay').style.display = 'none';  // Hide spinner
+      })
+      .catch(error => {
+          document.getElementById('mnemonic').textContent = 'Failed to retrieve mnemonic: ' + error;
+          document.getElementById('spinner-overlay').style.display = 'none';  // Hide spinner even on error
+      });
+  }
+</script>
+{% endblock %}

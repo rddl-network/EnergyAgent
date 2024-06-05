@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="wrapper">
+  <div class="section">
+    <p class="section-title"> Verify your recovery phrase</p>
+    <small class="center block">Fill in the blanks with the correct word </small>
+    <div class="col">
+      <form id="mnemonicForm" onsubmit="return validateAndRecover(event)">
+        <div id="mnemonicInputs" class="form-input"></div>
+        <div class="buttons">
+          <button class="btn" type="submit">Recover Mnemonic</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div id="result" class="status-indicator">Recovery result will appear here...</div>
+</div>
+<div class="spinner-overlay" id="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+  function setupInputs() {
+    const container = document.getElementById('mnemonicInputs');
+    const inputHTML = Array.from({ length: 24 }, (_, i) =>
+      `<input type="text" required id="word${i + 1}" placeholder="Word ${i + 1}">`
+    ).join('');
+    container.innerHTML = inputHTML;
+  }
+
+  function validateAndRecover(event) {
+    event.preventDefault();
+    const inputs = document.querySelectorAll('#mnemonicInputs input');
+    for (const input of inputs) {
+      if (!input.value.trim()) {
+        alert('Please fill in all the words.');
+        return;
+      }
+    }
+
+    recoverMnemonic();
+  }
+
+  function clearInputs() {
+    const inputs = document.querySelectorAll('#mnemonicInputs input');
+    inputs.forEach(input => input.value = '');
+  }
+
+
+  function recoverMnemonic() {
+    document.getElementById('spinner-overlay').style.display = 'flex';
+
+    const mnemonic = Array.from({ length: 24 }, (_, i) =>
+      document.getElementById(`word${i + 1}`).value.trim()
+    ).join(' ');
+    console.log(mnemonic)
+    const url = `/twi/recover-mnemonic?mnemonic=${encodeURIComponent(mnemonic)}`;
+
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('result').textContent = data.result || 'Recovery successful';
+        document.getElementById('spinner-overlay').style.display = 'none';
+        clearInputs();
+      })
+      .catch(error => {
+        document.getElementById('result').textContent = 'Recovery failed: ' + error;
+        document.getElementById('spinner-overlay').style.display = 'none';
+      });
+  }
+
+  window.onload = setupInputs;
+</script>
+{% endblock %}
