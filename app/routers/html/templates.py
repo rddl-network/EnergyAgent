@@ -17,16 +17,12 @@ router = APIRouter(
 
 @router.get("/")
 async def read_root(request: Request):
-    return templates.TemplateResponse(
-        "index.html", {"request": request, "title": "Home"}
-    )
+    return templates.TemplateResponse("index.html", {"request": request, "title": "Home"})
 
 
 @router.get("/trust-wallet")
 async def read_root(request: Request):
-    return templates.TemplateResponse(
-        "TrustWallet.html", {"request": request, "title": "Trust Wallet"}
-    )
+    return templates.TemplateResponse("TrustWallet.html", {"request": request, "title": "Trust Wallet"})
 
 
 @router.get("/smart-meter-page")
@@ -60,34 +56,24 @@ def scan_wifi_networks():
 @router.get("/wifi-config-page")
 async def read_root(request: Request):
     networks = scan_wifi_networks()
-    return templates.TemplateResponse(
-        "WifiConfig.html", {"request": request, "networks": networks}
-    )
+    return templates.TemplateResponse("WifiConfig.html", {"request": request, "networks": networks})
 
 
 @router.get("/rddl-page")
 async def read_about(request: Request):
-    return templates.TemplateResponse(
-        "RddlNetwork.html", {"request": request, "title": "RDDL Network participation"}
-    )
+    return templates.TemplateResponse("RddlNetwork.html", {"request": request, "title": "RDDL Network participation"})
 
 
 @router.get("/create-account")
 async def read_about(request: Request):
-    return templates.TemplateResponse(
-        "CreateAccount.html", {"request": request, "title": "Create On Chain Account"}
-    )
+    return templates.TemplateResponse("CreateAccount.html", {"request": request, "title": "Create On Chain Account"})
 
 
 @router.get("/recover-mnemonic")
 async def read_about(request: Request):
-    return templates.TemplateResponse(
-        "RecoverMnemonic.html", {"request": request, "title": "Recover Mmenonic"}
-    )
+    return templates.TemplateResponse("RecoverMnemonic.html", {"request": request, "title": "Recover Mmenonic"})
 
 
 @router.get("/create-mnemonic")
 async def read_about(request: Request):
-    return templates.TemplateResponse(
-        "CreateMnemonic.html", {"request": request, "title": "Create Mmenonic"}
-    )
+    return templates.TemplateResponse("CreateMnemonic.html", {"request": request, "title": "Create Mmenonic"})
