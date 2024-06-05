@@ -1,6 +1,7 @@
 from google.protobuf import any_pb2
 from app.proto.planetmintgo.asset import tx_pb2 as AsstTx
 from app.proto.planetmintgo.machine import tx_pb2 as MachineTx
+from app.proto.planetmintgo.dao import tx_pb2 as DaoTx
 from app.proto.cosmos.base.v1beta1 import coin_pb2
 from app.proto.cosmos.tx.v1beta1 import tx_pb2 as cosmosTx
 from app.proto.cosmos.crypto.secp256k1 import keys_pb2
@@ -33,6 +34,16 @@ def getAnyMachineAttestation(msg: MachineTx.MsgAttestMachine) -> any_pb2.Any:
     # Construct the Any message
     any_message = any_pb2.Any()
     any_message.type_url = "/planetmintgo.machine.MsgAttestMachine"
+    any_message.value = message_data
+    return any_message
+
+
+def getAnyPopResult(msg: DaoTx.MsgReportPopResult) -> any_pb2.Any:
+    message_data = msg.SerializeToString()
+
+    # Construct the Any message
+    any_message = any_pb2.Any()
+    any_message.type_url = "/planetmintgo.dao.MsgReportPopResult"
     any_message.value = message_data
     return any_message
 

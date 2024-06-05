@@ -15,6 +15,13 @@ from app.db.cid_store import get_value
 from app.RddlInteraction.cid_tool import compute_cid
 
 
+from app.RddlInteraction.planetmint_interaction import (
+    getPoPResultTx,
+    broadcastTX,
+    getAccountInfo,
+)
+
+
 class RDDLAgent:
     def __init__(self):
         self.client = None
@@ -121,8 +128,16 @@ class RDDLAgent:
         return
 
     async def sendPoPResult(self, success: bool):
-        # TODO integrate
-        return
+        keys = trust_wallet_instance.get_planetmint_keys()
+        accountID, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
+        if status != "":
+            logger.error(f"error: {status}, message: {status}")
+        txMsg = getPoPResultTx(
+            self.challengee, self.initiator, self.pop_height, success, config.chain_id, accountID, sequence
+        )
+        response = broadcastTX(txMsg)
+        if response.status_code != 200:
+            logger.error(f"error: {response.reason,}, message: {response.text}")
 
     async def pop_challenge_result(self, data):
         logger.info("PoP challenge result: " + data)

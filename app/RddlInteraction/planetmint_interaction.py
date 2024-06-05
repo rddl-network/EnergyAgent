@@ -4,6 +4,7 @@ import base64
 import hashlib
 from typing import Tuple
 
+from app.proto.planetmintgo.dao import tx_pb2 as DaoTx
 from app.proto.planetmintgo.machine import tx_pb2 as MachineTx
 from app.RddlInteraction.rddl import planetmint
 from app.RddlInteraction.rddl import signing
@@ -122,9 +123,9 @@ def attestMachine(
     attestMachine.machine.machineIdSignature = signature
 
     anyMsg = planetmint.getAnyMachineAttestation(attestMachine)
-    mycoin4Fee = planetmint.getCoin("plmnt", "0")
+    theFee = planetmint.getCoin("plmnt", "0")
 
-    txString = createAndSignEnvelopeMessage(anyMsg, mycoin4Fee, chainID, accountID, sequence)
+    txString = createAndSignEnvelopeMessage(anyMsg, theFee, chainID, accountID, sequence)
     return txString
 
 
@@ -152,10 +153,10 @@ def createAndSignEnvelopeMessage(anyMsg: any, coin: any, chainID: str, accountID
 def notarizeAsset(cid: str, chainID: str, accountID: int, sequence: int) -> str:
     PlanetmintKeys = trust_wallet_instance.get_planetmint_keys()
 
-    coin4Fee = planetmint.getCoin("plmnt", "1")
+    theFee = planetmint.getCoin("plmnt", "1")
     anyMsg = planetmint.getAnyAsset(PlanetmintKeys.planetmint_address, cid)
 
-    txString = createAndSignEnvelopeMessage(anyMsg, coin4Fee, chainID, accountID, sequence)
+    txString = createAndSignEnvelopeMessage(anyMsg, theFee, chainID, accountID, sequence)
     return txString
 
 
@@ -186,3 +187,23 @@ def getBalance(address: str) -> dict:
     data = json.loads(response.text)
     balance = data["balances"]
     return balance
+
+
+def getPoPResultTx(
+    challengee: str, initiator: str, height: str, success: bool, chainID: str, accountID: int, sequence: int
+) -> str:
+    keys = trust_wallet_instance.get_planetmint_keys()
+
+    pop_result = DaoTx.MsgReportPopResult()
+    pop_result.creator = keys.planetmint_address
+    pop_result.challenge.initiator = initiator
+    pop_result.challenge.challenger = keys.planetmint_address
+    pop_result.challenge.challengee = challengee
+    pop_result.challenge.height = height
+    pop_result.challenge.success = success
+    pop_result.challenge.finished = False
+
+    anyMsg = planetmint.getAnyPopResult(pop_result)
+    theFee = planetmint.getCoin("plmnt", "1")
+    txString = createAndSignEnvelopeMessage(anyMsg, theFee, chainID, accountID, sequence)
+    return txString
