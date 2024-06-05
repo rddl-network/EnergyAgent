@@ -434,6 +434,7 @@ code {
 
 .key {
   width: 180px;
+  flex-shrink: 0;
 }
 .warning {
   color: #FF8854;
@@ -491,6 +492,10 @@ table tbody tr:hover {
   color: red;
 }
 
+#attestation,
+#log {
+  white-space: break-spaces;
+}
 ::-webkit-scrollbar {
   height: 6px; 
   width: 6px;    
