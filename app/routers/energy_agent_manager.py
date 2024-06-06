@@ -13,7 +13,7 @@ _manager_instance = None
 
 class EnergyAgentManager:
     def __init__(self):
-        self.data_agent = None
+        self.energy_agent = None
         self.task = None
 
     def is_running(self):
@@ -28,19 +28,19 @@ class EnergyAgentManager:
 
     async def start(self):
         if not self.is_running():
-            self.data_agent = EnergyAgent()
-            self.data_agent.setup()
-            self.task = asyncio.create_task(self.data_agent.run())
+            self.energy_agent = EnergyAgent()
+            self.energy_agent.setup()
+            self.task = asyncio.create_task(self.energy_agent.run())
             logger.info("Async data agent started")
         else:
             logger.info("Async data agent is already running")
 
     async def await_and_stop(self):
         if self.is_running():
-            self.data_agent.stopped = True
+            self.energy_agent.stopped = True
             await self.task
-            await self.data_agent.disconnect_from_mqtt()
-            self.data_agent = None
+            await self.energy_agent.disconnect_from_mqtt()
+            self.energy_agent = None
             logger.info("Async data agent stopped")
         else:
             logger.info("Async data agent is not running")
