@@ -28,7 +28,7 @@ async def queryNotatizedAssets(challengee: str, num_cids: int) -> List[str]:
         except json.JSONDecodeError:
             logger.error("Error: Invalid JSON response.")
     else:
-        logger.error("Error:", response.status_code)
+        logger.error("Error:    " + str(response.status_code))
     return None
 
 
@@ -76,5 +76,5 @@ async def queryPoPInfo(height: str) -> Tuple[str, str, bool, bool]:
         except json.JSONDecodeError:
             logger.error("Error: Invalid JSON response.")
     else:
-        logger.error("Error:", response.status_code)
+        logger.error("Error: "+ str(response.status_code))
     return ("", "", False, False)
