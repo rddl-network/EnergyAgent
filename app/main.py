@@ -10,7 +10,6 @@ from app.routers import (
     energy_agent_manager,
     trust_wallet_interaction,
     manage_smd,
-    wifi_manager,
     rddl_network,
     tx_resolver,
 )
@@ -31,15 +30,6 @@ app.add_middleware(
 )
 
 
-@app.get("/favicon.ico", include_in_schema=False)
-async def favicon():
-    favicon_path = "app/templates/static/img/favicon.png"
-    with open(favicon_path, "rb") as f:
-        content = f.read()
-    response = Response(content=content, media_type="image/vnd.microsoft.icon")
-    return response
-
-
 # This routes the API
 app.mount("/static", StaticFiles(directory="app/templates/static"), name="static")
 
@@ -49,7 +39,6 @@ app.include_router(energy_agent_manager.router)
 app.include_router(trust_wallet_interaction.router)
 app.include_router(rddl_network.router)
 app.include_router(manage_smd.router)
-app.include_router(wifi_manager.router)
 app.include_router(tx_resolver.router)
 
 # This routes the HTML

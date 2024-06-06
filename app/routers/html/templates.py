@@ -1,10 +1,5 @@
-import subprocess
-import re
-
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
-
-from app.dependencies import config
 
 templates = Jinja2Templates(directory="app/templates")
 
@@ -44,19 +39,6 @@ async def read_about(request: Request):
         "CIDResolver.html",
         {"request": request, "title": "Local CID Resolver"},
     )
-
-
-def scan_wifi_networks():
-    result = subprocess.run(["iwlist", "wlan0", "scan"], capture_output=True, text=True)
-    networks = re.findall(r'ESSID:"([^"]+)"', result.stdout)
-    networks = list(set(networks))
-    return networks
-
-
-@router.get("/wifi-config-page")
-async def read_root(request: Request):
-    networks = scan_wifi_networks()
-    return templates.TemplateResponse("WifiConfig.html", {"request": request, "networks": networks})
 
 
 @router.get("/rddl-page")
