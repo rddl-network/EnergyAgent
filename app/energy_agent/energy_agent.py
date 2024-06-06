@@ -14,6 +14,7 @@ from app.helpers.models import SmartMeterConfig, MQTTConfig
 
 class EnergyAgent:
     def __init__(self):
+        logger.info(f"MQTT Energy Agent setup")
         self.client = None
         self.smart_meter_topic = ""
         self.mqtt_config = MQTTConfig()

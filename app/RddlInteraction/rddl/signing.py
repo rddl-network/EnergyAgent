@@ -1,7 +1,7 @@
 import hashlib
 
 from ecdsa import SigningKey, SECP256k1
-from ecdsa.util import sigencode_string_canonize
+from ecdsa.util import sigencode_string_canonize, sigencode_string
 
 from ripemd.ripemd160 import ripemd160
 from bitcoinaddress import segwit_addr
@@ -151,5 +151,5 @@ def signBytesWithKey(data: bytes, private_key: bytes) -> bytes:
     signing_key = SigningKey.from_string(private_key, curve=SECP256k1, hashfunc=hashlib.sha256)
 
     # Sign the message with the private key
-    signature = signing_key.sign_deterministic(data, hashfunc=hashlib.sha256, sigencode=sigencode_string_canonize)
+    signature = signing_key.sign_deterministic(data, hashfunc=hashlib.sha256, sigencode=sigencode_string)
     return signature

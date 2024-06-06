@@ -190,7 +190,7 @@ def getBalance(address: str) -> dict:
 
 
 def getPoPResultTx(
-    challengee: str, initiator: str, height: str, success: bool, chainID: str, accountID: int, sequence: int
+    challengee: str, initiator: str, height: int, success: bool, chainID: str, accountID: int, sequence: int
 ) -> str:
     keys = trust_wallet_instance.get_planetmint_keys()
 

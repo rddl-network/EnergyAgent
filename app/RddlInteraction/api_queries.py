@@ -32,7 +32,7 @@ async def queryNotatizedAssets(challengee: str, num_cids: int) -> List[str]:
     return None
 
 
-async def queryPoPInfo(height: str) -> Tuple[str, str, bool, bool]:
+async def queryPoPInfo(height: str) -> Tuple[str, str, str, int, bool, bool]:
     # Define the API endpoint URL
     url = config.planetmint_api + "/planetmint/dao/challenge/" + height
     # Set the header for accepting JSON data
@@ -66,15 +66,21 @@ async def queryPoPInfo(height: str) -> Tuple[str, str, bool, bool]:
                 ):
 
                     keys = keys = trust_wallet_instance.get_planetmint_keys()
+                    initiator = data["challenge"]["initiator"]
                     challenger = data["challenge"]["challenger"]
                     challengee = data["challenge"]["challengee"]
                     isChallenger = challenger == keys.planetmint_address
+                    pop_height = 0
+                    try:
+                        pop_height = int(data["challenge"]["height"])
+                    except: 
+                        logger.error("Erro: cannot convert string to int (pop height)")
                     if isChallenger or challengee == keys.planetmint_address:
-                        return (challenger, challengee, isChallenger, True)
+                        return (initiator, challenger, challengee, pop_height, isChallenger, True)
             else:
                 logger.error("Error: Missing key(s) in response.")
         except json.JSONDecodeError:
             logger.error("Error: Invalid JSON response.")
     else:
         logger.error("Error: "+ str(response.status_code))
-    return ("", "", False, False)
+    return ("", "", "", 0, False, False)

@@ -88,16 +88,19 @@ class RDDLAgent:
         self.challenger = ""
         self.cid = ""
         self.initiator = ""
+        self.pop_height = 0
 
     async def pop_init(self, data):
         logger.info("PoP init: " + data)
-        (challenger, challengee, isChallenger, valid) = await app.RddlInteraction.api_queries.queryPoPInfo(data)
+        (initiator, challenger, challengee, pop_height, isChallenger, valid) = await app.RddlInteraction.api_queries.queryPoPInfo(data)
         logger.info("challenger : " + challenger)
         logger.info("challengee : " + challengee)
         logger.info("valid : " + str(valid))
         if valid:
+            self.initiator = initiator
             self.challenger = challenger
             self.challengee = challengee
+            self.pop_height = pop_height
             if isChallenger:
                 asyncio.create_task(self.initPoPChallenge(challengee))
                 return
@@ -172,7 +175,7 @@ class RDDLAgent:
     async def initPoPChallenge(self, challengee: str):
         logger.info("RDDL MQTT init PoP")
         cids = await app.RddlInteraction.api_queries.queryNotatizedAssets(challengee, 20)
-        if not cids or len(cids) = 0:
+        if not cids or len(cids) == 0:
             logger.error("RDDL MQTT init PoP could not retriev cids.")
             asyncio.create_task(self.sendPoPResult(False))
             return
