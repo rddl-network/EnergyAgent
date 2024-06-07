@@ -15,7 +15,6 @@ from app.RddlInteraction.planetmint_interaction import (
 )
 
 
-
 router = APIRouter(
     prefix="/rddl",
     tags=["rddl"],

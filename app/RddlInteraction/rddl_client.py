@@ -94,17 +94,19 @@ class RDDLAgent:
 
     async def pop_init(self, data):
         logger.info("PoP init: " + data)
-        if self.isPoPActive :
+        if self.isPoPActive:
             logger.info("RDDL MQTT PoP init rejected. PoP is already running.")
             return
-        (initiator, challenger, challengee, pop_height, isChallenger, valid) = await app.RddlInteraction.api_queries.queryPoPInfo(data)
+        (initiator, challenger, challengee, pop_height, isChallenger, valid) = (
+            await app.RddlInteraction.api_queries.queryPoPInfo(data)
+        )
         logger.info("initiator: " + initiator)
         logger.info("challenger: " + challenger)
         logger.info("challengee: " + challengee)
         logger.info("pop_height: " + str(pop_height))
         logger.info("valid pop request: " + str(valid))
         logger.info("is challenger: " + str(isChallenger))
-        if self.isPoPActive :
+        if self.isPoPActive:
             logger.info("RDDL MQTT PoP init rejected. PoP is already running.")
             return
         if valid:
@@ -167,10 +169,7 @@ class RDDLAgent:
             jsonObj["PoPChallenge"]["data"]
             if self.cid != jsonObj["PoPChallenge"]["cid"]:
                 logger.error(
-                    "RDDL MQTT PoP Result: wrong cid. expected "
-                    + self.cid
-                    + " got "
-                    + jsonObj["PoPChallenge"]["cid"]
+                    "RDDL MQTT PoP Result: wrong cid. expected " + self.cid + " got " + jsonObj["PoPChallenge"]["cid"]
                 )
                 asyncio.create_task(self.sendPoPResult(False))
             elif "hex" != jsonObj["PoPChallenge"]["encoding"]:
@@ -225,7 +224,7 @@ class RDDLAgent:
 
             while not self.stopped:
                 logger.info("RDDL MQTT enter wait loop.")
-                asyncio.create_task( self.postStatus(keys.planetmint_address) )
+                asyncio.create_task(self.postStatus(keys.planetmint_address))
                 await asyncio.sleep(60)
 
         except Exception as e:

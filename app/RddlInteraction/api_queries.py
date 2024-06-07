@@ -73,7 +73,7 @@ async def queryPoPInfo(height: str) -> Tuple[str, str, str, int, bool, bool]:
                     pop_height = 0
                     try:
                         pop_height = int(data["challenge"]["height"])
-                    except: 
+                    except:
                         logger.error("Erro: cannot convert string to int (pop height)")
                     if isChallenger or challengee == keys.planetmint_address:
                         return (initiator, challenger, challengee, pop_height, isChallenger, True)
@@ -82,5 +82,5 @@ async def queryPoPInfo(height: str) -> Tuple[str, str, str, int, bool, bool]:
         except json.JSONDecodeError:
             logger.error("Error: Invalid JSON response.")
     else:
-        logger.error("Error: "+ str(response.status_code))
+        logger.error("Error: " + str(response.status_code))
     return ("", "", "", 0, False, False)
