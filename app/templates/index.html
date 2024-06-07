@@ -1,69 +1,84 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Energy Agent</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
-</head>
-<body>
-<div class="header">
-    <div class="center"><h1>Welcome to your Energy Agent</h1></div>
-</div>
-<div class="content">
-    <p>Here you can start configuring your Energy Agent.</p>
-    <div class="buttons">
-        <a href="/energy-agent">
-            <button class="btn-big" type="button">
-                <img class="device" src="{{ url_for('static', path='img/energy-agent.png') }}" alt="Energy Agent">
-                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots">
-                Energy Agent
-            </button>
-        </a>
-        <a href="/trust-wallet">
-            <button class="btn-big" type="button">
-                <img class="device" src="{{ url_for('static', path='img/trust-wallet.png') }}" alt="Trust Wallet">
-                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots">
-                Trust Wallet
-            </button>
-        </a>
-        <a href="/mqtt-page">
-            <button class="btn-big" type="button">
-                <img class="device" src="{{ url_for('static', path='img/mqtt.png') }}" alt="MQTT">
-                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots">
-                MQTT Config
-            </button>
-        </a>
-        <a href="/resolve-cid-page">
-            <button class="btn-big" type="button">
-                <img class="device" src="{{ url_for('static', path='img/cid.png') }}" alt="CID">
-                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots">
-                CID Resolver
-            </button>
-        </a>
-<!--?        <a href="/wifi-config-page">-->
-<!--?            <button class="btn-big" type="button">-->
-<!--?                <img class="device" src="{{ url_for('static', path='img/wifi.png') }}" alt="WiFi">-->
-<!--?                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots">-->
-<!--?                WiFi Config-->
-<!--?            </button>-->
-<!--?        </a>-->
-        <a href="/rddl-page">
-            <button class="btn-big" type="button">
-                <img class="device" src="{{ url_for('static', path='img/attestation.png') }}" alt="RDDL Network">
-                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots">
-                RDDL Network
-            </button>
-        </a>
-        <a href="/tx-page">
-            <button class="btn-big" type="button">
-                <img class="device" src="{{ url_for('static', path='img/transaction.png') }}" alt="Transaction Table">
-                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots">
-                Transaction Table
-            </button>
-        </a>
+{% extends "layout.html" %}
 
+{% block content %}
+
+<div class="wrapper">
+  <div class="no-device">
+    <img class="" src="{{ url_for('static', path='img/nodata.svg') }}" alt="No Data" width="72" />
+    <h3>No Connected Devices</h3>
+    <p class="warning">Follow the sidebar navigation steps starting with Trust Wallet</p>
+
+    <a class="btn mt-20" href="/trust-wallet">Get Started</a>
+  </div>
+  <div class="transaction">
+    <div class="description">
+      <p class="desc center">Below is the list of all transactions with their respective hash, CID, and creation time.
+      </p>
     </div>
+    <table id="transactionsTable">
+      <thead>
+        <tr>
+          <th>Transaction Hash</th>
+          <th>CID</th>
+          <th>Creation Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Data will be populated here by JavaScript -->
+      </tbody>
+    </table>
+  </div>
 </div>
-</body>
-</html>
+<div id="spinner-overlay" class="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+  const API_BASE = `/tx_resolver/txs`;
+  function toggleSpinner(visible) {
+    let overlay = document.getElementById('spinner-overlay');
+    overlay.style.display = visible ? 'flex' : 'none';
+  }
+
+  function fetchTransactions() {
+    toggleSpinner(true);
+    fetch(`${API_BASE}`)
+      .then((response, reject) => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        return response.json();
+      })
+      .then(data => {
+
+        const tableBody = document.querySelector('#transactionsTable tbody');
+        tableBody.innerHTML = ''; // Clear existing data
+        data.forEach(tx => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+                      <td>${tx.txhash}</td>
+                      <td>${tx.cid}</td>
+                      <td>${new Date(tx.created_at).toLocaleString()}</td>
+                  `;
+          tableBody.appendChild(row);
+        });
+        document.body.classList.add('fetch-success');
+      })
+      .catch(error => {
+        console.error('Failed to fetch transactions:', error);
+        document.body.classList.add('fetch-error');
+
+      }).finally(() => {
+        toggleSpinner(false);
+      })
+  }
+
+  window.onload = function () {
+    fetchTransactions();
+  };
+</script>
+{% endblock %}

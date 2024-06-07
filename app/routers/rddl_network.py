@@ -1,3 +1,5 @@
+import json
+import requests
 from datetime import datetime
 from fastapi import APIRouter, HTTPException
 from app.RddlInteraction.cid_tool import store_cid
@@ -72,7 +74,7 @@ async def getMachineAttestation():
 
 
 @router.get("/attestmachine")
-async def getAttestMachine():
+async def getAttestMachine(name: str, additional_info: str):
     if is_not_connected(config.trust_wallet_port):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
@@ -80,17 +82,17 @@ async def getAttestMachine():
         accountID, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
         additionalCID = ""
         machineIDSig = computeMachineIDSignature(config.machine_id)
-        print(machineIDSig)
-        gps_data = '{"Latitude":"-48.876667","Longitude":"-123.393333"}'
-        deviceDefinition = '{"Manufacturer": "RDDL","Serial":"AdnT2uyt"}'
+        gps_data = fetch_gps_data()
+
+        device_definition = json.dumps({"additional_information": additional_info})
 
         machine_attestation_tx = attestMachine(
             keys.planetmint_address,
-            "EnergyAgent0",
+            name,
             keys.extended_planetmint_pubkey,
             keys.extended_liquid_pubkey,
             gps_data,
-            deviceDefinition,
+            device_definition,
             config.machine_id,
             machineIDSig,
             additionalCID,
@@ -106,6 +108,32 @@ async def getAttestMachine():
             return {"status": "success", "message": response.text}
     except Exception as e:
         return {"status": "error", "error": str(e), "message": str(e)}
+
+
+def fetch_gps_data():
+    url = "https://us-central1-rddl-io-8680.cloudfunctions.net/geolocation-888954d"
+    headers = {"Content-Type": "application/json"}
+
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Raise an error for bad status codes
+
+        payload = response.json()  # Parse JSON response
+        print(response.status_code)
+        print(payload)
+
+        latitude = payload.get("Latitude", None)
+        longitude = payload.get("Longitude", None)
+
+        if latitude and longitude:
+            gps_data = {"Latitude": latitude, "Longitude": longitude}
+            return json.dumps(gps_data)
+        else:
+            print("Latitude or Longitude not found in the response.")
+            return None
+    except requests.RequestException as e:
+        print(f"HTTP request failed: {e}")
+        return None
 
 
 @router.get("/notarize")

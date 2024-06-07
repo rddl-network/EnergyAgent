@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="wrapper">
+  <div class="section">
+    <p class="section-title"></p>
+    <small class="center block"></small>
+    <div class="col">
+      <code id="mnemonic" class="status-indicator">Your account details will appear...</code>
+    </div>
+  </div>
+  <div class="buttons">
+    <button class="btn" onclick="createAccount()">Create Account</button>
+  </div>
+</div>
+<div class="spinner-overlay" id="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+  function createAccount() {
+      document.getElementById('spinner-overlay').style.display = 'flex';
+
+      fetch(`/rddl/createaccount`)
+      .then(response => response.json())
+      .then(data => {
+          document.getElementById('details').textContent = data.message
+          document.getElementById('spinner-overlay').style.display = 'none';
+      })
+      .catch(error => {
+          document.getElementById('details').textContent = 'Failed to retrieve mnemonic: ' + error;
+          document.getElementById('spinner-overlay').style.display = 'none';
+      });    
+  }
+</script>
+{% endblock %}
