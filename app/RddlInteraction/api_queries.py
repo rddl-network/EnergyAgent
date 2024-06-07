@@ -7,7 +7,7 @@ from app.dependencies import trust_wallet_instance
 
 async def queryNotatizedAssets(challengee: str, num_cids: int) -> List[str]:
     # Define the API endpoint URL
-    url = config.planetmint_api + "/planetmint/dao/challenge/" + challengee + "/" + str(num_cids)
+    url = config.planetmint_api + "/planetmint/asset/address/" + challengee + "/" + str(num_cids)
     # Set the header for accepting JSON data
     headers = {"accept": "application/json"}
 
