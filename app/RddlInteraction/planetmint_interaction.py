@@ -1,7 +1,6 @@
 import requests
 import json
 import base64
-import hashlib
 import binascii
 
 
@@ -10,13 +9,6 @@ from app.proto.planetmintgo.dao import tx_pb2 as DaoTx
 from app.proto.planetmintgo.machine import tx_pb2 as MachineTx
 from app.RddlInteraction.rddl import planetmint, signing
 from app.RddlInteraction.api_queries import getAccountInfo
-
-
-def getHash(data: bytes) -> bytes:
-    hasher = hashlib.sha256()
-    hasher.update(data)
-    digest = hasher.digest()
-    return digest
 
 
 def create_tx_notarize_data(cid: str) -> str:
@@ -29,7 +21,7 @@ def create_tx_notarize_data(cid: str) -> str:
 
 
 def computeMachineIDSignature(publicKey: str) -> str:
-    hashBytes = getHash(binascii.unhexlify(publicKey))
+    hashBytes = signing.getHash(binascii.unhexlify(publicKey))
     signature = trust_wallet_instance.sign_with_optega(2, hashBytes.hex(), publicKey)
     signature = "30" + hex(int(len(signature) / 2))[2:] + signature
     return signature
