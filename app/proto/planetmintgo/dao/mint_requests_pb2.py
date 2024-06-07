@@ -11,7 +11,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from planetmintgo.dao import mint_request_pb2 as planetmintgo_dot_dao_dot_mint__request__pb2
+from app.proto.planetmintgo.dao import mint_request_pb2 as planetmintgo_dot_dao_dot_mint__request__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n$planetmintgo/dao/mint_requests.proto\x12\x10planetmintgo.dao\x1a#planetmintgo/dao/mint_request.proto\"?\n\x0cMintRequests\x12/\n\x08Requests\x18\x01 \x03(\x0b\x32\x1d.planetmintgo.dao.MintRequestB1Z/github.com/planetmint/planetmint-go/x/dao/typesb\x06proto3')

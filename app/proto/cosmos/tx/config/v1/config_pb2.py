@@ -11,7 +11,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from cosmos.app.v1alpha1 import module_pb2 as cosmos_dot_app_dot_v1alpha1_dot_module__pb2
+from app.proto.cosmos.app.v1alpha1 import module_pb2 as cosmos_dot_app_dot_v1alpha1_dot_module__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n cosmos/tx/config/v1/config.proto\x12\x13\x63osmos.tx.config.v1\x1a cosmos/app/v1alpha1/module.proto\"n\n\x06\x43onfig\x12\x19\n\x11skip_ante_handler\x18\x01 \x01(\x08\x12\x19\n\x11skip_post_handler\x18\x02 \x01(\x08:.\xba\xc0\x96\xda\x01(\n&github.com/cosmos/cosmos-sdk/x/auth/txb\x06proto3')

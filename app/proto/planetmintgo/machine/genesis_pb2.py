@@ -11,8 +11,8 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from gogoproto import gogo_pb2 as gogoproto_dot_gogo__pb2
-from planetmintgo.machine import params_pb2 as planetmintgo_dot_machine_dot_params__pb2
+from app.proto.gogoproto import gogo_pb2 as gogoproto_dot_gogo__pb2
+from app.proto.planetmintgo.machine import params_pb2 as planetmintgo_dot_machine_dot_params__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"planetmintgo/machine/genesis.proto\x12\x14planetmintgo.machine\x1a\x14gogoproto/gogo.proto\x1a!planetmintgo/machine/params.proto\"B\n\x0cGenesisState\x12\x32\n\x06params\x18\x01 \x01(\x0b\x32\x1c.planetmintgo.machine.ParamsB\x04\xc8\xde\x1f\x00\x42\x35Z3github.com/planetmint/planetmint-go/x/machine/typesb\x06proto3')
