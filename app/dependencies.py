@@ -25,8 +25,12 @@ class Config:
             or "af837636231cf339f9e991ef37e12f56b04b824914acc2f04417e3894181c152ff2c2e9d785104301b2ee2a6d10578324de92cdf5f8d952f6fe1497d59c096e8"
         )
         self.chain_id = os.environ.get("CHAIN_ID") or "planetmintgo"
-        self.planetmint_api = os.environ.get("PLANETMINT_API") or "http://localhost:1317"
-        self.ta_base_url = os.environ.get("TA_BASE_URL") or "http://localhost:8080"
+        self.planetmint_api = os.environ.get("PLANETMINT_API") or "https://testnet-api.rddl.io"
+        self.ta_base_url = os.environ.get("TA_BASE_URL") or "https://testnet-ta.rddl.io"
+        self.rddl_mqtt_user = os.environ.get("RDDL_MQTT_USER") or "rddl-tasmota"
+        self.rddl_mqtt_password = os.environ.get("RDDL_MQTT_PASSWORD") or "bE91dLR49FmsTtR2xbFCJfmgaGwTqeZJ"
+        self.rddl_mqtt_server = os.environ.get("RDDL_MQTT_SERVER") or "testnet-mqtt.rddl.io"
+        self.rddl_mqtt_port = os.environ.get("RDDL_MQTT_PORT") or "1886"
 
         # Database setup
         self.database = os.path.join(self.config_base_path, "energy_agent.db")

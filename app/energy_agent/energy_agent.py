@@ -6,14 +6,15 @@ from gmqtt.mqtt.constants import MQTTv311
 from app.RddlInteraction.cid_tool import store_cid
 from app.RddlInteraction.planetmint_interaction import create_tx_notarize_data
 from app.db.tx_store import insert_tx
-from app.dependencies import config, logger, trust_wallet_instance
+from app.dependencies import config, logger
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.config_helper import load_config
 from app.helpers.models import SmartMeterConfig, MQTTConfig
 
 
-class DataAgent:
+class EnergyAgent:
     def __init__(self):
+        logger.info(f"MQTT Energy Agent setup")
         self.client = None
         self.smart_meter_topic = ""
         self.mqtt_config = MQTTConfig()

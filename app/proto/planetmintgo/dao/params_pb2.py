@@ -11,7 +11,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from gogoproto import gogo_pb2 as gogoproto_dot_gogo__pb2
+from app.proto.gogoproto import gogo_pb2 as gogoproto_dot_gogo__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1dplanetmintgo/dao/params.proto\x12\x10planetmintgo.dao\x1a\x14gogoproto/gogo.proto\"\xd1\x03\n\x06Params\x12\x14\n\x0cmint_address\x18\x01 \x01(\t\x12\x13\n\x0btoken_denom\x18\x02 \x01(\t\x12\x14\n\x0cstaged_denom\x18\x03 \x01(\t\x12\x13\n\x0b\x63laim_denom\x18\x04 \x01(\t\x12\x18\n\x10reissuance_asset\x18\x05 \x01(\t\x12\x19\n\x11reissuance_epochs\x18\x06 \x01(\x03\x12\x12\n\npop_epochs\x18\x07 \x01(\x03\x12\x1b\n\x13\x64istribution_offset\x18\x08 \x01(\x03\x12&\n\x1e\x64istribution_address_early_inv\x18\t \x01(\t\x12%\n\x1d\x64istribution_address_investor\x18\n \x01(\t\x12&\n\x1e\x64istribution_address_strategic\x18\x0b \x01(\t\x12 \n\x18\x64istribution_address_dao\x18\x0c \x01(\t\x12 \n\x18\x64istribution_address_pop\x18\r \x01(\t\x12\x1d\n\x15mqtt_response_timeout\x18\x0e \x01(\x03\x12\x15\n\rclaim_address\x18\x0f \x01(\t\x12\x14\n\x0ctx_gas_limit\x18\x10 \x01(\x04:\x04\x98\xa0\x1f\x00\x42\x31Z/github.com/planetmint/planetmint-go/x/dao/typesb\x06proto3')

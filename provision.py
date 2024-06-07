@@ -1,17 +1,11 @@
 import time
 import hashlib
+from app.RddlInteraction.rddl.signing import getHash
 from app.RddlInteraction.TrustWallet.TrustWalletConnector import TrustWalletConnector
 import binascii
 
 
 trust_wallet = TrustWalletConnector("/dev/ttyACM0")
-
-
-def getHash(data: bytes) -> bytes:
-    hasher = hashlib.sha256()
-    hasher.update(data)
-    digest = hasher.digest()
-    return digest
 
 
 slot = 2

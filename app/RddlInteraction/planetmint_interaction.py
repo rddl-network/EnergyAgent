@@ -1,21 +1,14 @@
 import requests
 import json
 import base64
-import hashlib
-from typing import Tuple
-
-from app.proto.planetmintgo.machine import tx_pb2 as MachineTx
-from app.RddlInteraction.rddl import planetmint
-from app.RddlInteraction.rddl import signing
-from app.dependencies import trust_wallet_instance, config
 import binascii
 
 
-def getHash(data: bytes) -> bytes:
-    hasher = hashlib.sha256()
-    hasher.update(data)
-    digest = hasher.digest()
-    return digest
+from app.dependencies import trust_wallet_instance, config
+from app.proto.planetmintgo.dao import tx_pb2 as DaoTx
+from app.proto.planetmintgo.machine import tx_pb2 as MachineTx
+from app.RddlInteraction.rddl import planetmint, signing
+from app.RddlInteraction.api_queries import getAccountInfo
 
 
 def create_tx_notarize_data(cid: str) -> str:
@@ -28,64 +21,10 @@ def create_tx_notarize_data(cid: str) -> str:
 
 
 def computeMachineIDSignature(publicKey: str) -> str:
-    hashBytes = getHash(binascii.unhexlify(publicKey))
+    hashBytes = signing.getHash(binascii.unhexlify(publicKey))
     signature = trust_wallet_instance.sign_with_optega(2, hashBytes.hex(), publicKey)
     signature = "30" + hex(int(len(signature) / 2))[2:] + signature
     return signature
-
-
-def createAccountOnNetwork(
-    ta_service_base_url: str, machineId: str, plmnt_address: str, signature: str
-) -> requests.Response:
-    # Define the URL and data
-    url = ta_service_base_url + "/create-account"
-    data = {"machine-id": machineId, "plmnt-address": plmnt_address, "signature": signature}
-
-    # Set headers
-    headers = {"Content-Type": "application/json"}
-
-    # Send POST request with JSON data and headers
-    response = requests.post(url, json=data, headers=headers)
-    return response
-
-
-def getAccountInfo(apiURL: str, address: str) -> Tuple[int, int, str]:
-    queryURL = apiURL + "/cosmos/auth/v1beta1/account_info/" + address
-    headers = {"Content-Type": "application/json"}
-
-    # Send POST request with JSON data and headers
-    response = requests.get(queryURL, headers=headers)
-
-    accountID = 0
-    sequence = 0
-    statusMsg = ""
-    if response.status_code != 200:
-        statusMsg = response.text
-    else:
-        data = json.loads(response.text)
-        accountID = int(data["info"]["account_number"])
-        sequence = int(data["info"]["sequence"])
-        statusMsg = ""
-
-    return (accountID, sequence, statusMsg)
-
-
-def getMachineInfo(apiURL: str, address: str) -> Tuple[str, str]:
-    queryURL = apiURL + "/planetmint/machine/address/" + address
-    headers = {"Content-Type": "application/json"}
-
-    # Send POST request with JSON data and headers
-    response = requests.get(queryURL, headers=headers)
-
-    machinedata = ""
-    statusMsg = ""
-    if response.status_code != 200:
-        statusMsg = response.text
-    else:
-        machinedata = json.loads(response.text)
-        statusMsg = ""
-
-    return (machinedata, statusMsg)
 
 
 def attestMachine(
@@ -122,9 +61,9 @@ def attestMachine(
     attestMachine.machine.machineIdSignature = signature
 
     anyMsg = planetmint.getAnyMachineAttestation(attestMachine)
-    mycoin4Fee = planetmint.getCoin("plmnt", "0")
+    theFee = planetmint.getCoin("plmnt", "0")
 
-    txString = createAndSignEnvelopeMessage(anyMsg, mycoin4Fee, chainID, accountID, sequence)
+    txString = createAndSignEnvelopeMessage(anyMsg, theFee, chainID, accountID, sequence)
     return txString
 
 
@@ -152,10 +91,10 @@ def createAndSignEnvelopeMessage(anyMsg: any, coin: any, chainID: str, accountID
 def notarizeAsset(cid: str, chainID: str, accountID: int, sequence: int) -> str:
     PlanetmintKeys = trust_wallet_instance.get_planetmint_keys()
 
-    coin4Fee = planetmint.getCoin("plmnt", "1")
+    theFee = planetmint.getCoin("plmnt", "1")
     anyMsg = planetmint.getAnyAsset(PlanetmintKeys.planetmint_address, cid)
 
-    txString = createAndSignEnvelopeMessage(anyMsg, coin4Fee, chainID, accountID, sequence)
+    txString = createAndSignEnvelopeMessage(anyMsg, theFee, chainID, accountID, sequence)
     return txString
 
 
@@ -174,15 +113,21 @@ def broadcastTX(tx_bytes: str) -> requests.Response:
     return response
 
 
-def getBalance(address: str) -> dict:
-    url = f"{config.planetmint_api}/cosmos/bank/v1beta1/balances/{address}"
-    headers = {"Content-Type": "application/json"}
+def getPoPResultTx(
+    challengee: str, initiator: str, height: int, success: bool, chainID: str, accountID: int, sequence: int
+) -> str:
+    keys = trust_wallet_instance.get_planetmint_keys()
 
-    response = requests.get(url, headers=headers)
+    pop_result = DaoTx.MsgReportPopResult()
+    pop_result.creator = keys.planetmint_address
+    pop_result.challenge.initiator = initiator
+    pop_result.challenge.challenger = keys.planetmint_address
+    pop_result.challenge.challengee = challengee
+    pop_result.challenge.height = height
+    pop_result.challenge.success = success
+    pop_result.challenge.finished = False
 
-    if response.status_code != 200:
-        raise Exception(f"Failed to get balance: {response.text}")
-
-    data = json.loads(response.text)
-    balance = data["balances"]
-    return balance
+    anyMsg = planetmint.getAnyPopResult(pop_result)
+    theFee = planetmint.getCoin("plmnt", "1")
+    txString = createAndSignEnvelopeMessage(anyMsg, theFee, chainID, accountID, sequence)
+    return txString
