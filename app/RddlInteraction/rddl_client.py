@@ -13,7 +13,7 @@ from app.helpers.models import MQTTConfig
 from app.dependencies import trust_wallet_instance
 from app.db.cid_store import get_value
 from app.RddlInteraction.cid_tool import compute_cid
-
+from app.RddlInteraction import utils
 
 from app.RddlInteraction.planetmint_interaction import (
     getPoPResultTx,
@@ -36,6 +36,7 @@ class RDDLAgent:
         self.mqtt_config.mqtt_host = config.rddl_mqtt_server
         self.mqtt_config.mqtt_port = config.rddl_mqtt_port
         self.clear_pop_context()
+        self.isPoPActive = False
 
     def setup(self):
         try:
@@ -74,8 +75,9 @@ class RDDLAgent:
                 asyncio.create_task(self.pop_challenge(decoded_payload))
             elif topic == "cmnd/" + keys.planetmint_address + "/PoPInit":
                 asyncio.create_task(self.pop_init(decoded_payload))
-            elif self.challengee != "" and topic == "cmnd/" + self.challengee + "/PoPChallengeResult":
+            elif self.challengee != "" and topic == "stat/" + self.challengee + "/POPCHALLENGERESULT":
                 asyncio.create_task(self.pop_challenge_result(decoded_payload))
+
             else:
                 logger.debug(f"MQTT RDDL topic currently not supported: " + topic)
         except UnicodeDecodeError:
@@ -92,11 +94,21 @@ class RDDLAgent:
 
     async def pop_init(self, data):
         logger.info("PoP init: " + data)
+        if self.isPoPActive :
+            logger.info("RDDL MQTT PoP init rejected. PoP is already running.")
+            return
         (initiator, challenger, challengee, pop_height, isChallenger, valid) = await app.RddlInteraction.api_queries.queryPoPInfo(data)
-        logger.info("challenger : " + challenger)
-        logger.info("challengee : " + challengee)
-        logger.info("valid : " + str(valid))
+        logger.info("initiator: " + initiator)
+        logger.info("challenger: " + challenger)
+        logger.info("challengee: " + challengee)
+        logger.info("pop_height: " + str(pop_height))
+        logger.info("valid pop request: " + str(valid))
+        logger.info("is challenger: " + str(isChallenger))
+        if self.isPoPActive :
+            logger.info("RDDL MQTT PoP init rejected. PoP is already running.")
+            return
         if valid:
+            self.isPoPActive = True
             self.initiator = initiator
             self.challenger = challenger
             self.challengee = challengee
@@ -114,11 +126,14 @@ class RDDLAgent:
             return
         cid = data
         cid_data = get_value(cid)
-        cid_data_hex = app.RddlInteraction.utils.toHexString(cid_data)
-        topic = "cmnd/" + self.challengee + "/PoPChallengeResult"
+        logger.info("PoP challenge cid data : " + cid_data)
+        cid_data_hex = utils.toHexString(cid_data)
+        logger.info("PoP challenge cid data hex : " + cid_data_hex)
+
         payload = (
             '{ "PoPChallengeResult": { "cid": "' + cid + '", "encoding": "hex", "data": "' + cid_data_hex + '"} }'
         )
+        topic = "stat/" + self.challengee + "/POPCHALLENGERESULT"
         msg = Message(
             topic,
             payload,
@@ -128,7 +143,8 @@ class RDDLAgent:
             user_property=("time", str(datetime.now())),
         )
         self.client.publish(msg)
-        self.clear_pop_participants()
+        self.clear_pop_context()
+        self.isPoPActive = False
         return
 
     async def sendPoPResult(self, success: bool):
@@ -145,24 +161,24 @@ class RDDLAgent:
 
     async def pop_challenge_result(self, data):
         logger.info("PoP challenge result: " + data)
-        self.client.unsubscribe("stat/" + self.challengee + "/PoPChallengeResult")
+        self.client.unsubscribe("stat/" + self.challengee + "/POPCHALLENGERESULT")
         try:
             jsonObj = json.loads(data)
-            jsonObj["PoPChallengeResult"]["data"]
-            if self.cid != jsonObj["PoPChallengeResult"]["cid"]:
+            jsonObj["PoPChallenge"]["data"]
+            if self.cid != jsonObj["PoPChallenge"]["cid"]:
                 logger.error(
                     "RDDL MQTT PoP Result: wrong cid. expected "
                     + self.cid
                     + " got "
-                    + jsonObj["PoPChallengeResult"]["cid"]
+                    + jsonObj["PoPChallenge"]["cid"]
                 )
                 asyncio.create_task(self.sendPoPResult(False))
-            elif "hex" != jsonObj["PoPChallengeResult"]["encoding"]:
+            elif "hex" != jsonObj["PoPChallenge"]["encoding"]:
                 logger.error("RDDL MQTT PoP Result: unsupported encoding.")
                 asyncio.create_task(self.sendPoPResult(False))
             else:
-                cid_data_encoded = jsonObj["PoPChallengeResult"]["data"]
-                cid_data = app.RddlInteraction.utils.fromHexString(cid_data_encoded)
+                cid_data_encoded = jsonObj["PoPChallenge"]["data"]
+                cid_data = utils.fromHexString(cid_data_encoded)
                 computed_cid = compute_cid(cid_data)
                 if computed_cid == self.cid:
                     asyncio.create_task(self.sendPoPResult(True))
@@ -171,6 +187,7 @@ class RDDLAgent:
         except json.JSONDecodeError:
             logger.error("RDDL MQTT PoP Result: Error: Invalid JSON string.")
             asyncio.create_task(self.sendPoPResult(False))
+        self.isPoPActive = False
 
     async def initPoPChallenge(self, challengee: str):
         logger.info("RDDL MQTT init PoP")
@@ -182,7 +199,7 @@ class RDDLAgent:
 
         random_cid = random.choice(cids)
         self.cid = random_cid
-        self.client.subscribe("cmnd/" + challengee + "/PoPChallengeResult")
+        self.client.subscribe("stat/" + challengee + "/POPCHALLENGERESULT")
         topic = "cmnd/" + challengee + "/PoPChallenge"
         msg = Message(
             topic,
