@@ -7,19 +7,13 @@ from gmqtt import Client as MQTTClient
 from gmqtt import Message
 from gmqtt.mqtt.constants import MQTTv311
 
-import app.RddlInteraction.api_queries
-from app.dependencies import config, logger
+from app.dependencies import config, logger, trust_wallet_instance
 from app.helpers.models import MQTTConfig
-from app.dependencies import trust_wallet_instance
 from app.db.cid_store import get_value
-from app.RddlInteraction.cid_tool import compute_cid
 from app.RddlInteraction import utils
-
-from app.RddlInteraction.planetmint_interaction import (
-    getPoPResultTx,
-    broadcastTX,
-    getAccountInfo,
-)
+from app.RddlInteraction.cid_tool import compute_cid
+from app.RddlInteraction.api_queries import queryPoPInfo, getAccountInfo
+from app.RddlInteraction.planetmint_interaction import broadcastTX, getPoPResultTx
 
 
 class RDDLAgent:
@@ -97,9 +91,7 @@ class RDDLAgent:
         if self.isPoPActive:
             logger.info("RDDL MQTT PoP init rejected. PoP is already running.")
             return
-        (initiator, challenger, challengee, pop_height, isChallenger, valid) = (
-            await app.RddlInteraction.api_queries.queryPoPInfo(data)
-        )
+        (initiator, challenger, challengee, pop_height, isChallenger, valid) = await queryPoPInfo(data)
         logger.info("initiator: " + initiator)
         logger.info("challenger: " + challenger)
         logger.info("challengee: " + challengee)

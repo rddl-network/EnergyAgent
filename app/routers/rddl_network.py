@@ -5,15 +5,17 @@ from fastapi import APIRouter, HTTPException
 from app.RddlInteraction.cid_tool import store_cid
 from app.dependencies import trust_wallet_instance, config
 from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
-from app.RddlInteraction.planetmint_interaction import (
+from app.RddlInteraction.api_queries import (
     createAccountOnNetwork,
     getAccountInfo,
+    getMachineInfo,
+    getBalance,
+)
+from app.RddlInteraction.planetmint_interaction import (
     attestMachine,
     notarizeAsset,
     computeMachineIDSignature,
-    getMachineInfo,
     broadcastTX,
-    getBalance,
 )
 
 

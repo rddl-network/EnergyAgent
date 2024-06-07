@@ -5,6 +5,74 @@ from app.dependencies import config, logger
 from app.dependencies import trust_wallet_instance
 
 
+def createAccountOnNetwork(
+    ta_service_base_url: str, machineId: str, plmnt_address: str, signature: str
+) -> requests.Response:
+    # Define the URL and data
+    url = ta_service_base_url + "/create-account"
+    data = {"machine-id": machineId, "plmnt-address": plmnt_address, "signature": signature}
+
+    # Set headers
+    headers = {"Content-Type": "application/json"}
+
+    # Send POST request with JSON data and headers
+    response = requests.post(url, json=data, headers=headers)
+    return response
+
+
+def getAccountInfo(apiURL: str, address: str) -> Tuple[int, int, str]:
+    queryURL = apiURL + "/cosmos/auth/v1beta1/account_info/" + address
+    headers = {"Content-Type": "application/json"}
+
+    # Send POST request with JSON data and headers
+    response = requests.get(queryURL, headers=headers)
+
+    accountID = 0
+    sequence = 0
+    statusMsg = ""
+    if response.status_code != 200:
+        statusMsg = response.text
+    else:
+        data = json.loads(response.text)
+        accountID = int(data["info"]["account_number"])
+        sequence = int(data["info"]["sequence"])
+        statusMsg = ""
+
+    return (accountID, sequence, statusMsg)
+
+
+def getMachineInfo(apiURL: str, address: str) -> Tuple[str, str]:
+    queryURL = apiURL + "/planetmint/machine/address/" + address
+    headers = {"Content-Type": "application/json"}
+
+    # Send POST request with JSON data and headers
+    response = requests.get(queryURL, headers=headers)
+
+    machinedata = ""
+    statusMsg = ""
+    if response.status_code != 200:
+        statusMsg = response.text
+    else:
+        machinedata = json.loads(response.text)
+        statusMsg = ""
+
+    return (machinedata, statusMsg)
+
+
+def getBalance(address: str) -> dict:
+    url = f"{config.planetmint_api}/cosmos/bank/v1beta1/balances/{address}"
+    headers = {"Content-Type": "application/json"}
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code != 200:
+        raise Exception(f"Failed to get balance: {response.text}")
+
+    data = json.loads(response.text)
+    balance = data["balances"]
+    return balance
+
+
 async def queryNotatizedAssets(challengee: str, num_cids: int) -> List[str]:
     # Define the API endpoint URL
     url = config.planetmint_api + "/planetmint/asset/address/" + challengee + "/" + str(num_cids)

@@ -1,11 +1,7 @@
-from app.RddlInteraction.planetmint_interaction import (
-    createAccountOnNetwork,
-    getAccountInfo,
-    attestMachine,
-    notarizeAsset,
-)
-from app.RddlInteraction.TrustWallet.TrustWalletConnector import TrustWalletConnector
 import binascii
+from app.RddlInteraction.api_queries import createAccountOnNetwork, getAccountInfo
+from app.RddlInteraction.planetmint_interaction import attestMachine, notarizeAsset
+from app.RddlInteraction.TrustWallet.TrustWalletConnector import TrustWalletConnector
 
 
 def test_createMnemonic():
