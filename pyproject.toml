@@ -33,7 +33,6 @@ gmqtt = "^0.6.16"
 requests = "^2.32.2"
 scapy = "^2.5.0"
 netifaces = "^0.11.0"
-wifi = "^0.3.8"
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.1.1"

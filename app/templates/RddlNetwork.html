@@ -2,144 +2,167 @@
 
 {% block content %}
 <div class="wrapper">
-  <div class="section">
-    <p class="section-title">The entry point to start interacting with the RDDL network is a comprehensive gateway
-      designed to facilitate seamless access to the blockchain ecosystem. </p>
-    <small class="center desc"> This process ensures that the information is tamper-proof and immutable, providing a
-      trustworthy and transparent record.The RDDL network, attestation it's used for confirming identity and validating
-      Trust Wallet</small>
-    <div class="details">
-      <div class="col">
-        <div class="key">Planetmint Address:</div>
-        <code class="value" id="planetmintAddress">Loading...</code>
-      </div>
-      <div class="col">
-        <div class="key">Account ID:</div>
-        <code class="value" id="accountid">Loading...</code>
-      </div>
-      <div class="col">
-        <div class="key">Balance:</div>
-        <code class="value" id="balance">Loading...</code>
-      </div>
-      <div class="col">
-        <div class="key">Sequence:</div>
-        <code class="value" id="sequence">Loading...</code>
-      </div>
-      <div class="col">
-        <div class="key">Machine Attestation:</div>
-        <code class="value" id="attestation">Loading...</code>
-      </div>
-      <div class="col">
-        <div class="key">Log:</div>
-        <code class="value" id="log">Loading...</code>
-      </div>
+    <div class="section">
+        <p class="section-title">The entry point to start interacting with the RDDL network is a comprehensive gateway
+            designed to facilitate seamless access to the blockchain ecosystem. </p>
+        <small class="center desc"> This process ensures that the information is tamper-proof and immutable, providing a
+            trustworthy and transparent record.The RDDL network, attestation it's used for confirming identity and
+            validating
+            Trust Wallet</small>
+        <div class="details">
+            <div class="col">
+                <div class="key">Planetmint Address:</div>
+                <code class="value" id="planetmintAddress">Loading...</code>
+            </div>
+            <div class="col">
+                <div class="key">Account ID:</div>
+                <code class="value" id="accountid">Loading...</code>
+            </div>
+            <div class="col">
+                <div class="key">Balance:</div>
+                <code class="value" id="balance">Loading...</code>
+            </div>
+            <div class="col">
+                <div class="key">Sequence:</div>
+                <code class="value" id="sequence">Loading...</code>
+            </div>
+            <div class="col">
+                <div class="key">Machine Attestation:</div>
+                <code class="value" id="attestation">Loading...</code>
+            </div>
+            <div class="col">
+                <div class="key">Log:</div>
+                <code class="value" id="log">Loading...</code>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="buttons">
-    <button class="btn" onclick="attestMachine()" id="attestButton" type="button">Attest Machine</button>
-    <button class="btn" onclick="notarize()" id="notarizeButton" type="button">Notarize</button>
-  </div>
-  
+    <div class="inputs">
+        <div class="input-group">
+            <label for="machineName">Machine Name:</label>
+            <input class="value" id="machineName" type="text" placeholder="Enter Machine Name" required>
+        </div>
+        <div class="input-group">
+            <label for="additionalInfo">Additional Information:</label>
+            <input class="value" id="additionalInfo" type="text" placeholder="Enter Additional Information" required>
+        </div>
+    </div>
+    <div class="buttons">
+        <button class="btn" onclick="attestMachine()" id="attestButton" type="button">Attest Machine</button>
+        <button class="btn" onclick="notarize()" id="notarizeButton" type="button">Notarize</button>
+    </div>
+
 </div>
 {% endblock %}
 {% block scripts %}
 {{ super() }}
 <script>
-  window.onload = function () {
-    let planetmintAddress = '';
-    fetch('/twi/get-planetmint-keys')
-      .then(response => response.json())
-      .then(data => {
-        planetmintAddress = data.planetmint_address;
-        if (planetmintAddress === undefined) {
-          throw new Error('no address')
+    window.onload = function () {
+        let planetmintAddress = '';
+        fetch('/twi/get-planetmint-keys')
+                .then(response => response.json())
+                .then(data => {
+                    planetmintAddress = data.planetmint_address;
+                    if (planetmintAddress === undefined) {
+                        throw new Error('no address')
+                    }
+                    document.getElementById('planetmintAddress').textContent = planetmintAddress;
+                })
+                .then(() => {
+                    fetch(`/rddl/balance/` + planetmintAddress)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (planetmintAddress === undefined || data.balance === undefined) {
+                                    throw new Error('no balance')
+                                }
+                                document.getElementById('balance').textContent = JSON.stringify(data.balance);
+                            })
+                            .catch(error => {
+                                console.error('Failed to fetch balance:', error);
+                                document.getElementById('balance').textContent = 'Failed to load';
+                            });
+                })
+                .catch(error => {
+                    console.error('Failed to fetch keys:', error);
+                    document.getElementById('planetmintAddress').textContent = 'Failed to load';
+                    document.getElementById('balance').textContent = 'Failed to load';
+                    document.getElementById('log').textContent = 'Failed to load';
+                });
+        fetch(`/rddl/account`)
+                .then(response => response.json())
+                .then(data => {
+
+                    document.getElementById('accountid').textContent = data.accountinfo.accountid
+                    document.getElementById('sequence').textContent = data.accountinfo.sequence
+                })
+                .catch(error => {
+                    document.getElementById('accountid').textContent = 'Failed to load: ' + error;
+                    document.getElementById('sequence').textContent = 'Failed to load: ' + error;
+                });
+        fetch(`/rddl/machine`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('attestation').textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    document.getElementById('attestation').textContent = 'Failed to load: ' + error;
+                });
+        updateButtonState();
+    };
+
+    function updateButtonState() {
+        const attestButton = document.getElementById("attestButton");
+        const attestationValue = document.getElementById("attestation").textContent;
+        const disabledValue = "machine not found"; // Replace with your desired value
+        if (attestationValue.textContent === disabledValue) {
+            attestButton.disabled = true;
+        } else {
+            attestButton.disabled = false;
         }
-        document.getElementById('planetmintAddress').textContent = planetmintAddress;
-      })
-      .then(() => {
-        fetch(`/rddl/balance/` + planetmintAddress)
-          .then(response => response.json())
-          .then(data => {
-            if (planetmintAddress === undefined || data.balance === undefined) {
-              throw new Error('no balance')
-            }
-            document.getElementById('balance').textContent = JSON.stringify(data.balance);
-          })
-          .catch(error => {
-            console.error('Failed to fetch balance:', error);
-            document.getElementById('balance').textContent = 'Failed to load';
-          });
-      })
-      .catch(error => {
-        console.error('Failed to fetch keys:', error);
-        document.getElementById('planetmintAddress').textContent = 'Failed to load';
-        document.getElementById('balance').textContent = 'Failed to load';
-        document.getElementById('log').textContent = 'Failed to load';
-      });
-    fetch(`/rddl/account`)
-      .then(response => response.json())
-      .then(data => {
-
-        document.getElementById('accountid').textContent = data.accountinfo.accountid
-        document.getElementById('sequence').textContent = data.accountinfo.sequence
-      })
-      .catch(error => {
-        document.getElementById('accountid').textContent = 'Failed to load: ' + error;
-        document.getElementById('sequence').textContent = 'Failed to load: ' + error;
-      });
-    fetch(`/rddl/machine`)
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('attestation').textContent = JSON.stringify(data, null, 2);
-      })
-      .catch(error => {
-        document.getElementById('attestation').textContent = 'Failed to load: ' + error;
-      });
-    updateButtonState();
-  };
-
-  function updateButtonState() {
-    const attestButton = document.getElementById("attestButton");
-    const attestationValue = document.getElementById("attestation").textContent;
-    const disabledValue = "machine not found"; // Replace with your desired value
-    if (attestationValue.textContent === disabledValue) {
-      attestButton.disabled = true;
-    } else {
-      attestButton.disabled = false;
     }
-  }
 
-  function attestMachine() {
-    fetch(`/rddl/attestmachine`)
-      .then(response => response.json())
-      .then(data => {
-        if (data === undefined) {
-          throw new Error('no log')
+    function attestMachine() {
+        const machineName = document.getElementById("machineName").value;
+        const additionalInfo = document.getElementById("additionalInfo").value;
+
+        if (!machineName || !additionalInfo) {
+            alert("Machine Name and Additional Information are required.");
+            return;
         }
-        document.getElementById('balance').textContent = 'Failed to load';
-        document.getElementById('log').textContent = JSON.parse(data.message).tx_response.txhash
-      })
-      .catch(error => {
-        document.getElementById('log').textContent = 'Failed to load: ' + error;
-      });
-  }
 
-  function notarize() {
-    fetch(`/rddl/notarize`)
-      .then(response => response.json())
-      .then(data => {
-        if (data === undefined) {
-          throw new Error('no log')
-        }
-        document.getElementById('log').textContent = JSON.parse(data.message).tx_response.txhash
-      })
-      .catch(error => {
-        document.getElementById('log').textContent = 'Failed to load: ' + error;
-      });
-  }
+        const url = new URL('/rddl/attestmachine', window.location.origin);
+        url.searchParams.append('name', machineName);
+        url.searchParams.append('device_definition', additionalInfo);
 
-  // Update button state initially (optional)
-  attestationValue.addEventListener("DOMContentLoaded", updateButtonState); // For initial load
-  attestationValue.addEventListener("change", updateButtonState); // For any future changes
+        fetch(url.toString())
+                .then(response => response.json())
+                .then(data => {
+                    if (data === undefined) {
+                        throw new Error('no log')
+                    }
+                    document.getElementById('balance').textContent = 'Failed to load';
+                    document.getElementById('log').textContent = JSON.parse(data.message).tx_response.txhash
+                })
+                .catch(error => {
+                    document.getElementById('log').textContent = 'Failed to load: ' + error;
+                });
+    }
+
+    function notarize() {
+        fetch(`/rddl/notarize`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data === undefined) {
+                        throw new Error('no log')
+                    }
+                    document.getElementById('log').textContent = JSON.parse(data.message).tx_response.txhash
+                })
+                .catch(error => {
+                    document.getElementById('log').textContent = 'Failed to load: ' + error;
+                });
+    }
+
+    // Update button state initially (optional)
+    attestationValue.addEventListener("DOMContentLoaded", updateButtonState); // For initial load
+    attestationValue.addEventListener("change", updateButtonState); // For any future changes
 </script>
 {% endblock %}
