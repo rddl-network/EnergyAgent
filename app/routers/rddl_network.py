@@ -1,3 +1,7 @@
+from datetime import datetime
+from fastapi import APIRouter, HTTPException
+from app.RddlInteraction.cid_tool import store_cid
+from app.dependencies import trust_wallet_instance, config
 from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
 from app.RddlInteraction.planetmint_interaction import (
     createAccountOnNetwork,
@@ -9,8 +13,7 @@ from app.RddlInteraction.planetmint_interaction import (
     broadcastTX,
     getBalance,
 )
-from app.dependencies import trust_wallet_instance, config
-from fastapi import APIRouter, HTTPException
+
 
 
 router = APIRouter(
@@ -112,8 +115,10 @@ async def notarize():
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
+        payload = '{"Time": "' + str(datetime.now()) + '" }'
+        cid = store_cid(payload)
         accountID, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
-        notarize_tx = notarizeAsset("cidstr", config.chain_id, accountID, sequence)
+        notarize_tx = notarizeAsset(cid, config.chain_id, accountID, sequence)
         response = broadcastTX(notarize_tx)
 
         if response.status_code != 200:
