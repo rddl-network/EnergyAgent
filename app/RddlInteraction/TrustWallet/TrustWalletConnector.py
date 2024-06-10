@@ -11,6 +11,7 @@ PREFIX_IHW = "/IHW"
 
 logger = logging.getLogger(__name__)
 
+
 class TrustWalletConnector(object):
     _instance = None
     occ_message_sender = None
@@ -99,6 +100,9 @@ class TrustWalletConnector(object):
                 print("Send key query OSC Message")
                 msg = OSCMessage(f"{PREFIX_IHW}/getPlntmntKeys", ",", [])
                 occ_message = self.occ_message_sender.send_message(msg)
+                if len(occ_message.data) < 5:
+                    logger.error(f"Get PlanetMintKeys failed with errorcode {occ_message.data[1]}")
+                    return None
                 self.plmnt_keys = PlanetMintKeys()
                 self.plmnt_keys.planetmint_address = occ_message.data[1]
                 self.plmnt_keys.extended_liquid_pubkey = occ_message.data[2]
@@ -107,13 +111,11 @@ class TrustWalletConnector(object):
 
             return self.plmnt_keys
 
-
     def get_seed_SE050(self):
         with self._lock:
             msg = OSCMessage(f"{PREFIX_IHW}/se050GetSeed", ",", [])
             occ_message = self.occ_message_sender.send_message(msg)
             return occ_message
-
 
     def sign_hash_with_planetmint(self, data_to_sign: str) -> str:
         with self._lock:
@@ -176,7 +178,6 @@ class TrustWalletConnector(object):
         else:
             return False, public_key
 
-
     def calculate_hash(self, data_to_sign: str) -> str:
         with self._lock:
             msg = OSCMessage(f"{PREFIX_IHW}/se050CalculateHash", ",s", [data_to_sign])
@@ -195,7 +196,6 @@ class TrustWalletConnector(object):
             pubkey = occ_message.data[1]
             return pubkey
 
-
     def create_SE050_keypair_secp256k1(self, ctx: int) -> str:
         with self._lock:
             """
@@ -207,7 +207,6 @@ class TrustWalletConnector(object):
             occ_message = self.occ_message_sender.send_message(msg)
             pubkey = occ_message.data[1]
             return pubkey
-
 
     def sign_with_SE050(self, data_to_sign: str, ctx: int) -> str:
         with self._lock:
@@ -223,7 +222,6 @@ class TrustWalletConnector(object):
             occ_message = self.occ_message_sender.send_message(msg)
             signature = occ_message.data[1]
             return signature
-
 
     def verify_SE050_signature(self, data_to_sign: str, signature: str, ctx: int) -> bool:
         with self._lock:
