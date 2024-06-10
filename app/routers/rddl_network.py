@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from app.RddlInteraction.cid_tool import store_cid
 from app.dependencies import trust_wallet_instance, config
 from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
+from app.RddlInteraction.rddl_network_config import get_rddl_network_settings
 from app.RddlInteraction.api_queries import (
     createAccountOnNetwork,
     getAccountInfo,
@@ -165,3 +166,17 @@ async def get_balance(address: str):
         return {"status": "success", "balance": balance}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+
+@router.get("/configuration")
+async def get_configuration():
+    return {"status": "success", "configuration": {"name": config.rddl.name}}
+
+
+@router.post("/configuration/{name}")
+async def set_configuration(name: str):
+    if name == "mainnet" or name == "testnet":
+        config.rddl = get_rddl_network_settings(name)
+        return {"status": "success", "configuration": {"name": config.rddl.name}}
+    else:
+        return {"status": "error", "message": "configuration name is not supported - use 'mainnet' or 'testnet'."}
