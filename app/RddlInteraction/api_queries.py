@@ -60,7 +60,7 @@ def getMachineInfo(apiURL: str, address: str) -> Tuple[str, str]:
 
 
 def getBalance(address: str) -> dict:
-    url = f"{config.planetmint_api}/cosmos/bank/v1beta1/balances/{address}"
+    url = f"{config.rddl.planetmint_api}/cosmos/bank/v1beta1/balances/{address}"
     headers = {"Content-Type": "application/json"}
 
     response = requests.get(url, headers=headers)
@@ -75,7 +75,7 @@ def getBalance(address: str) -> dict:
 
 async def queryNotatizedAssets(challengee: str, num_cids: int) -> List[str]:
     # Define the API endpoint URL
-    url = config.planetmint_api + "/planetmint/asset/address/" + challengee + "/" + str(num_cids)
+    url = config.rddl.planetmint_api + "/planetmint/asset/address/" + challengee + "/" + str(num_cids)
     # Set the header for accepting JSON data
     headers = {"accept": "application/json"}
 
@@ -102,7 +102,7 @@ async def queryNotatizedAssets(challengee: str, num_cids: int) -> List[str]:
 
 async def queryPoPInfo(height: str) -> Tuple[str, str, str, int, bool, bool]:
     # Define the API endpoint URL
-    url = config.planetmint_api + "/planetmint/dao/challenge/" + height
+    url = config.rddl.planetmint_api + "/planetmint/dao/challenge/" + height
     # Set the header for accepting JSON data
     headers = {"accept": "application/json"}
 

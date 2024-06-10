@@ -18,10 +18,10 @@ class TopicConfig(BaseModel):
 
 
 class MQTTConfig(BaseModel):
-    mqtt_host: str = ""
-    mqtt_port: int = 0
-    mqtt_password: str = ""
-    mqtt_username: str = ""
+    host: str = ""
+    port: int = 0
+    password: str = ""
+    username: str = ""
 
 
 class AdditionalInfo(BaseModel):
@@ -41,3 +41,10 @@ class PlanetMintKeys(BaseModel):
 class OSCResponse(BaseModel):
     command: str = ""
     data: List[str] = []
+
+
+class RDDLNetworkConfig(BaseModel):
+    chain_id: str = ""
+    planetmint_api: str = ""
+    ta_base_url: str = ""
+    mqtt: MQTTConfig = MQTTConfig()
