@@ -34,13 +34,11 @@ class EnergyAgent:
     def initialize_mqtt_client(self):
         self.client = MQTTClient(client_id=config.client_id)
         self.client.on_message = self.on_message
-        self.client.set_auth_credentials(self.mqtt_config.mqtt_username, self.mqtt_config.mqtt_password)
+        self.client.set_auth_credentials(self.mqtt_config.username, self.mqtt_config.password)
 
     async def connect_to_mqtt(self):
         try:
-            await self.client.connect(
-                self.mqtt_config.mqtt_host, self.mqtt_config.mqtt_port, keepalive=60, version=MQTTv311
-            )
+            await self.client.connect(self.mqtt_config.host, self.mqtt_config.port, keepalive=60, version=MQTTv311)
         except Exception as e:
             logger.error(f"MQTT connection error: {e}")
             raise
@@ -77,7 +75,7 @@ class EnergyAgent:
                 data = json.dumps(self.data_buffer)
                 notarize_cid = store_cid(data)
                 logger.debug(f"Notarize CID transaction: {notarize_cid}, {data}")
-                tx_hash = create_tx_notarize_data(notarize_cid)
+                tx_hash = create_tx_notarize_data(notarize_cid, config.rddl.planetmint_api, config.rddl.chain_id)
                 insert_tx(tx_hash, notarize_cid)
                 logger.info(f"Planetmint transaction response: {tx_hash}")
                 self.data_buffer.clear()

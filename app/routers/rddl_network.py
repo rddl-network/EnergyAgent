@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from app.RddlInteraction.cid_tool import store_cid
 from app.dependencies import trust_wallet_instance, config
 from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
+from app.RddlInteraction.rddl_network_config import get_rddl_network_settings
 from app.RddlInteraction.api_queries import (
     createAccountOnNetwork,
     getAccountInfo,
@@ -35,7 +36,7 @@ async def createAccount():
         address = trust_wallet_instance.get_planetmint_keys().planetmint_address
         signature = computeMachineIDSignature(machine_id)
 
-        response = createAccountOnNetwork(config.ta_base_url, machine_id, address, signature)
+        response = createAccountOnNetwork(config.rddl.ta_base_url, machine_id, address, signature)
         print(response)
         return {"status": "success", "message": str(response)}
     except Exception as e:
@@ -49,7 +50,7 @@ async def getAccount():
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
         print(keys.planetmint_address)
-        accountID, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
+        accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
         print(accountID)
         print(sequence)
         if status != "":
@@ -66,7 +67,7 @@ async def getMachineAttestation():
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
-        machine_data, status = getMachineInfo(config.planetmint_api, keys.planetmint_address)
+        machine_data, status = getMachineInfo(config.rddl.planetmint_api, keys.planetmint_address)
         if status != "":
             return {"status": "error", "error": status, "message": status}
         else:
@@ -81,7 +82,7 @@ async def getAttestMachine(name: str, additional_info: str):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
-        accountID, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
+        accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
         additionalCID = ""
         machineIDSig = computeMachineIDSignature(config.machine_id)
         gps_data = fetch_gps_data()
@@ -98,11 +99,11 @@ async def getAttestMachine(name: str, additional_info: str):
             config.machine_id,
             machineIDSig,
             additionalCID,
-            config.chain_id,
+            config.rddl.chain_id,
             accountID,
             sequence,
         )
-        response = broadcastTX(machine_attestation_tx)
+        response = broadcastTX(machine_attestation_tx, config.rddl.planetmint_api)
 
         if response.status_code != 200:
             return {"status": "error", "error": response.reason, "message": response.text}
@@ -146,9 +147,9 @@ async def notarize():
         keys = trust_wallet_instance.get_planetmint_keys()
         payload = '{"Time": "' + str(datetime.now()) + '" }'
         cid = store_cid(payload)
-        accountID, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
-        notarize_tx = notarizeAsset(cid, config.chain_id, accountID, sequence)
-        response = broadcastTX(notarize_tx)
+        accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
+        notarize_tx = notarizeAsset(cid, config.rddl.chain_id, accountID, sequence)
+        response = broadcastTX(notarize_tx, config.rddl.planetmint_api)
 
         if response.status_code != 200:
             return {"status": "error", "error": response.reason, "message": response.text}
@@ -165,3 +166,17 @@ async def get_balance(address: str):
         return {"status": "success", "balance": balance}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+
+@router.get("/configuration")
+async def get_configuration():
+    return {"status": "success", "configuration": {"name": config.rddl.name}}
+
+
+@router.post("/configuration/{name}")
+async def set_configuration(name: str):
+    if name == "mainnet" or name == "testnet":
+        config.rddl = get_rddl_network_settings(name)
+        return {"status": "success", "configuration": {"name": config.rddl.name}}
+    else:
+        return {"status": "error", "message": "configuration name is not supported - use 'mainnet' or 'testnet'."}
