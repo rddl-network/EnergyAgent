@@ -28,9 +28,9 @@ def create_tx_notarize_data(cid: str) -> str:
 
 
 def computeMachineIDSignature(publicKey: str) -> str:
+    pre_attest_slot = 2
     hashBytes = getHash(binascii.unhexlify(publicKey))
-    signature = trust_wallet_instance.sign_with_optega(2, hashBytes.hex(), publicKey)
-    signature = "30" + hex(int(len(signature) / 2))[2:] + signature
+    signature = trust_wallet_instance.sign_with_SE050(hashBytes.hex(), pre_attest_slot)
     return signature
 
 
