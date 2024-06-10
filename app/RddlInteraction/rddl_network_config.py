@@ -6,6 +6,7 @@ def get_rddl_network_settings(mode: str) -> RDDLNetworkConfig:
     network_config = RDDLNetworkConfig()
     lowercase_mode = mode.lower()
     if lowercase_mode == "mainnet":
+        network_config.name = lowercase_mode
         network_config.chain_id = "planetmint-mainnet-1"
         network_config.planetmint_api = "https://api.rddl.io"
         network_config.ta_base_url = "https://ta.rddl.io"
@@ -15,6 +16,7 @@ def get_rddl_network_settings(mode: str) -> RDDLNetworkConfig:
         network_config.mqtt.username = "rddl-tasmota"
 
     elif lowercase_mode == "testnet":
+        network_config.name = lowercase_mode
         network_config.chain_id = "planetmint-testnet-1"
         network_config.planetmint_api = "https://testnet-api.rddl.io"
         network_config.ta_base_url = "https://testnet-ta.rddl.io"
@@ -31,6 +33,7 @@ def get_rddl_network_settings(mode: str) -> RDDLNetworkConfig:
 
 def setCustomRDDLConfig() -> RDDLNetworkConfig:
     network_config = RDDLNetworkConfig()
+    network_config.name = "custom"
     network_config.chain_id = os.environ.get("CHAIN_ID") or "planetmintgo"
     network_config.planetmint_api = os.environ.get("PLANETMINT_API") or "http://localhost:1317"
     network_config.ta_base_url = os.environ.get("TA_BASE_URL") or "http://localhost:8080"

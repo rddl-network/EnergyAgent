@@ -44,6 +44,7 @@ class OSCResponse(BaseModel):
 
 
 class RDDLNetworkConfig(BaseModel):
+    name: str = ""
     chain_id: str = ""
     planetmint_api: str = ""
     ta_base_url: str = ""
