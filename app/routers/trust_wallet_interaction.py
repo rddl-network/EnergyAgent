@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
+from app.RddlInteraction.planetmint_interaction import planetmint_slot
 from app.dependencies import trust_wallet_instance, config
 from app.helpers.models import PlanetMintKeys
 
@@ -9,7 +10,6 @@ router = APIRouter(
     tags=["twi"],
     responses={404: {"detail": "Not found"}},
 )
-
 
 @router.get("/valise-get")
 def valise_get():
@@ -23,6 +23,9 @@ def mnemonic_to_private_key():
     if is_not_connected(config.trust_wallet_port):
         raise HTTPException(status_code=400, detail="wallet not connected")
     mnemonic = trust_wallet_instance.create_mnemonic()
+    injected = trust_wallet_instance.inject_planetmintkey_to_se050(planetmint_slot)
+    if injected is False:
+        return {"mnemonic": "None"}
     return {"mnemonic": mnemonic}
 
 
@@ -31,6 +34,9 @@ def recover_mnemonic(mnemonic: str):
     if is_not_connected(config.trust_wallet_port):
         raise HTTPException(status_code=400, detail="wallet not connected")
     mnemonic = trust_wallet_instance.recover_from_mnemonic(mnemonic)
+    injected = trust_wallet_instance.inject_planetmintkey_to_se050(planetmint_slot)
+    if injected is False:
+        return {"mnemonic": "None"}
     return {"mnemonic": mnemonic}
 
 

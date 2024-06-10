@@ -68,17 +68,11 @@ class TrustWalletConnector(object):
         with self._lock:
             msg = OSCMessage(f"{PREFIX_IHW}/se050InjectSECPKeys", ",i", [slot])
             occ_message = self.occ_message_sender.send_message(msg)
-            if occ_message.data[1] == 0:
+            if occ_message.data[1] == '0':
                 return True
             else:
                 logger.error(f"Inject PlanetMintKey failed with errorcode {occ_message.data[1]}")
                 return False
-
-    def sign_with_se050(self, data_to_sign: str, slot: int):
-        msg = OSCMessage(f"{PREFIX_IHW}/se050SignData", ",si", [data_to_sign, slot])
-        occ_message = self.occ_message_sender.send_message(msg)
-        signature = occ_message.data[1]
-        return signature
 
     def recover_from_mnemonic(self, mnemonic: str) -> str:
         with self._lock:
@@ -208,7 +202,7 @@ class TrustWalletConnector(object):
             pubkey = occ_message.data[1]
             return pubkey
 
-    def sign_with_SE050(self, data_to_sign: str, ctx: int) -> str:
+    def sign_with_se050(self, data_to_sign: str, ctx: int) -> str:
         with self._lock:
             """
             @brief: Signs the hash with the planetmint private key

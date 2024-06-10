@@ -124,12 +124,8 @@ def fetch_gps_data():
         print(response.status_code)
         print(payload)
 
-        latitude = payload.get("Latitude", None)
-        longitude = payload.get("Longitude", None)
-
-        if latitude and longitude:
-            gps_data = {"Latitude": latitude, "Longitude": longitude}
-            return json.dumps(gps_data)
+        if payload:
+            return json.dumps(payload)
         else:
             print("Latitude or Longitude not found in the response.")
             return None

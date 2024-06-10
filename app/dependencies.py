@@ -22,7 +22,7 @@ class Config:
         self.client_id = os.environ.get("CLIENT_ID") or "energy_agent"
         self.machine_id = (
             os.environ.get("MACHINE_ID")
-            or "af837636231cf339f9e991ef37e12f56b04b824914acc2f04417e3894181c152ff2c2e9d785104301b2ee2a6d10578324de92cdf5f8d952f6fe1497d59c096e8"
+            or "0e9e54284f9b107d0ae1992709d2b1bc94885123d46f6b5353c0d6a7ef733bf38a995823947186fab58a4006f99f70a88210da2e6ebb56b0244e4120e02bfb61"
         )
         self.chain_id = os.environ.get("CHAIN_ID") or "planetmintgo"
         self.planetmint_api = os.environ.get("PLANETMINT_API") or "https://testnet-api.rddl.io"

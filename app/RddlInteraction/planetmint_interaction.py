@@ -9,6 +9,7 @@ from app.proto.planetmintgo.machine import tx_pb2 as MachineTx
 from app.RddlInteraction.rddl import planetmint, signing
 from app.RddlInteraction.api_queries import getAccountInfo
 
+planetmint_slot = 2138
 
 def create_tx_notarize_data(cid: str) -> str:
     keys = trust_wallet_instance.get_planetmint_keys()
@@ -20,8 +21,9 @@ def create_tx_notarize_data(cid: str) -> str:
 
 
 def computeMachineIDSignature(publicKey: str) -> str:
+    pre_attest_slot = 2
     hashBytes = signing.getHash(binascii.unhexlify(publicKey))
-    signature = trust_wallet_instance.sign_with_SE050(hashBytes.hex(), pre_attest_slot)
+    signature = trust_wallet_instance.sign_with_se050(hashBytes.hex(), pre_attest_slot)
     return signature
 
 
@@ -75,7 +77,7 @@ def createAndSignEnvelopeMessage(anyMsg: any, coin: any, chainID: str, accountID
 
     hash = signing.getHash(signDocBytes)
     hash_string = binascii.hexlify(hash).decode("utf-8")
-    signature_hexed_string = trust_wallet_instance.sign_hash_with_planetmint(hash_string)
+    signature_hexed_string = trust_wallet_instance.sign_with_se050(hash_string, planetmint_slot)
     sig_bytes = binascii.unhexlify(signature_hexed_string.encode("utf-8"))
     rawTx.signatures.append(sig_bytes)
     rawTxBytes = rawTx.SerializeToString()
