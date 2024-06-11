@@ -4,7 +4,8 @@ import base64
 import binascii
 
 
-from app.dependencies import trust_wallet_instance, config
+from app.dependencies import trust_wallet_instance
+from app.proto.planetmintgo.dao import tx_pb2 as DaoTx
 from app.proto.planetmintgo.machine import tx_pb2 as MachineTx
 from app.RddlInteraction.rddl import planetmint, signing
 from app.RddlInteraction.api_queries import getAccountInfo
@@ -12,11 +13,11 @@ from app.RddlInteraction.api_queries import getAccountInfo
 planetmint_slot = 2138
 
 
-def create_tx_notarize_data(cid: str) -> str:
+def create_tx_notarize_data(cid: str, planetmint_api: str, chain_id: str) -> str:
     keys = trust_wallet_instance.get_planetmint_keys()
-    account_id, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
-    notarize_tx = notarizeAsset(cid, config.chain_id, account_id, sequence)
-    response = broadcastTX(notarize_tx)
+    account_id, sequence, status = getAccountInfo(planetmint_api, keys.planetmint_address)
+    notarize_tx = getNotarizeAssetTx(cid, chain_id, account_id, sequence)
+    response = broadcastTX(notarize_tx, planetmint_api)
     tx_hash = json.loads(response.text)["tx_response"]["txhash"]
     return tx_hash
 
@@ -28,7 +29,7 @@ def computeMachineIDSignature(publicKey: str) -> str:
     return signature
 
 
-def attestMachine(
+def getAttestMachineTx(
     plmnt_address: str,
     name: str,
     issuerPlanetmint: str,
@@ -89,7 +90,7 @@ def createAndSignEnvelopeMessage(anyMsg: any, coin: any, chainID: str, accountID
     return finalString
 
 
-def notarizeAsset(cid: str, chainID: str, accountID: int, sequence: int) -> str:
+def getNotarizeAssetTx(cid: str, chainID: str, accountID: int, sequence: int) -> str:
     PlanetmintKeys = trust_wallet_instance.get_planetmint_keys()
 
     theFee = planetmint.getCoin("plmnt", "1")
@@ -99,8 +100,8 @@ def notarizeAsset(cid: str, chainID: str, accountID: int, sequence: int) -> str:
     return txString
 
 
-def broadcastTX(tx_bytes: str) -> requests.Response:
-    url = config.planetmint_api + "/cosmos/tx/v1beta1/txs"
+def broadcastTX(tx_bytes: str, planetmint_api: str) -> requests.Response:
+    url = planetmint_api + "/cosmos/tx/v1beta1/txs"
 
     data = {"tx_bytes": tx_bytes, "mode": "BROADCAST_MODE_SYNC"}
 
@@ -130,5 +131,15 @@ def getPoPResultTx(
 
     anyMsg = planetmint.getAnyPopResult(pop_result)
     theFee = planetmint.getCoin("plmnt", "1")
+    txString = createAndSignEnvelopeMessage(anyMsg, theFee, chainID, accountID, sequence)
+    return txString
+
+
+def getRedeemClaimsTx(beneficiary: str, chainID: str, accountID: int, sequence: int) -> str:
+    PlanetmintKeys = trust_wallet_instance.get_planetmint_keys()
+
+    theFee = planetmint.getCoin("plmnt", "1")
+    anyMsg = planetmint.getAnyRedeemClaimMsg(PlanetmintKeys.planetmint_address, beneficiary)
+
     txString = createAndSignEnvelopeMessage(anyMsg, theFee, chainID, accountID, sequence)
     return txString

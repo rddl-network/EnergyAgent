@@ -4,6 +4,7 @@ import sqlite3
 
 from app.helpers.config_helper import build_config_path
 from app.RddlInteraction.TrustWallet.TrustWalletConnector import TrustWalletConnector
+from app.RddlInteraction.rddl_network_config import get_rddl_network_settings
 
 FILE_SMART_METER_CONFIG = "smart_meter_config.json"
 FILE_MQTT_CONFIG = "mqtt_config.json"
@@ -20,14 +21,12 @@ class Config:
         self.trust_wallet_port = os.environ.get("TRUST_WALLET_PORT") or "/dev/tty.usbmodem1101"
         self.notarize_interval = int(os.environ.get("NOTARIZE_INTERVAL") or 1)
         self.client_id = os.environ.get("CLIENT_ID") or "energy_agent"
-        self.machine_id = os.environ.get("MACHINE_ID") or "public_key"
-        self.chain_id = os.environ.get("CHAIN_ID") or "planetmintgo"
-        self.planetmint_api = os.environ.get("PLANETMINT_API") or "https://testnet-api.rddl.io"
-        self.ta_base_url = os.environ.get("TA_BASE_URL") or "https://testnet-ta.rddl.io"
-        self.rddl_mqtt_user = os.environ.get("RDDL_MQTT_USER") or "rddl-tasmota"
-        self.rddl_mqtt_password = os.environ.get("RDDL_MQTT_PASSWORD") or "bE91dLR49FmsTtR2xbFCJfmgaGwTqeZJ"
-        self.rddl_mqtt_server = os.environ.get("RDDL_MQTT_SERVER") or "testnet-mqtt.rddl.io"
-        self.rddl_mqtt_port = os.environ.get("RDDL_MQTT_PORT") or "1886"
+        self.machine_id = (
+            os.environ.get("MACHINE_ID")
+            or "af837636231cf339f9e991ef37e12f56b04b824914acc2f04417e3894181c152ff2c2e9d785104301b2ee2a6d10578324de92cdf5f8d952f6fe1497d59c096e8"
+        )
+        self.rddl_network_mode = os.environ.get("RDDL_NETWORK_MODE") or "testnet"
+        self.rddl = get_rddl_network_settings(self.rddl_network_mode)
 
         # Database setup
         self.database = os.path.join(self.config_base_path, "energy_agent.db")

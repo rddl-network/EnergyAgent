@@ -8,7 +8,6 @@ from gmqtt import Message
 from gmqtt.mqtt.constants import MQTTv311
 
 from app.dependencies import config, logger, trust_wallet_instance
-from app.helpers.models import MQTTConfig
 from app.db.cid_store import get_value
 from app.RddlInteraction import utils
 from app.RddlInteraction.cid_tool import compute_cid
@@ -19,18 +18,17 @@ from app.RddlInteraction.planetmint_interaction import broadcastTX, getPoPResult
 class RDDLAgent:
     def __init__(self):
         logger.info(f"MQTT RDDL creation")
+
+        # client management
         self.client = None
-        self.mqtt_config = MQTTConfig()
         self.stopped = False
         self.data_buffer = []
         self.max_buffer_size = 3000
         self.retry_attempts = 3
-        self.mqtt_config.mqtt_username = config.rddl_mqtt_user
-        self.mqtt_config.mqtt_password = config.rddl_mqtt_password
-        self.mqtt_config.mqtt_host = config.rddl_mqtt_server
-        self.mqtt_config.mqtt_port = config.rddl_mqtt_port
-        self.clear_pop_context()
+
+        # network management
         self.isPoPActive = False
+        self.clear_pop_context()
 
     def setup(self):
         try:
@@ -38,7 +36,7 @@ class RDDLAgent:
             keys = trust_wallet_instance.get_planetmint_keys()
             self.client = MQTTClient(client_id=keys.planetmint_address)
             self.client.on_message = self.on_message
-            self.client.set_auth_credentials(self.mqtt_config.mqtt_username, self.mqtt_config.mqtt_password)
+            self.client.set_auth_credentials(config.rddl.mqtt.username, config.rddl.mqtt.password)
         except Exception as e:
             logger.error(f"MQTT RDDL Setup error: {e}")
             raise
@@ -47,7 +45,7 @@ class RDDLAgent:
         try:
             logger.info(f"MQTT RDDL connect")
             await self.client.connect(
-                self.mqtt_config.mqtt_host, self.mqtt_config.mqtt_port, keepalive=60, version=MQTTv311, ssl=True
+                config.rddl.mqtt.host, config.rddl.mqtt.port, keepalive=60, version=MQTTv311, ssl=True
             )
         except Exception as e:
             logger.error(f"MQTT RDDL connection error: {e}")
@@ -143,13 +141,13 @@ class RDDLAgent:
 
     async def sendPoPResult(self, success: bool):
         keys = trust_wallet_instance.get_planetmint_keys()
-        accountID, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
+        accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
         if status != "":
             logger.error(f"error: {status}, message: {status}")
         txMsg = getPoPResultTx(
-            self.challengee, self.initiator, self.pop_height, success, config.chain_id, accountID, sequence
+            self.challengee, self.initiator, self.pop_height, success, config.rddl.chain_id, accountID, sequence
         )
-        response = broadcastTX(txMsg)
+        response = broadcastTX(txMsg, config.rddl.planetmint_api)
         if response.status_code != 200:
             logger.error(f"error: {response.reason,}, message: {response.text}")
 
