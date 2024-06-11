@@ -18,6 +18,7 @@ from app.RddlInteraction.planetmint_interaction import (
     getNotarizeAssetTx,
     getRedeemClaimsTx,
     broadcastTX,
+    pre_attest_slot,
 )
 
 
@@ -33,7 +34,7 @@ async def createAccount():
     if is_not_connected(config.trust_wallet_port):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
-        machine_id = config.machine_id
+        machine_id = trust_wallet_instance.get_public_key_from_se050(pre_attest_slot)
         address = trust_wallet_instance.get_planetmint_keys().planetmint_address
         signature = computeMachineIDSignature(machine_id)
 
@@ -83,9 +84,10 @@ async def getAttestMachine(name: str, additional_info: str):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
+        machine_id = trust_wallet_instance.get_public_key_from_se050(pre_attest_slot)
         accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
         additionalCID = ""
-        machineIDSig = computeMachineIDSignature(config.machine_id)
+        machineIDSig = computeMachineIDSignature(machine_id)
         gps_data = fetch_gps_data()
 
         device_definition = json.dumps({"additional_information": additional_info})

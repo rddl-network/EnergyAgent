@@ -11,7 +11,7 @@ trust_wallet = TrustWalletConnector("/dev/tty.usbmodem1101")
 slot = 2
 # wrappedPubKey = trust_wallet.create_SE050_keypair_secp256k1(slot)
 
-wrappedPubKey = trust_wallet.create_SE050_keypair_nist(slot)
+wrappedPubKey = trust_wallet.create_se050_keypair_nist(slot)
 (valid, pubKey) = trust_wallet.unwrapPublicKey(wrappedPubKey)
 if valid == False:
     exit(-1)
@@ -27,5 +27,5 @@ print(hashBytes.hex())
 print(binascii.hexlify(hashBytes))
 # data_hash = trust_wallet.calculate_hash(pubKey)
 # print("Data Hash: " + data_hash)
-signature = trust_wallet.sign_with_se050(hashBytes.hex(), slot)
-print(signature)
+# signature = trust_wallet.sign_with_se050(hashBytes.hex(), slot)
+# print(signature)

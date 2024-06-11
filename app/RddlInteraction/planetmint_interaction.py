@@ -3,13 +3,13 @@ import json
 import base64
 import binascii
 
-
 from app.dependencies import trust_wallet_instance
 from app.proto.planetmintgo.dao import tx_pb2 as DaoTx
 from app.proto.planetmintgo.machine import tx_pb2 as MachineTx
 from app.RddlInteraction.rddl import planetmint, signing
 from app.RddlInteraction.api_queries import getAccountInfo
 
+pre_attest_slot = 2
 planetmint_slot = 2138
 
 
@@ -23,7 +23,6 @@ def create_tx_notarize_data(cid: str, planetmint_api: str, chain_id: str) -> str
 
 
 def computeMachineIDSignature(publicKey: str) -> str:
-    pre_attest_slot = 2
     hashBytes = signing.getHash(binascii.unhexlify(publicKey))
     signature = trust_wallet_instance.sign_with_se050(hashBytes.hex(), pre_attest_slot)
     return signature

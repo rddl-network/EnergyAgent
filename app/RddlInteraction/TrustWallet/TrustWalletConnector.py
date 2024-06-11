@@ -90,22 +90,21 @@ class TrustWalletConnector(object):
             @brief: Gets the seed
             @return: return seed
             """
-            if self.plmnt_keys == None:
+            if self.plmnt_keys is None:
                 print("Send key query OSC Message")
                 msg = OSCMessage(f"{PREFIX_IHW}/getPlntmntKeys", ",", [])
                 occ_message = self.occ_message_sender.send_message(msg)
-                if len(occ_message.data) < 5:
-                    logger.error(f"Get PlanetMintKeys failed with errorcode {occ_message.data[1]}")
-                    return None
                 self.plmnt_keys = PlanetMintKeys()
+                if len(occ_message.data) < 5:
+                    logger.error(f"Trust Wallet not initialized. Please initialize the wallet.")
+                    return self.plmnt_keys
                 self.plmnt_keys.planetmint_address = occ_message.data[1]
                 self.plmnt_keys.extended_liquid_pubkey = occ_message.data[2]
                 self.plmnt_keys.extended_planetmint_pubkey = occ_message.data[3]
                 self.plmnt_keys.raw_planetmint_pubkey = occ_message.data[4]
-
             return self.plmnt_keys
 
-    def get_seed_SE050(self):
+    def get_seed_se050(self):
         with self._lock:
             msg = OSCMessage(f"{PREFIX_IHW}/se050GetSeed", ",", [])
             occ_message = self.occ_message_sender.send_message(msg)
@@ -178,7 +177,7 @@ class TrustWalletConnector(object):
             occ_message = self.occ_message_sender.send_message(msg)
             return occ_message.data[1]
 
-    def create_SE050_keypair_nist(self, ctx: int) -> str:
+    def create_se050_keypair_nist(self, ctx: int) -> str:
         with self._lock:
             """
             @brief: Signs the hash with the planetmint private key
@@ -189,6 +188,21 @@ class TrustWalletConnector(object):
             occ_message = self.occ_message_sender.send_message(msg)
             pubkey = occ_message.data[1]
             return pubkey
+
+    def get_public_key_from_se050(self, ctx: int) -> str:
+        with self._lock:
+            """
+            @brief: Get the public key from the slot
+            @param ctx: define one of 4 context of Optega x
+            @return: public key
+            """
+            msg = OSCMessage(f"{PREFIX_IHW}/se050GetPublicKey", ",i", [ctx])
+            occ_message = self.occ_message_sender.send_message(msg)
+            wrapped_pubkey = occ_message.data[1]
+            (valid, pubKey) = self.unwrapPublicKey(wrapped_pubkey)
+            if not valid:
+                logger.error(f"Inject PlanetMintKey failed: No key found.")
+            return pubKey
 
     def sign_with_se050(self, data_to_sign: str, ctx: int) -> str:
         with self._lock:
@@ -205,7 +219,7 @@ class TrustWalletConnector(object):
             signature = occ_message.data[1]
             return signature
 
-    def verify_SE050_signature(self, data_to_sign: str, signature: str, ctx: int) -> bool:
+    def verify_se050_signature(self, data_to_sign: str, signature: str, ctx: int) -> bool:
         with self._lock:
             """
             @brief: Verifies the signature using the SE050 Security Chip
