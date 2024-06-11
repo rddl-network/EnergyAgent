@@ -11,6 +11,7 @@ from app.RddlInteraction.api_queries import getAccountInfo
 
 planetmint_slot = 2138
 
+
 def create_tx_notarize_data(cid: str) -> str:
     keys = trust_wallet_instance.get_planetmint_keys()
     account_id, sequence, status = getAccountInfo(config.planetmint_api, keys.planetmint_address)
@@ -77,7 +78,7 @@ def createAndSignEnvelopeMessage(anyMsg: any, coin: any, chainID: str, accountID
 
     hash = signing.getHash(signDocBytes)
     hash_string = binascii.hexlify(hash).decode("utf-8")
-    signature_hexed_string = trust_wallet_instance.sign_with_se050(hash_string, planetmint_slot)
+    signature_hexed_string = trust_wallet_instance.sign_hash_with_planetmint(hash_string)
     sig_bytes = binascii.unhexlify(signature_hexed_string.encode("utf-8"))
     rawTx.signatures.append(sig_bytes)
     rawTxBytes = rawTx.SerializeToString()

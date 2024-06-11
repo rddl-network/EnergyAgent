@@ -11,6 +11,7 @@ router = APIRouter(
     responses={404: {"detail": "Not found"}},
 )
 
+
 @router.get("/valise-get")
 def valise_get():
     if is_not_connected(config.trust_wallet_port):
@@ -23,9 +24,9 @@ def mnemonic_to_private_key():
     if is_not_connected(config.trust_wallet_port):
         raise HTTPException(status_code=400, detail="wallet not connected")
     mnemonic = trust_wallet_instance.create_mnemonic()
-    injected = trust_wallet_instance.inject_planetmintkey_to_se050(planetmint_slot)
-    if injected is False:
-        return {"mnemonic": "None"}
+    # injected = trust_wallet_instance.inject_planetmintkey_to_se050(planetmint_slot)
+    # if injected is False:
+    #     return {"mnemonic": "None"}
     return {"mnemonic": mnemonic}
 
 
@@ -34,9 +35,9 @@ def recover_mnemonic(mnemonic: str):
     if is_not_connected(config.trust_wallet_port):
         raise HTTPException(status_code=400, detail="wallet not connected")
     mnemonic = trust_wallet_instance.recover_from_mnemonic(mnemonic)
-    injected = trust_wallet_instance.inject_planetmintkey_to_se050(planetmint_slot)
-    if injected is False:
-        return {"mnemonic": "None"}
+    # injected = trust_wallet_instance.inject_planetmintkey_to_se050(planetmint_slot)
+    # if injected is False:
+    #     return {"mnemonic": "None"}
     return {"mnemonic": mnemonic}
 
 

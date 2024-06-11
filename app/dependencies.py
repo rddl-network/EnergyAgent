@@ -22,8 +22,9 @@ class Config:
         self.client_id = os.environ.get("CLIENT_ID") or "energy_agent"
         self.machine_id = (
             os.environ.get("MACHINE_ID")
-            or "0e9e54284f9b107d0ae1992709d2b1bc94885123d46f6b5353c0d6a7ef733bf38a995823947186fab58a4006f99f70a88210da2e6ebb56b0244e4120e02bfb61"
+            or "67d6f47387991c5208189789ad2d134dc54dbcbb191d723d6df40ede2b5b45b3b742df1e180881ae4bfc463e03e32a4ccff9fb65bfa26ffec7fbaaa1fb858311"
         )
+        # gown word egg athlete core marble laugh carpet border home adult giggle keep original decline fly hat ship obvious wrestle clip uncover grass cage
         self.chain_id = os.environ.get("CHAIN_ID") or "planetmintgo"
         self.planetmint_api = os.environ.get("PLANETMINT_API") or "https://testnet-api.rddl.io"
         self.ta_base_url = os.environ.get("TA_BASE_URL") or "https://testnet-ta.rddl.io"

@@ -68,7 +68,7 @@ class TrustWalletConnector(object):
         with self._lock:
             msg = OSCMessage(f"{PREFIX_IHW}/se050InjectSECPKeys", ",i", [slot])
             occ_message = self.occ_message_sender.send_message(msg)
-            if occ_message.data[1] == '0':
+            if occ_message.data[1] == "0":
                 return True
             else:
                 logger.error(f"Inject PlanetMintKey failed with errorcode {occ_message.data[1]}")
@@ -186,18 +186,6 @@ class TrustWalletConnector(object):
             @return: public key
             """
             msg = OSCMessage(f"{PREFIX_IHW}/se050CreateKeyPair", ",ii", [ctx, 1])
-            occ_message = self.occ_message_sender.send_message(msg)
-            pubkey = occ_message.data[1]
-            return pubkey
-
-    def create_SE050_keypair_secp256k1(self, ctx: int) -> str:
-        with self._lock:
-            """
-            @brief: Signs the hash with the planetmint private key
-            @param ctx: define one of 4 context of Optega x
-            @return: public key
-            """
-            msg = OSCMessage(f"{PREFIX_IHW}/se050InjectSECPKeys", ",i", [ctx])
             occ_message = self.occ_message_sender.send_message(msg)
             pubkey = occ_message.data[1]
             return pubkey
