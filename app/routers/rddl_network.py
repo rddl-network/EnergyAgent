@@ -13,10 +13,11 @@ from app.RddlInteraction.api_queries import (
     getBalance,
 )
 from app.RddlInteraction.planetmint_interaction import (
-    attestMachine,
-    notarizeAsset,
     computeMachineIDSignature,
-    broadcastTX,
+    getAttestMachineTx,
+    getNotarizeAssetTx,
+    getRedeemClaimsTx,
+    broadcastTX
 )
 
 
@@ -89,7 +90,7 @@ async def getAttestMachine(name: str, additional_info: str):
 
         device_definition = json.dumps({"additional_information": additional_info})
 
-        machine_attestation_tx = attestMachine(
+        machine_attestation_tx = getAttestMachineTx(
             keys.planetmint_address,
             name,
             keys.extended_planetmint_pubkey,
@@ -148,8 +149,27 @@ async def notarize():
         payload = '{"Time": "' + str(datetime.now()) + '" }'
         cid = store_cid(payload)
         accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
-        notarize_tx = notarizeAsset(cid, config.rddl.chain_id, accountID, sequence)
+        notarize_tx = getNotarizeAssetTx(cid, config.rddl.chain_id, accountID, sequence)
         response = broadcastTX(notarize_tx, config.rddl.planetmint_api)
+
+        if response.status_code != 200:
+            return {"status": "error", "error": response.reason, "message": response.text}
+        else:
+            return {"status": "success", "message": response.text}
+    except Exception as e:
+        return {"status": "error", "error": str(e), "message": str(e)}
+
+
+
+@router.get("/redeemclaims/{beneficiary}")
+async def redeemClaims(beneficiary: str):
+    if is_not_connected(config.trust_wallet_port):
+        raise HTTPException(status_code=400, detail="wallet not connected")
+    try:
+        keys = trust_wallet_instance.get_planetmint_keys()
+        accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
+        redeem_claims_tx = getRedeemClaimsTx( keys.planetmint_address, beneficiary, config.rddl.chain_id, accountID, sequence)
+        response = broadcastTX(redeem_claims_tx, config.rddl.planetmint_api)
 
         if response.status_code != 200:
             return {"status": "error", "error": response.reason, "message": response.text}
