@@ -132,7 +132,8 @@ def getPoPResultTx(
     txString = createAndSignEnvelopeMessage(anyMsg, theFee, chainID, accountID, sequence)
     return txString
 
-def getRedeemClaimsTx( beneficiary: str, chainID: str, accountID: int, sequence: int ) -> str:
+
+def getRedeemClaimsTx(beneficiary: str, chainID: str, accountID: int, sequence: int) -> str:
     PlanetmintKeys = trust_wallet_instance.get_planetmint_keys()
 
     theFee = planetmint.getCoin("plmnt", "1")

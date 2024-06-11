@@ -17,7 +17,7 @@ from app.RddlInteraction.planetmint_interaction import (
     getAttestMachineTx,
     getNotarizeAssetTx,
     getRedeemClaimsTx,
-    broadcastTX
+    broadcastTX,
 )
 
 
@@ -160,7 +160,6 @@ async def notarize():
         return {"status": "error", "error": str(e), "message": str(e)}
 
 
-
 @router.get("/redeemclaims/{beneficiary}")
 async def redeemClaims(beneficiary: str):
     if is_not_connected(config.trust_wallet_port):
@@ -168,7 +167,9 @@ async def redeemClaims(beneficiary: str):
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
         accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
-        redeem_claims_tx = getRedeemClaimsTx( keys.planetmint_address, beneficiary, config.rddl.chain_id, accountID, sequence)
+        redeem_claims_tx = getRedeemClaimsTx(
+            keys.planetmint_address, beneficiary, config.rddl.chain_id, accountID, sequence
+        )
         response = broadcastTX(redeem_claims_tx, config.rddl.planetmint_api)
 
         if response.status_code != 200:
