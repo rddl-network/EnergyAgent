@@ -83,3 +83,16 @@ def getSignDoc(rawTx: cosmosTx.TxRaw, chainID: str, accountID: int) -> cosmosTx.
     signDoc.chain_id = chainID
     signDoc.account_number = accountID
     return signDoc
+
+
+def getAnyRedeemClaimMsg(creator: str, beneficiary: str) -> any_pb2.Any:
+    msg = DaoTx.MsgCreateRedeemClaim()
+    msg.creator = creator
+    msg.beneficiary = beneficiary
+
+    message_data = msg.SerializeToString()
+    # Construct the Any message
+    any_message = any_pb2.Any()
+    any_message.type_url = "/planetmintgo.dao.MsgCreateRedeemClaim"
+    any_message.value = message_data
+    return any_message

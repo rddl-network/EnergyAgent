@@ -8,7 +8,6 @@ from gmqtt import Message
 from gmqtt.mqtt.constants import MQTTv311
 
 from app.dependencies import config, logger, trust_wallet_instance
-from app.helpers.models import MQTTConfig
 from app.db.cid_store import get_value
 from app.RddlInteraction import utils
 from app.RddlInteraction.cid_tool import compute_cid

@@ -1,6 +1,6 @@
 import binascii
 from app.RddlInteraction.api_queries import createAccountOnNetwork, getAccountInfo
-from app.RddlInteraction.planetmint_interaction import attestMachine, notarizeAsset
+from app.RddlInteraction.planetmint_interaction import getAttestMachineTx, getNotarizeAssetTx
 from app.RddlInteraction.TrustWallet.TrustWalletConnector import TrustWalletConnector
 
 
@@ -136,7 +136,7 @@ def test_attestMachine_valid():
     issuerLiquid = "pmpb7vUTeBGCD5Jtz9zrrcqWoMBXdQVEr1qebJsYgETXNebuKmnzMi4S2bMqpEswLUmEa2s6HeXz8cgVrdsYTnQVtcxbd5Vr7ZZpqmMGX6ZT8tQ"
     sequence = 0
     accountID = 15
-    tx = attestMachine(
+    tx = getAttestMachineTx(
         address,
         "MyMachine0",
         issuerPlanetmint,
@@ -163,7 +163,7 @@ def test_notarize_asset_valid():
     accountID, sequence, statusText = getAccountInfo("http://localhost:1317", PlanetmintKeys.planetmint_address)
     assert "" == statusText  # on failure: account does not yet exist on chain
 
-    tx = notarizeAsset("cid", "planetmintgo", accountID, sequence)
+    tx = getNotarizeAssetTx("cid", "planetmintgo", accountID, sequence)
     assert (
         "Cl0KWwokL3BsYW5ldG1pbnRnby5hc3NldC5Nc2dOb3Rhcml6ZUFzc2V0EjMKLHBsbW50MTk5emYwdmttZWhocjJoaGR0M2U0MjVyNWR4NDc0OWRtZW5tMzV3EgNjaWQSZApQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAuuTwelk3VjYYRk78BWwdDgdRDIoIaecVKILRVtMV8HGEgQKAggBGAISEAoKCgVwbG1udBIBMRDAmgwaQMWakNURssQsAKf3eDUGr29/WUbN1gLRFhoDfSflSdMfbTSVb9YaxXBlnS6ElLwuh7Qc/xB3+K2OmdomyMW1EFE="
         == tx

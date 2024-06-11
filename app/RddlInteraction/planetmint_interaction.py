@@ -14,7 +14,7 @@ from app.RddlInteraction.api_queries import getAccountInfo
 def create_tx_notarize_data(cid: str, planetmint_api: str, chain_id: str) -> str:
     keys = trust_wallet_instance.get_planetmint_keys()
     account_id, sequence, status = getAccountInfo(planetmint_api, keys.planetmint_address)
-    notarize_tx = notarizeAsset(cid, chain_id, account_id, sequence)
+    notarize_tx = getNotarizeAssetTx(cid, chain_id, account_id, sequence)
     response = broadcastTX(notarize_tx, planetmint_api)
     tx_hash = json.loads(response.text)["tx_response"]["txhash"]
     return tx_hash
@@ -27,7 +27,7 @@ def computeMachineIDSignature(publicKey: str) -> str:
     return signature
 
 
-def attestMachine(
+def getAttestMachineTx(
     plmnt_address: str,
     name: str,
     issuerPlanetmint: str,
@@ -88,7 +88,7 @@ def createAndSignEnvelopeMessage(anyMsg: any, coin: any, chainID: str, accountID
     return finalString
 
 
-def notarizeAsset(cid: str, chainID: str, accountID: int, sequence: int) -> str:
+def getNotarizeAssetTx(cid: str, chainID: str, accountID: int, sequence: int) -> str:
     PlanetmintKeys = trust_wallet_instance.get_planetmint_keys()
 
     theFee = planetmint.getCoin("plmnt", "1")
@@ -129,5 +129,15 @@ def getPoPResultTx(
 
     anyMsg = planetmint.getAnyPopResult(pop_result)
     theFee = planetmint.getCoin("plmnt", "1")
+    txString = createAndSignEnvelopeMessage(anyMsg, theFee, chainID, accountID, sequence)
+    return txString
+
+
+def getRedeemClaimsTx(beneficiary: str, chainID: str, accountID: int, sequence: int) -> str:
+    PlanetmintKeys = trust_wallet_instance.get_planetmint_keys()
+
+    theFee = planetmint.getCoin("plmnt", "1")
+    anyMsg = planetmint.getAnyRedeemClaimMsg(PlanetmintKeys.planetmint_address, beneficiary)
+
     txString = createAndSignEnvelopeMessage(anyMsg, theFee, chainID, accountID, sequence)
     return txString
