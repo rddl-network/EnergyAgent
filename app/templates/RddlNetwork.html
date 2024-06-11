@@ -131,7 +131,7 @@
 
         const url = new URL('/rddl/attestmachine', window.location.origin);
         url.searchParams.append('name', machineName);
-        url.searchParams.append('device_definition', additionalInfo);
+        url.searchParams.append('additional_info', additionalInfo);
 
         fetch(url.toString())
                 .then(response => response.json())

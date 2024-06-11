@@ -33,6 +33,8 @@ gmqtt = "^0.6.16"
 requests = "^2.32.2"
 scapy = "^2.5.0"
 netifaces = "^0.11.0"
+pyopenssl = "^24.1.0"
+asn1 = "^2.7.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.1.1"

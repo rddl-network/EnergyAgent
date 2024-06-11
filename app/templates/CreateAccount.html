@@ -7,7 +7,7 @@
     <p class="section-title"></p>
     <small class="center block"></small>
     <div class="col">
-      <code id="mnemonic" class="status-indicator">Your account details will appear...</code>
+      <code id="account_transaction" class="status-indicator">Your account details will appear...</code>
     </div>
   </div>
   <div class="buttons">
@@ -27,11 +27,18 @@
       fetch(`/rddl/createaccount`)
       .then(response => response.json())
       .then(data => {
-          document.getElementById('details').textContent = data.message
+          console.log(data)
+          if (data.message.toLowerCase() === '<response [200]>'.toLowerCase())
+          {
+              document.getElementById('account_transaction').textContent = 'Account Creation Successful'
+          } else {
+              document.getElementById('account_transaction').textContent = "Account Creation failed check Explorer if Address exists"
+          }
           document.getElementById('spinner-overlay').style.display = 'none';
       })
       .catch(error => {
-          document.getElementById('details').textContent = 'Failed to retrieve mnemonic: ' + error;
+          console.log(error)
+          document.getElementById('account_transaction').textContent = 'Failed to create account';
           document.getElementById('spinner-overlay').style.display = 'none';
       });    
   }

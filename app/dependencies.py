@@ -21,10 +21,6 @@ class Config:
         self.trust_wallet_port = os.environ.get("TRUST_WALLET_PORT") or "/dev/tty.usbmodem1101"
         self.notarize_interval = int(os.environ.get("NOTARIZE_INTERVAL") or 1)
         self.client_id = os.environ.get("CLIENT_ID") or "energy_agent"
-        self.machine_id = (
-            os.environ.get("MACHINE_ID")
-            or "af837636231cf339f9e991ef37e12f56b04b824914acc2f04417e3894181c152ff2c2e9d785104301b2ee2a6d10578324de92cdf5f8d952f6fe1497d59c096e8"
-        )
         self.rddl_network_mode = os.environ.get("RDDL_NETWORK_MODE") or "testnet"
         self.rddl = get_rddl_network_settings(self.rddl_network_mode)
 
