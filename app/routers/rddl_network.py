@@ -99,7 +99,7 @@ async def getAttestMachine(name: str, additional_info: str):
             keys.extended_liquid_pubkey,
             gps_data,
             device_definition,
-            config.machine_id,
+            machine_id,
             machineIDSig,
             additionalCID,
             config.rddl.chain_id,
