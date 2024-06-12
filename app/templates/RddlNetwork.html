@@ -139,7 +139,8 @@
                     if (data === undefined) {
                         throw new Error('no log')
                     }
-                    document.getElementById('balance').textContent = 'Failed to load';
+                    msg = "TX data of transaction " +JSON.parse(data.message).tx_response.txhash + " will be shown after the block consensus and the page got reloaded.";
+                    document.getElementById('attestation').textContent = msg;
                     document.getElementById('log').textContent = JSON.parse(data.message).tx_response.txhash
                 })
                 .catch(error => {
