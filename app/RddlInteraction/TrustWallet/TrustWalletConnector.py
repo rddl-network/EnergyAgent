@@ -62,6 +62,7 @@ class TrustWalletConnector(object):
             msg = OSCMessage(f"{PREFIX_IHW}/mnemonicToSeed", ",i", [1])
             occ_message = self.occ_message_sender.send_message(msg)
             print(occ_message)
+            self.plmnt_keys = None
             return occ_message.data[1]
 
     def inject_planetmintkey_to_se050(self, slot: int):
@@ -82,6 +83,7 @@ class TrustWalletConnector(object):
             self.plmnt_keys == None
             msg = OSCMessage(f"{PREFIX_IHW}/mnemonicToSeed", ",is", [1, mnemonic])
             occ_message = self.occ_message_sender.send_message(msg)
+            self.plmnt_keys = None
             return occ_message.data[1]
 
     def get_planetmint_keys(self) -> PlanetMintKeys:
