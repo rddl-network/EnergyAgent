@@ -10,7 +10,9 @@ services:
       - "9001:9001"
     command: "mosquitto -c /mosquitto-no-auth.conf"
   energy-agent:
-    image: energy-agent:latest
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     container_name: energy-agent
     depends_on:
       - mqtt
@@ -21,6 +23,9 @@ services:
       NOTARIZE_INTERVAL: 60
       CLIENT_ID: "energy_agent"
       PORT: 2138
+      PLANETMINT_API: "https://testnet-api.rddl.io"
+      TA_BASE_URL: "https://testnet-ta.rddl.io"
+      CHAIN_ID: "planetmint-testnet-1"
     ports:
       - 2138:2138
     privileged: true
