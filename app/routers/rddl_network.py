@@ -40,6 +40,7 @@ async def createAccount():
         signature = computeMachineIDSignature(machine_id)
 
         response = createAccountOnNetwork(config.rddl.ta_base_url, machine_id, address, signature)
+        print(response)
         if response.status_code == 200:
             return {"status": "success", "message": response.reason + " " + response.text}
         else:

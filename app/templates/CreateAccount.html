@@ -28,11 +28,10 @@
       .then(response => response.json())
       .then(data => {
           console.log(data)
-          if (data.message.toLowerCase() === '<response [200]>'.toLowerCase())
-          {
+          if (data.status.toLowerCase() === 'success'){
               document.getElementById('account_transaction').textContent = 'Account Creation Successful'
           } else {
-              document.getElementById('account_transaction').textContent = "Account Creation failed check Explorer if Address exists"
+              document.getElementById('account_transaction').textContent = "Account Creation failed: " + data.message
           }
           document.getElementById('spinner-overlay').style.display = 'none';
       })
