@@ -40,8 +40,10 @@ async def createAccount():
         signature = computeMachineIDSignature(machine_id)
 
         response = createAccountOnNetwork(config.rddl.ta_base_url, machine_id, address, signature)
-        print(response)
-        return {"status": "success", "message": str(response)}
+        if response.status_code == 200:
+            return {"status": "success", "message": response.reason + " " + response.text}
+        else:
+            return {"status": "error", "message": response.reason + " " + response.text}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
@@ -54,8 +56,6 @@ async def getAccount():
         keys = trust_wallet_instance.get_planetmint_keys()
         print(keys.planetmint_address)
         accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
-        print(accountID)
-        print(sequence)
         if status != "":
             return {"status": "error", "error": status, "message": status}
         else:

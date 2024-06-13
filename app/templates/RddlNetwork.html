@@ -52,6 +52,9 @@
     </div>
 
 </div>
+<div class="spinner-overlay" id="spinner-overlay">
+    <div class="spinner"></div>
+</div>
 {% endblock %}
 {% block scripts %}
 {{ super() }}
@@ -121,11 +124,13 @@
     }
 
     function attestMachine() {
+        document.getElementById('spinner-overlay').style.display = 'flex';
         const machineName = document.getElementById("machineName").value;
         const additionalInfo = document.getElementById("additionalInfo").value;
 
         if (!machineName || !additionalInfo) {
             alert("Machine Name and Additional Information are required.");
+            document.getElementById('spinner-overlay').style.display = 'none';
             return;
         }
 
@@ -137,28 +142,35 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data === undefined) {
+                        document.getElementById('spinner-overlay').style.display = 'none';
                         throw new Error('no log')
                     }
                     msg = "TX data of transaction " +JSON.parse(data.message).tx_response.txhash + " will be shown after the block consensus and the page got reloaded.";
                     document.getElementById('attestation').textContent = msg;
                     document.getElementById('log').textContent = JSON.parse(data.message).tx_response.txhash
+                    document.getElementById('spinner-overlay').style.display = 'none';
                 })
                 .catch(error => {
                     document.getElementById('log').textContent = 'Failed to load: ' + error;
+                    document.getElementById('spinner-overlay').style.display = 'none';
                 });
     }
 
     function notarize() {
+        document.getElementById('spinner-overlay').style.display = 'flex';
         fetch(`/rddl/notarize`)
                 .then(response => response.json())
                 .then(data => {
                     if (data === undefined) {
+                        document.getElementById('spinner-overlay').style.display = 'none';
                         throw new Error('no log')
                     }
                     document.getElementById('log').textContent = JSON.parse(data.message).tx_response.txhash
+                    document.getElementById('spinner-overlay').style.display = 'none';
                 })
                 .catch(error => {
                     document.getElementById('log').textContent = 'Failed to load: ' + error;
+                    document.getElementById('spinner-overlay').style.display = 'none';
                 });
     }
 
