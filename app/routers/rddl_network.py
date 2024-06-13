@@ -57,8 +57,6 @@ async def getAccount():
         keys = trust_wallet_instance.get_planetmint_keys()
         print(keys.planetmint_address)
         accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
-        print(accountID)
-        print(sequence)
         if status != "":
             return {"status": "error", "error": status, "message": status}
         else:
