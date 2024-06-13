@@ -116,10 +116,10 @@
     async function fetchMQTTConfig() {
         const response = await fetch('/config/mqtt');
         const data = await response.json();
-        document.getElementById('mqtt-host').value = data.mqtt_host || '';
-        document.getElementById('mqtt-port').value = data.mqtt_port || '';
-        document.getElementById('mqtt-user').value = data.mqtt_username || '';
-        document.getElementById('mqtt-password').value = data.mqtt_password || '';
+        document.getElementById('mqtt-host').value = data.host || '';
+        document.getElementById('mqtt-port').value = data.port || '';
+        document.getElementById('mqtt-user').value = data.username || '';
+        document.getElementById('mqtt-password').value = data.password || '';
     }
 
     async function updateMqttConfig() {
@@ -134,10 +134,10 @@
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                mqtt_host: mqttHost,
-                mqtt_port: parseInt(mqttPort),
-                mqtt_user: mqttUser,
-                mqtt_password: mqttPassword
+                host: mqttHost,
+                port: parseInt(mqttPort),
+                username: mqttUser,
+                password: mqttPassword
             })
         });
 
