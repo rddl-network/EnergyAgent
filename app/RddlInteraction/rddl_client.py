@@ -11,7 +11,7 @@ from app.dependencies import config, logger, trust_wallet_instance
 from app.db.cid_store import get_value
 from app.RddlInteraction import utils
 from app.RddlInteraction.cid_tool import compute_cid
-from app.RddlInteraction.api_queries import queryPoPInfo, getAccountInfo
+from app.RddlInteraction.api_queries import queryPoPInfo, getAccountInfo, queryNotatizedAssets
 from app.RddlInteraction.planetmint_interaction import broadcastTX, getPoPResultTx
 
 
@@ -180,9 +180,9 @@ class RDDLAgent:
 
     async def initPoPChallenge(self, challengee: str):
         logger.info("RDDL MQTT init PoP")
-        cids = await app.RddlInteraction.api_queries.queryNotatizedAssets(challengee, 20)
+        cids = await queryNotatizedAssets(challengee, 20)
         if not cids or len(cids) == 0:
-            logger.error("RDDL MQTT init PoP could not retriev cids.")
+            logger.error("RDDL MQTT init PoP could not retrieve cids.")
             asyncio.create_task(self.sendPoPResult(False))
             return
 
