@@ -41,7 +41,10 @@ async def createAccount():
 
         response = createAccountOnNetwork(config.rddl.ta_base_url, machine_id, address, signature)
         print(response)
-        return {"status": "success", "message": str(response)}
+        if response.status_code == 200:
+            return {"status": "success", "message": response.reason + " " + response.text}
+        else:
+            return {"status": "error", "message": response.reason + " " + response.text}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
