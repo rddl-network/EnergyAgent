@@ -123,7 +123,7 @@ class RDDLAgent:
         logger.info("PoP challenge cid data hex : " + cid_data_hex)
 
         payload = (
-            '{ "PoPChallengeResult": { "cid": "' + cid + '", "encoding": "hex", "data": "' + cid_data_hex + '"} }'
+            '{ "PoPChallenge": { "cid": "' + cid + '", "encoding": "hex", "data": "' + cid_data_hex + '"} }'
         )
         topic = "stat/" + self.challengee + "/POPCHALLENGERESULT"
         msg = Message(
@@ -156,8 +156,12 @@ class RDDLAgent:
         self.client.unsubscribe("stat/" + self.challengee + "/POPCHALLENGERESULT")
         try:
             jsonObj = json.loads(data)
-            jsonObj["PoPChallenge"]["data"]
-            if self.cid != jsonObj["PoPChallenge"]["cid"]:
+            if not jsonObj["PoPChallenge"]:
+                logger.error(
+                    "RDDL MQTT PoP Result: wrong JSON object. expected \"PoPChallenge\" got " + data
+                )
+                asyncio.create_task(self.sendPoPResult(False))            
+            elif self.cid != jsonObj["PoPChallenge"]["cid"]:
                 logger.error(
                     "RDDL MQTT PoP Result: wrong cid. expected " + self.cid + " got " + jsonObj["PoPChallenge"]["cid"]
                 )
