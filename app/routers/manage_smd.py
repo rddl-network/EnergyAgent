@@ -40,7 +40,7 @@ def get_ip_range():
     return ip_network
 
 
-def scan_network(ip_range) -> Tuple[list[dict[str,str]], bool, str  ]:
+def scan_network(ip_range) -> Tuple[list[dict[str, str]], bool, str]:
     arp = ARP(pdst=ip_range)
     ether = Ether(dst="ff:ff:ff:ff:ff:ff")
     packet = ether / arp

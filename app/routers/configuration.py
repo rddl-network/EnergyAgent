@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Body
 
 from app.dependencies import config
 from app.helpers.config_helper import save_config, load_config
@@ -34,6 +34,6 @@ async def get_mqtt_config():
 
 
 @router.post("/mqtt")
-async def create_mqtt_config(mqtt_config: MQTTConfig):
+async def create_mqtt_config(mqtt_config: MQTTConfig = Body(...)):
     save_config(config.path_to_mqtt_config, mqtt_config.__dict__)
     return {"message": "Updated MQTT configuration"}
