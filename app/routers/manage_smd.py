@@ -1,4 +1,5 @@
 import logging
+from typing import Tuple
 from fastapi import APIRouter, HTTPException, Body
 import netifaces
 from scapy.all import ARP, Ether, srp
@@ -39,17 +40,18 @@ def get_ip_range():
     return ip_network
 
 
-def scan_network(ip_range):
+def scan_network(ip_range) -> Tuple[list[dict[str,str]], bool, str  ]:
     arp = ARP(pdst=ip_range)
     ether = Ether(dst="ff:ff:ff:ff:ff:ff")
     packet = ether / arp
     try:
         result = srp(packet, timeout=120, verbose=0)[0]
     except Exception as e:
-        logger.error(f"Error scanning network: {e}")
-        return []
+        msg = f"Error scanning network: {e}"
+        logger.error(msg)
+        return [], False, "", msg
     devices = [{"ip": received.psrc, "mac": received.hwsrc} for sent, received in result]
-    return devices
+    return [devices, True, ""]
 
 
 def identify_shelly(ip_address):
@@ -83,7 +85,9 @@ def scan_and_identify_devices():
         raise HTTPException(status_code=500, detail="Could not determine IP range.")
 
     logger.info(f"Scanning network range: {ip_range}")
-    devices = scan_network(ip_range)
+    devices, successful, error_msg = scan_network(ip_range)
+    if not successful:
+        raise HTTPException(status_code=500, detail=error_msg)
     shelly_devices = []
     tasmota_devices = []
     for device in devices:
