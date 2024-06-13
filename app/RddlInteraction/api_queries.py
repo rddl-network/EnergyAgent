@@ -121,12 +121,6 @@ async def queryPoPInfo(height: str) -> Tuple[str, str, str, int, bool, bool]:
                 for key in ["initiator", "challenger", "challengee", "height", "success", "finished"]
             ):
                 # Access and print the challenge variables
-                logger.info("Initiator: " + data["challenge"]["initiator"])
-                logger.info("Challenger: " + data["challenge"]["challenger"])
-                logger.info("Challengee: " + data["challenge"]["challengee"])
-                logger.info("Height: " + data["challenge"]["height"])
-                logger.info("Success: " + str(data["challenge"]["success"]))
-                logger.info("Finished: " + str(data["challenge"]["finished"]))
                 if (
                     data["challenge"]["height"] == height
                     and data["challenge"]["success"] == False

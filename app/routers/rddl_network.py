@@ -2,6 +2,7 @@ import json
 import requests
 from datetime import datetime
 from fastapi import APIRouter, HTTPException
+from app.db.tx_store import insert_tx
 from app.RddlInteraction.cid_tool import store_cid
 from app.dependencies import trust_wallet_instance, config
 from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
@@ -149,7 +150,8 @@ async def notarize():
         accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
         notarize_tx = getNotarizeAssetTx(cid, config.rddl.chain_id, accountID, sequence)
         response = broadcastTX(notarize_tx, config.rddl.planetmint_api)
-
+        tx_hash = json.loads(response.text)["tx_response"]["txhash"]
+        insert_tx(tx_hash, cid)
         if response.status_code != 200:
             return {"status": "error", "error": response.reason, "message": response.text}
         else:

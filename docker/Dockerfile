@@ -18,13 +18,14 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy only necessary files for installing Python dependencies
 COPY poetry.lock pyproject.toml ./
-COPY app  /app
 
 RUN pip install --upgrade setuptools
 RUN pip install poetry
 RUN poetry config virtualenvs.create false
 RUN poetry lock
 RUN poetry install --no-root
+
+COPY app  /app
 
 EXPOSE 2138
 
