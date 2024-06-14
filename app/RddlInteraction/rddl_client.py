@@ -82,6 +82,7 @@ class RDDLAgent:
             self.pop_context = PoPContext()
             return
 
+        logger.info("PoP Watchdog is terminating the current PoP: " + str(self.pop_context.pop_height))
         isChallenger = self.pop_context.isChallenger
         await asyncio.sleep(80)
         if isChallenger:
