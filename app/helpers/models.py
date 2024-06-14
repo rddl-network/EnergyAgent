@@ -49,3 +49,13 @@ class RDDLNetworkConfig(BaseModel):
     planetmint_api: str = ""
     ta_base_url: str = ""
     mqtt: MQTTConfig = MQTTConfig()
+
+
+class PoPContext(BaseModel):
+    initiator: str = ""
+    challenger: str = ""
+    challengee: str = ""
+    pop_height: int = 0
+    isChallenger: bool = False
+    isActive: bool = False
+    cid: str = ""

@@ -3,6 +3,7 @@ import requests
 from typing import Tuple, List
 from app.dependencies import config, logger
 from app.dependencies import trust_wallet_instance
+from app.helpers.models import PoPContext
 
 
 def createAccountOnNetwork(
@@ -100,7 +101,7 @@ async def queryNotatizedAssets(challengee: str, num_cids: int) -> List[str]:
     return None
 
 
-async def queryPoPInfo(height: str) -> Tuple[str, str, str, int, bool, bool]:
+async def queryPoPInfo(height: str) -> PoPContext:
     # Define the API endpoint URL
     url = config.rddl.planetmint_api + "/planetmint/dao/challenge/" + height
     # Set the header for accepting JSON data
@@ -126,23 +127,25 @@ async def queryPoPInfo(height: str) -> Tuple[str, str, str, int, bool, bool]:
                     and data["challenge"]["success"] == False
                     and data["challenge"]["finished"] == False
                 ):
+                    pop_context = PoPContext()
 
                     keys = keys = trust_wallet_instance.get_planetmint_keys()
-                    initiator = data["challenge"]["initiator"]
-                    challenger = data["challenge"]["challenger"]
-                    challengee = data["challenge"]["challengee"]
-                    isChallenger = challenger == keys.planetmint_address
-                    pop_height = 0
+                    pop_context.initiator = data["challenge"]["initiator"]
+                    pop_context.challenger = data["challenge"]["challenger"]
+                    pop_context.challengee = data["challenge"]["challengee"]
+                    pop_context.pop_height = 0
+                    pop_context.isChallenger = pop_context.challenger == keys.planetmint_address
                     try:
-                        pop_height = int(data["challenge"]["height"])
+                        pop_context.pop_height = int(data["challenge"]["height"])
                     except:
                         logger.error("Erro: cannot convert string to int (pop height)")
-                    if isChallenger or challengee == keys.planetmint_address:
-                        return (initiator, challenger, challengee, pop_height, isChallenger, True)
+                    if pop_context.isChallenger or (pop_context.challengee == keys.planetmint_address):
+                        pop_context.isActive = True
+                        return pop_context
             else:
                 logger.error("Error: Missing key(s) in response.")
         except json.JSONDecodeError:
             logger.error("Error: Invalid JSON response.")
     else:
         logger.error("Error: " + str(response.status_code))
-    return ("", "", "", 0, False, False)
+    return PoPContext()
