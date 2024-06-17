@@ -1,11 +1,13 @@
+import os
+import sys
+import platform
 import logging
 import threading
 from osc4py3.oscbuildparse import OSCMessage
 
 from app.RddlInteraction.TrustWallet.osc_message_sender import OSCMessageSender
 from app.helpers.models import PlanetMintKeys
-import platform
-import sys
+
 
 PREFIX_IHW = "/IHW"
 
@@ -28,6 +30,8 @@ class TrustWalletConnector(object):
         # system pick and optimistic architecture selection
         if platform.system() == "Linux":
             if platform.processor() == "x86_64":
+                lib_path = "app/lib/linux/x86_64/libocc.so"
+            elif os.uname().machine == "x86_64":  # linux-docker image has an empty platform.system() value
                 lib_path = "app/lib/linux/x86_64/libocc.so"
             else:
                 lib_path = "app/lib/linux/armv7/libocc.so"

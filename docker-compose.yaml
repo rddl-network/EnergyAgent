@@ -10,7 +10,7 @@ services:
       - "9001:9001"
     command: "mosquitto -c /mosquitto-no-auth.conf"
   energy-agent:
-    image: energy-agent:latest
+    image: ghcr.io/rddl-network/energyagent:latest
     container_name: energy-agent
     depends_on:
       - mqtt
