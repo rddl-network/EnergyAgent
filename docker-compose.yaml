@@ -19,7 +19,6 @@ services:
       RDDL_TOPIC: "rddl/SMD/#"
       TRUST_WALLET_PORT: "/dev/ttyACM0"
       NOTARIZE_INTERVAL: 60
-      CLIENT_ID: "energy_agent"
       PORT: 2138
     ports:
       - 2138:2138

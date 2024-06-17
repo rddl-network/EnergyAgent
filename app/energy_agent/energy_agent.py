@@ -6,7 +6,7 @@ from gmqtt.mqtt.constants import MQTTv311
 from app.RddlInteraction.cid_tool import store_cid
 from app.RddlInteraction.planetmint_interaction import create_tx_notarize_data
 from app.db.tx_store import insert_tx
-from app.dependencies import config, logger
+from app.dependencies import config, logger, trust_wallet_instance
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.config_helper import load_config
 from app.helpers.models import SmartMeterConfig, MQTTConfig
@@ -32,7 +32,8 @@ class EnergyAgent:
             raise
 
     def initialize_mqtt_client(self):
-        self.client = MQTTClient(client_id=config.client_id)
+        keys = trust_wallet_instance.get_planetmint_keys()
+        self.client = MQTTClient(client_id=keys.planetmint_address)
         self.client.on_message = self.on_message
         self.client.set_auth_credentials(self.mqtt_config.username, self.mqtt_config.password)
 
