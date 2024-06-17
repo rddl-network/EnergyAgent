@@ -19,7 +19,7 @@ RDDL_TOPIC =         "rddl/SMD/#""         # the channel to subscribe to SMD dat
 TRUST_WALLET_PORT =  "/dev/ttyACM0"        # the serial devices port to the TrustWallet
 NOTARIZE_INTERVAL =  3600                  # in seconds 3600 seconds = 1 hour
 CLIENT_ID =          energy_agent
-RDDL_NETWORK_MODE =  testnet               # testnet, mainnet, or custom
+RDDL_NETWORK_MODE =  mainnet               # testnet, mainnet, or custom
 ```
 
 The custom RDDL network connection can be set via the following environment variables:
