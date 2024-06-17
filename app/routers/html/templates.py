@@ -53,9 +53,9 @@ async def read_about(request: Request):
 
 @router.get("/recover-mnemonic")
 async def read_about(request: Request):
-    return templates.TemplateResponse("RecoverMnemonic.html", {"request": request, "title": "Recover Mmenonic"})
+    return templates.TemplateResponse("RecoverMnemonic.html", {"request": request, "title": "Recover Mnemonic"})
 
 
 @router.get("/create-mnemonic")
 async def read_about(request: Request):
-    return templates.TemplateResponse("CreateMnemonic.html", {"request": request, "title": "Create Mmenonic"})
+    return templates.TemplateResponse("CreateMnemonic.html", {"request": request, "title": "Create Mnemonic"})
