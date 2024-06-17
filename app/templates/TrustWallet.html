@@ -3,55 +3,68 @@
 {% block content %}
 
 <div class="wrapper">
-  <div class="section">
-    <p class="section-title">Wallet Details</p>
-    <div class="details">
-      <div class="col">
-        <div class="key">Planetmint Address:</div>
-        <code class="value" id="planetmintAddress">Loading...</code>
-      </div>
-      <div class="col">
-        <div class="key">Planetmint Public Key:</div>
-        <code class="value" id="planetmintPubKey">Loading...</code>
-      </div>
-      <div class="col">
-        <div class="key">Rddl Public Key:</div>
-        <code class="value" id="rddlPubKey">Loading...</code>
-      </div>
+    <div class="section">
+        <p class="section-title">Wallet Details</p>
+        <div class="details">
+            <div class="col">
+                <div class="key">Planetmint Address:</div>
+                <code class="value" id="planetmintAddress">Loading...</code>
+            </div>
+            <div class="col">
+                <div class="key">Planetmint Public Key:</div>
+                <code class="value" id="planetmintPubKey">Loading...</code>
+            </div>
+            <div class="col">
+                <div class="key">Rddl Public Key:</div>
+                <code class="value" id="rddlPubKey">Loading...</code>
+            </div>
+            <div class="col">
+                <div class="key">Machine ID:</div>
+                <code class="value" id="machineId">Loading...</code>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="section">
-    <p class="section-title">Generate or recover key on Trust Wallet</p>
-    <div class="buttons">
-      <div class="card">
-        <div> <img src="{{ url_for('static', path='img/generate-key.png') }}" width="120px" height="120px" alt="">
-          <p>Generate your key and create a backup for recovery via mnemonic phrase</p>
+    <div class="section">
+        <p class="section-title">Generate or recover key on Trust Wallet</p>
+        <div class="buttons">
+            <div class="card">
+                <div><img src="{{ url_for('static', path='img/generate-key.png') }}" width="120px" height="120px"
+                          alt="">
+                    <p>Generate your key and create a backup for recovery via mnemonic phrase</p>
+                </div>
+                <a href="/create-mnemonic">
+                    <button class="btn" type="button">Create Mnemonic</button>
+                </a>
+            </div>
+            <div class="card">
+                <div>
+                    <img src="{{ url_for('static', path='img/recovery-key.png') }}" width="120px" height="120px" alt="">
+                    <p>Recover your key via the mnemonic backup on your steel plate.</p>
+                </div>
+                <a href="/recover-mnemonic">
+                    <button class="btn" type="button">Recover Mnemonic</button>
+                </a>
+            </div>
+            <div class="card">
+                <div>
+                    <img src="{{ url_for('static', path='img/chain-of-responsibility.png') }}" width="120px"
+                         height="120px"
+                         alt="">
+                    <p>Create account on chain.</p>
+                </div>
+                <a href="/create-account">
+                    <button class="btn" type="button">Create on-chain account</button>
+                </a>
+            </div>
         </div>
-        <a href="/create-mnemonic">
-          <button class="btn" type="button">Create Mnemonic</button>
-        </a>
-      </div>
-      <div class="card">
-        <div>
-          <img src="{{ url_for('static', path='img/recovery-key.png') }}" width="120px" height="120px" alt="">
-          <p>Recover your key via the mnemonic backup on your steel plate.</p>
-        </div>
-        <a href="/recover-mnemonic">
-          <button class="btn" type="button">Recover Mnemonic</button>
-        </a>
-      </div>
-      <div class="card">
-        <div>
-          <img src="{{ url_for('static', path='img/chain-of-responsibility.png') }}" width="120px" height="120px"
-            alt="">
-          <p>Create account on chain.</p>
-        </div>
-        <a href="/create-account">
-          <button class="btn" type="button">Create on-chain account</button>
-        </a>
-      </div>
     </div>
-  </div>
+    <div class="section">
+        <div class="switch-network">
+            <p class="section-title">Switch Network</p>
+            <button class="btn" id="switchNetworkButton">Switch to</button>
+            <p>Current Network: <span id="currentNetwork">Loading...</span></p>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -60,20 +73,30 @@
 <script>
 
     fetch('/twi/get-planetmint-keys')
-      .then(response => response.json())
-      .then(data => {
-        if(data === undefined || data.detail === 'Not Found') {
-          throw new Error('no keys');
-        }
-        document.getElementById('planetmintAddress').textContent = data.planetmint_address;
-        document.getElementById('planetmintPubKey').textContent = data.extended_planetmint_pubkey;
-        document.getElementById('rddlPubKey').textContent = data.extended_liquid_pubkey;
-      })
-      .catch(error => {
-        console.error('Failed to fetch keys:', error);
-        document.getElementById('planetmintAddress').textContent = 'Failed to load';
-        document.getElementById('planetmintPubKey').textContent = 'Failed to load';
-        document.getElementById('rddlPubKey').textContent = 'Failed to load';
-      });
-  
+            .then(response => response.json())
+            .then(data => {
+                if (data === undefined || data.detail === 'Not Found') {
+                    throw new Error('no keys');
+                }
+                document.getElementById('planetmintAddress').textContent = data.planetmint_address;
+                document.getElementById('planetmintPubKey').textContent = data.extended_planetmint_pubkey;
+                document.getElementById('rddlPubKey').textContent = data.extended_liquid_pubkey;
+            }).then(
+                fetch('/twi/get-machine-id')
+                        .then(response => response.json())
+                        .then(data => {
+                            if(data === undefined || data.detail === 'Not Found')
+                            {
+                                throw new Error('no machineId')
+                            }
+                            document.getElementById('machineId').textContent = data;
+                        })
+    )
+            .catch(error => {
+                console.error('Failed to fetch keys:', error);
+                document.getElementById('planetmintAddress').textContent = 'Failed to load';
+                document.getElementById('planetmintPubKey').textContent = 'Failed to load';
+                document.getElementById('rddlPubKey').textContent = 'Failed to load';
+            });
+
 </script>{% endblock %}
