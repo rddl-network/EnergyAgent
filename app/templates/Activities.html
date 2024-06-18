@@ -73,7 +73,7 @@
           const row = document.createElement('tr');
           let command = action.command
           if (action.type == 'tx'){
-            let url = base_url+"/"+ action.tx
+            let url = base_url+"/planetmint/transactions/"+ action.tx
             command = `<a href="${url}">${action.tx}</a>`;
           }
           row.innerHTML = `
