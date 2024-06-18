@@ -19,9 +19,8 @@ class Config:
         self.path_to_smart_meter_config = build_config_path(self.config_base_path, FILE_SMART_METER_CONFIG)
         self.path_to_mqtt_config = build_config_path(self.config_base_path, FILE_MQTT_CONFIG)
         self.trust_wallet_port = os.environ.get("TRUST_WALLET_PORT") or "/dev/tty.usbmodem1101"
-        self.notarize_interval = int(os.environ.get("NOTARIZE_INTERVAL") or 1)
-        self.client_id = os.environ.get("CLIENT_ID") or "energy_agent"
-        self.rddl_network_mode = os.environ.get("RDDL_NETWORK_MODE") or "mainnet"
+        self.notarize_interval = int(os.environ.get("NOTARIZE_INTERVAL") or 60)
+        self.rddl_network_mode = os.environ.get("RDDL_NETWORK_MODE") or "testnet"
         self.rddl = get_rddl_network_settings(self.rddl_network_mode)
 
         # Database setup

@@ -11,15 +11,14 @@ But there is more to be configured! The following set of environment variables c
 
 ```
 LOG_LEVEL =          "INFO"                # the log level
+RDDL_TOPIC =         "rddl/SMD/#""         # the channel to subscribe to SMD data updates
+TRUST_WALLET_PORT =  "/dev/ttyACM0"        # the serial devices port to the TrustWallet
+NOTARIZE_INTERVAL =  60                    # in minutes 60 min = 1 hour
+RDDL_NETWORK_MODE =  testnet               # testnet, mainnet, or custom
 CONFIG_PATH =        "/tmp"                # the basic config folder where
                                            #   mqtt_config.json, 
                                            #   smart_meter_config.json, and 
                                            #   energy_agent.db are expected
-RDDL_TOPIC =         "rddl/SMD/#""         # the channel to subscribe to SMD data updates
-TRUST_WALLET_PORT =  "/dev/ttyACM0"        # the serial devices port to the TrustWallet
-NOTARIZE_INTERVAL =  3600                  # in seconds 3600 seconds = 1 hour
-CLIENT_ID =          energy_agent
-RDDL_NETWORK_MODE =  mainnet               # testnet, mainnet, or custom
 ```
 
 The custom RDDL network connection can be set via the following environment variables:
