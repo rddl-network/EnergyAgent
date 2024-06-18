@@ -47,6 +47,7 @@ class RDDLNetworkConfig(BaseModel):
     name: str = ""
     chain_id: str = ""
     planetmint_api: str = ""
+    explorer: str = ""
     ta_base_url: str = ""
     mqtt: MQTTConfig = MQTTConfig()
 

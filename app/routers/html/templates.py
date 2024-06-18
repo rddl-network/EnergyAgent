@@ -59,3 +59,8 @@ async def read_about(request: Request):
 @router.get("/create-mnemonic")
 async def read_about(request: Request):
     return templates.TemplateResponse("CreateMnemonic.html", {"request": request, "title": "Create Mnemonic"})
+
+
+@router.get("/activities-page")
+async def read_about(request: Request):
+    return templates.TemplateResponse("Activities.html", {"request": request, "title": "RDDL Network Activities"})
