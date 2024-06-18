@@ -1,8 +1,10 @@
 import json
 import requests
 from datetime import datetime
+from typing import Dict, List
 from fastapi import APIRouter, HTTPException
 from app.db.tx_store import insert_tx
+from app.db.activity_store import insert_tx_activity_by_response, get_all_activities
 from app.RddlInteraction.cid_tool import store_cid
 from app.dependencies import trust_wallet_instance, config
 from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
@@ -109,11 +111,10 @@ async def getAttestMachine(name: str, additional_info: str):
             sequence,
         )
         response = broadcastTX(machine_attestation_tx, config.rddl.planetmint_api)
-
+        insert_tx_activity_by_response(response, "Attest Machine")
         if response.status_code != 200:
             return {"status": "error", "error": response.reason, "message": response.text}
-        else:
-            return {"status": "success", "message": response.text}
+        return {"status": "success", "message": response.text}
     except Exception as e:
         return {"status": "error", "error": str(e), "message": str(e)}
 
@@ -153,10 +154,10 @@ async def notarize():
         response = broadcastTX(notarize_tx, config.rddl.planetmint_api)
         tx_hash = json.loads(response.text)["tx_response"]["txhash"]
         insert_tx(tx_hash, cid)
+        insert_tx_activity_by_response(response, "notarize CID")
         if response.status_code != 200:
             return {"status": "error", "error": response.reason, "message": response.text}
-        else:
-            return {"status": "success", "message": response.text}
+        return {"status": "success", "message": response.text}
     except Exception as e:
         return {"status": "error", "error": str(e), "message": str(e)}
 
@@ -172,11 +173,10 @@ async def redeemClaims(beneficiary: str):
             keys.planetmint_address, beneficiary, config.rddl.chain_id, accountID, sequence
         )
         response = broadcastTX(redeem_claims_tx, config.rddl.planetmint_api)
-
+        insert_tx_activity_by_response(response, "redeem claims")
         if response.status_code != 200:
             return {"status": "error", "error": response.reason, "message": response.text}
-        else:
-            return {"status": "success", "message": response.text}
+        return {"status": "success", "message": response.text}
     except Exception as e:
         return {"status": "error", "error": str(e), "message": str(e)}
 
@@ -192,13 +192,23 @@ async def get_balance(address: str):
 
 @router.get("/configuration")
 async def get_configuration():
-    return {"status": "success", "configuration": {"name": config.rddl.name}}
+    return {"status": "success", "configuration": config.rddl}
 
 
 @router.post("/configuration/{name}")
 async def set_configuration(name: str):
     if name == "mainnet" or name == "testnet":
         config.rddl = get_rddl_network_settings(name)
-        return {"status": "success", "configuration": {"name": config.rddl.name}}
-    else:
-        return {"status": "error", "message": "configuration name is not supported - use 'mainnet' or 'testnet'."}
+        return {"status": "success", "configuration": config.rddl}
+    return {"status": "error", "message": "configuration name is not supported - use 'mainnet' or 'testnet'."}
+
+
+@router.get("/activities")
+async def get_activities() -> List[Dict]:
+    activities = get_all_activities()
+    if not activities:
+        return []
+    return [
+        {"type": a[0], "tx": a[1], "command": a[2], "result": a[3], "context": a[4], "timestamp": a[5]}
+        for a in activities
+    ]

@@ -1,6 +1,8 @@
-import logging
 import os
-import sqlite3
+import logging
+from sqlite3 import Error
+from app.db import init_tables, create_connection
+
 
 from app.helpers.config_helper import build_config_path
 from app.RddlInteraction.TrustWallet.TrustWalletConnector import TrustWalletConnector
@@ -25,50 +27,14 @@ class Config:
 
         # Database setup
         self.database = os.path.join(self.config_base_path, "energy_agent.db")
-        self.db_connection = self.create_db_connection()
-        self.init_tables()
-
-    def create_db_connection(self):
-        """Create a database connection to the SQLite database"""
         try:
-            conn = sqlite3.connect(self.database)
-            return conn
-        except sqlite3.Error as e:
-            logger.error(f"Unable to connect to database: {e}")
-            return None
-
-    def init_tables(self):
-        """Initialize the tables if they do not exist"""
-        if self.db_connection:
+            self.db_connection = create_connection(self.database)
             try:
-                cursor = self.db_connection.cursor()
-
-                # SQL for creating key_value_store table
-                create_key_value_store_table_sql = """
-                CREATE TABLE IF NOT EXISTS key_value_store (
-                    cid TEXT PRIMARY KEY,
-                    json_value TEXT NOT NULL
-                );
-                """
-
-                # SQL for creating transactions table
-                create_transactions_table_sql = """
-                CREATE TABLE IF NOT EXISTS transactions (
-                    txhash TEXT NOT NULL,
-                    cid TEXT NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
-                """
-
-                # Execute SQL statements
-                cursor.execute(create_key_value_store_table_sql)
-                cursor.execute(create_transactions_table_sql)
-
-                # Commit the changes
-                self.db_connection.commit()
-
-            except sqlite3.Error as e:
+                init_tables(self.db_connection)
+            except Error as e:
                 logger.error(f"Failed to create tables: {e}")
+        except Error as e:
+            logger.error(f"Unable to connect to database: {e}")
 
 
 config = Config()

@@ -1,18 +1,8 @@
 import logging
-import sqlite3
+from app.db import execute_sql_command
 from app.dependencies import config
 
 logger = logging.getLogger(__name__)
-
-
-def execute_sql_command(sql_command, params, fetch_data=False):
-    try:
-        cursor = config.db_connection.cursor()
-        cursor.execute(sql_command, params)
-        if fetch_data:
-            return cursor.fetchone()
-    except sqlite3.Error as e:
-        logger.error(f"Failed to carry out SQL command: {e}")
 
 
 def insert_tx(txhash, cid):

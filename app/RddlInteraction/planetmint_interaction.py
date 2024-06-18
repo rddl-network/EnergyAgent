@@ -3,6 +3,7 @@ import json
 import base64
 import binascii
 
+from app.db.activity_store import insert_tx_activity_by_response
 from app.dependencies import trust_wallet_instance
 from app.proto.planetmintgo.dao import tx_pb2 as DaoTx
 from app.proto.planetmintgo.machine import tx_pb2 as MachineTx
@@ -18,6 +19,7 @@ def create_tx_notarize_data(cid: str, planetmint_api: str, chain_id: str) -> str
     account_id, sequence, status = getAccountInfo(planetmint_api, keys.planetmint_address)
     notarize_tx = getNotarizeAssetTx(cid, chain_id, account_id, sequence)
     response = broadcastTX(notarize_tx, planetmint_api)
+    insert_tx_activity_by_response(response, "notarize CID")
     tx_hash = json.loads(response.text)["tx_response"]["txhash"]
     return tx_hash
 

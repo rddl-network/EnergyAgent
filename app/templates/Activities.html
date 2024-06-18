@@ -1,0 +1,104 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="wrapper">
+  <div class="no-device">
+    <img class="" src="{{ url_for('static', path='img/nodata.svg') }}" alt="No Data" width="72" />
+    <h3>No Connected Devices</h3>
+    <p class="warning">Follow the sidebar navigation steps starting with Trust Wallet</p>
+
+    <a class="btn mt-20" href="/trust-wallet">Get Started</a>
+  </div>
+  <div class="transaction">
+    <div class="description">
+      <p class="desc center">Below is the list of all blockchain and MQTT on the RDDL Network with their respective hash/command, result, context, and creation time.
+      </p>
+    </div>
+    <table id="transactionsTable">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Action</th>
+          <th>Result</th>
+          <th>Context</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Data will be populated here by JavaScript -->
+      </tbody>
+    </table>
+  </div>
+</div>
+<div id="spinner-overlay" class="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+  const API_BASE = `/rddl/activities`;
+  let base_url = ""
+
+  function toggleSpinner(visible) {
+    let overlay = document.getElementById('spinner-overlay');
+    overlay.style.display = visible ? 'flex' : 'none';
+  }
+  function fetchBaseURL() {
+    fetch(`/rddl/configuration`)
+        .then((response, reject) => {
+            if (!response.ok) {
+            throw new Error(response.status);
+            }
+            return response.json();
+        }).then( data => {
+            base_url = data.configuration.explorer
+        })
+    }
+  
+  function fetchTransactions() {
+      fetch(`${API_BASE}`)
+      .then((response, reject) => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        return response.json();
+      })
+      .then(data => {
+        const tableBody = document.querySelector('#transactionsTable tbody');
+        tableBody.innerHTML = ''; // Clear existing data
+        data.forEach(action => {
+          const row = document.createElement('tr');
+          let command = action.command
+          if (action.type == 'tx'){
+            let url = base_url+"/"+ action.tx
+            command = `<a href="${url}">${action.tx}</a>`;
+          }
+          row.innerHTML = `
+                      <td>${new Date(action.timestamp).toLocaleString()}</td>
+                      <td>${command}</td>
+                      <td>${action.result}</td>
+                      <td>${action.context}</td>
+                  `;
+          tableBody.appendChild(row);
+        });
+        document.body.classList.add('fetch-success');
+      })
+      .catch(error => {
+        console.error('Failed to fetch transactions:', error);
+        document.body.classList.add('fetch-error');
+
+      }).finally(() => {
+        toggleSpinner(false);
+      })
+  }
+
+  window.onload = function () {
+    toggleSpinner(true);
+    fetchBaseURL();
+    fetchTransactions();
+  };
+</script>
+{% endblock %}
