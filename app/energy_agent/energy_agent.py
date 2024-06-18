@@ -21,7 +21,7 @@ class EnergyAgent:
         self.stopped = False
         self.data_buffer = []
         self.max_buffer_size = 1000
-        self.retry_attempts = 3
+        self.retry_attempts = 6
 
     def setup(self):
         try:
@@ -83,9 +83,11 @@ class EnergyAgent:
                 break
             except Exception as e:
                 attempts += 1
+                await asyncio.sleep(300)
                 logger.error(f"Error occurred while notarizing data, attempt {attempts}/{self.retry_attempts}: {e}")
                 if attempts >= self.retry_attempts:
                     logger.error("Max retry attempts reached. Data notarization failed.")
+                    raise Exception("Data notarization failed")
 
     async def notarize_data_with_interval(self):
         while not self.stopped:
