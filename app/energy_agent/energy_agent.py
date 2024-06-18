@@ -99,7 +99,7 @@ class EnergyAgent:
     def update_mqtt_connection_params(self):
         try:
             mqtt_config_dict = load_config(config.path_to_mqtt_config)
-            self.mqtt_config = MQTTConfig.parse_obj(mqtt_config_dict)
+            self.mqtt_config = MQTTConfig.model_validate(mqtt_config_dict)
         except Exception as e:
             logger.error(f"Error loading MQTT configuration: {e}")
             raise
@@ -107,7 +107,7 @@ class EnergyAgent:
     def update_smart_meter_topic(self):
         try:
             smart_meter_topic_dict = load_config(config.path_to_smart_meter_config)
-            sm_topic = SmartMeterConfig.parse_obj(smart_meter_topic_dict)
+            sm_topic = SmartMeterConfig.model_validate(smart_meter_topic_dict)
             self.smart_meter_topic = sm_topic.smart_meter_topic
         except Exception as e:
             logger.error(f"Error loading smart meter topic configuration: {e}")

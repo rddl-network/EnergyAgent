@@ -14,7 +14,7 @@ router = APIRouter(
 # @router.get("/smart-meter")
 # async def get_der_smart_meter() -> SmartMeterConfig:
 #     smart_meter_config = load_config(config.path_to_smart_meter_config)
-#     smart_meter_config_obj = SmartMeterConfig.parse_obj(smart_meter_config)
+#     smart_meter_config_obj = SmartMeterConfig.model_validate(smart_meter_config)
 #
 #     if smart_meter_config:
 #         return smart_meter_config_obj

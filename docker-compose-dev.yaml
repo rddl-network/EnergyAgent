@@ -22,9 +22,6 @@ services:
       TRUST_WALLET_PORT: "/dev/ttyACM0"
       NOTARIZE_INTERVAL: 60
       PORT: 2138
-      PLANETMINT_API: "https://testnet-api.rddl.io"
-      TA_BASE_URL: "https://testnet-ta.rddl.io"
-      CHAIN_ID: "planetmint-testnet-1"
     ports:
       - 2138:2138
     privileged: true

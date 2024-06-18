@@ -3,77 +3,150 @@
 {% block content %}
 
 <div class="wrapper">
-  <div class="section">
-    <p class="section-title">Wallet Details</p>
-    <div class="details">
-      <div class="col">
-        <div class="key">Planetmint Address:</div>
-        <code class="value" id="planetmintAddress">Loading...</code>
-      </div>
-      <div class="col">
-        <div class="key">Planetmint Public Key:</div>
-        <code class="value" id="planetmintPubKey">Loading...</code>
-      </div>
-      <div class="col">
-        <div class="key">Rddl Public Key:</div>
-        <code class="value" id="rddlPubKey">Loading...</code>
-      </div>
+    <div class="section">
+        <p class="section-title">Wallet Details</p>
+        <div class="details">
+            <div class="col">
+                <div class="key">Planetmint Address:</div>
+                <code class="value" id="planetmintAddress">Loading...</code>
+            </div>
+            <div class="col">
+                <div class="key">Planetmint Public Key:</div>
+                <code class="value" id="planetmintPubKey">Loading...</code>
+            </div>
+            <div class="col">
+                <div class="key">Rddl Public Key:</div>
+                <code class="value" id="rddlPubKey">Loading...</code>
+            </div>
+            <div class="col">
+                <div class="key">Machine ID:</div>
+                <code class="value" id="machineId">Loading...</code>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="section">
-    <p class="section-title">Generate or recover key on Trust Wallet</p>
-    <div class="buttons">
-      <div class="card">
-        <div> <img src="{{ url_for('static', path='img/generate-key.png') }}" width="120px" height="120px" alt="">
-          <p>Generate your key and create a backup for recovery via mnemonic phrase</p>
+    <div class="section">
+        <p class="section-title">Generate or recover key on Trust Wallet</p>
+        <div class="buttons">
+            <div class="card">
+                <div><img src="{{ url_for('static', path='img/generate-key.png') }}" width="120px" height="120px"
+                          alt="">
+                    <p>Generate your key and create a backup for recovery via mnemonic phrase</p>
+                </div>
+                <a href="/create-mnemonic">
+                    <button class="btn" type="button">Create Mnemonic</button>
+                </a>
+            </div>
+            <div class="card">
+                <div>
+                    <img src="{{ url_for('static', path='img/recovery-key.png') }}" width="120px" height="120px" alt="">
+                    <p>Recover your key via the mnemonic backup on your steel plate.</p>
+                </div>
+                <a href="/recover-mnemonic">
+                    <button class="btn" type="button">Recover Mnemonic</button>
+                </a>
+            </div>
+            <div class="card">
+                <div>
+                    <img src="{{ url_for('static', path='img/chain-of-responsibility.png') }}" width="120px"
+                         height="120px"
+                         alt="">
+                    <p>Create account on chain.</p>
+                </div>
+                <a href="/create-account">
+                    <button class="btn" type="button">Create on-chain account</button>
+                </a>
+            </div>
         </div>
-        <a href="/create-mnemonic">
-          <button class="btn" type="button">Create Mnemonic</button>
-        </a>
-      </div>
-      <div class="card">
-        <div>
-          <img src="{{ url_for('static', path='img/recovery-key.png') }}" width="120px" height="120px" alt="">
-          <p>Recover your key via the mnemonic backup on your steel plate.</p>
-        </div>
-        <a href="/recover-mnemonic">
-          <button class="btn" type="button">Recover Mnemonic</button>
-        </a>
-      </div>
-      <div class="card">
-        <div>
-          <img src="{{ url_for('static', path='img/chain-of-responsibility.png') }}" width="120px" height="120px"
-            alt="">
-          <p>Create account on chain.</p>
-        </div>
-        <a href="/create-account">
-          <button class="btn" type="button">Create on-chain account</button>
-        </a>
-      </div>
     </div>
-  </div>
+    <div class="switch-network">
+        <p class="section-title">Switch Network</p>
+        <div class="card">
+            <div>
+                <button class="btn" id="switchNetworkButton" onclick=switchNetwork()>Switch Network</button>
+                <p>Current Network: <span id="currentNetwork">Loading...</span></p>
+            </div>
+        </div>
+    </div>
 </div>
-{% endblock %}
+        {% endblock %}
 
-{% block scripts %}
-{{ super() }}
-<script>
+        {% block scripts %}
+        {{ super() }}
+        <script>
+            const ERROR_LOADING = 'Failed to load'
 
-    fetch('/twi/get-planetmint-keys')
-      .then(response => response.json())
-      .then(data => {
-        if(data === undefined || data.detail === 'Not Found') {
-          throw new Error('no keys');
-        }
-        document.getElementById('planetmintAddress').textContent = data.planetmint_address;
-        document.getElementById('planetmintPubKey').textContent = data.extended_planetmint_pubkey;
-        document.getElementById('rddlPubKey').textContent = data.extended_liquid_pubkey;
-      })
-      .catch(error => {
-        console.error('Failed to fetch keys:', error);
-        document.getElementById('planetmintAddress').textContent = 'Failed to load';
-        document.getElementById('planetmintPubKey').textContent = 'Failed to load';
-        document.getElementById('rddlPubKey').textContent = 'Failed to load';
-      });
-  
-</script>{% endblock %}
+            const CURRENT_NETWORK_ELEMENT = 'currentNetwork'
+
+            const MAINNET = 'mainnet';
+            const TESTNET = 'testnet';
+
+            fetch('/twi/get-planetmint-keys')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data === undefined || data.detail === 'Not Found') {
+                            throw new Error('no keys');
+                        }
+                        document.getElementById('planetmintAddress').textContent = data.planetmint_address;
+                        document.getElementById('planetmintPubKey').textContent = data.extended_planetmint_pubkey;
+                        document.getElementById('rddlPubKey').textContent = data.extended_liquid_pubkey;
+                    }).then()
+                    .catch(error => {
+                        console.error('Failed to fetch keys:', error);
+                        document.getElementById('planetmintAddress').textContent = ERROR_LOADING;
+                        document.getElementById('planetmintPubKey').textContent = ERROR_LOADING;
+                        document.getElementById('rddlPubKey').textContent = ERROR_LOADING;
+                    });
+            getMachineId()
+            getCurrentNetwork()
+
+            function getMachineId() {
+                fetch('/twi/get-machine-id')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data === undefined || data.detail === ERROR_LOADING) {
+                                throw new Error('no machineId')
+                            }
+                            document.getElementById('machineId').textContent = data;
+                        })
+                        .catch(error => {
+                            console.error('Failed to fetch machineId:', error);
+                            document.getElementById('machineId').textContent = ERROR_LOADING;
+                        });
+            }
+
+            function getCurrentNetwork() {
+                fetch('/rddl/configuration')
+                        .then(response => response.json())
+                        .then(data => {
+                            document.getElementById(CURRENT_NETWORK_ELEMENT).textContent = data.configuration.name;
+                        })
+                        .catch(error => {
+                            console.error('Failed to fetch network config: ', error);
+                            document.getElementById(CURRENT_NETWORK_ELEMENT).textContent = ERROR_LOADING;
+                        })
+            }
+
+            function switchNetwork() {
+                let currentNetwork = document.getElementById(CURRENT_NETWORK_ELEMENT).textContent;
+                let networkToSet;
+                if (currentNetwork === TESTNET) {
+                    networkToSet = MAINNET;
+                } else {
+                    networkToSet = TESTNET
+                }
+
+                fetch('/rddl/configuration/' + networkToSet, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }).then(response => response.json())
+                        .then(data => {
+                            document.getElementById(CURRENT_NETWORK_ELEMENT).textContent = data.configuration.name;
+                        }).catch(error => {
+                    console.error('Failed to set network: ', error);
+                    document.getElementById(CURRENT_NETWORK_ELEMENT).textContent = ERROR_LOADING;
+                })
+            }
+
+        </script>{% endblock %}
