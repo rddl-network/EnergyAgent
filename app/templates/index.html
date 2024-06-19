@@ -27,6 +27,11 @@
         <!-- Data will be populated here by JavaScript -->
       </tbody>
     </table>
+    <div class="pagination">
+      <button onclick="fetchTransactions(currentPage - 1)" disabled>Previous</button>
+      <span id="pageIndicator">Page: 1</span>
+      <button onclick="fetchTransactions(currentPage + 1)">Next</button>
+    </div>
   </div>
 </div>
 <div id="spinner-overlay" class="spinner-overlay">
@@ -39,22 +44,26 @@
 {{ super() }}
 <script>
   const API_BASE = `/tx_resolver/txs`;
+  let currentPage = 1;
+  const pageSize = 10;
+
   function toggleSpinner(visible) {
     let overlay = document.getElementById('spinner-overlay');
     overlay.style.display = visible ? 'flex' : 'none';
   }
 
-  function fetchTransactions() {
+  function fetchTransactions(page = 1) {
     toggleSpinner(true);
-    fetch(`${API_BASE}`)
+    fetch(`${API_BASE}?page=${page}&page_size=${pageSize}`)
       .then((response, reject) => {
         if (!response.ok) {
-          throw new Error(response.status);
+          throw new Error(response.statusText);
         }
         return response.json();
       })
       .then(data => {
-
+        currentPage = page;
+        document.getElementById('pageIndicator').innerText = `Page: ${currentPage}`;
         const tableBody = document.querySelector('#transactionsTable tbody');
         tableBody.innerHTML = ''; // Clear existing data
         data.forEach(tx => {
@@ -67,6 +76,9 @@
           tableBody.appendChild(row);
         });
         document.body.classList.add('fetch-success');
+        // Enable/disable buttons based on data availability
+        document.querySelector('.pagination button:nth-child(1)').disabled = currentPage === 1;
+        document.querySelector('.pagination button:nth-child(3)').disabled = data.length < pageSize; // Assume end of data if less than full page returned
       })
       .catch(error => {
         console.error('Failed to fetch transactions:', error);
@@ -78,7 +90,7 @@
   }
 
   window.onload = function () {
-    fetchTransactions();
+    fetchTransactions(currentPage);
   };
 </script>
 {% endblock %}
