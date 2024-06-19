@@ -30,7 +30,7 @@ def delete_tx(txhash):
     logger.debug("Transaction deleted.")
 
 
-def get_all_txhashes(order='DESC'):
+def get_all_txhashes(order="DESC"):
     try:
         cursor = config.db_connection.cursor()
         cursor.execute(f"SELECT txhash, cid, created_at FROM transactions ORDER BY created_at {order}")

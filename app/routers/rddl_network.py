@@ -208,8 +208,8 @@ async def set_configuration(name: str):
 
 @router.get("/activities")
 async def get_activities(
-        page: Optional[conint(gt=0)] = None,  # page > 0
-        page_size: Optional[conint(gt=0)] = None,  # page_size > 0
+    page: Optional[conint(gt=0)] = None,  # page > 0
+    page_size: Optional[conint(gt=0)] = None,  # page_size > 0
 ) -> List[Dict]:
     activities = get_all_activities()
     if not activities:
