@@ -12,11 +12,10 @@
             margin: 20px 0;
             font-size: 18px;
             text-align: left;
-            color: white; /* Ensure the text color is always white */
+            color: white;
         }
         table thead tr {
             background-color: #009879;
-            color: white;
             text-align: left;
             font-weight: bold;
         }
@@ -32,7 +31,16 @@
         }
         table tbody tr:hover {
             background-color: #1abc9c;
-            color: white; /* Keep the text color white on hover */
+            color: white;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .page-item {
+            margin: 0 5px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -56,16 +64,24 @@
             <!-- Data will be populated here by JavaScript -->
         </tbody>
     </table>
+    <div class="pagination">
+        <span class="page-item" onclick="fetchTransactions(1, 10)">First</span>
+        <span class="page-item" onclick="fetchTransactions(prevPage, 10)">Prev</span>
+        <span class="page-item" onclick="fetchTransactions(nextPage, 10)">Next</span>
+    </div>
 </div>
 <script>
+    let currentPage = 1;
+    const pageSize = 10;
     const API_BASE = `/tx_resolver/txs`;
 
-    function fetchTransactions() {
-        fetch(`${API_BASE}`)
+    function fetchTransactions(page = 1, pageSize = 10) {
+        fetch(`${API_BASE}?page=${page}&page_size=${pageSize}`)
             .then(response => response.json())
             .then(data => {
+                currentPage = page; // Update current page
                 const tableBody = document.querySelector('#transactionsTable tbody');
-                tableBody.innerHTML = ''; // Clear existing data
+                tableBody.innerHTML = '';
                 data.forEach(tx => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -75,12 +91,21 @@
                     `;
                     tableBody.appendChild(row);
                 });
+                updatePaginationControls(data.totalPages);
             })
             .catch(error => console.error('Failed to fetch transactions:', error));
     }
 
+    function updatePaginationControls(totalPages) {
+        const pagination = document.querySelector('.pagination');
+        const prevPage = currentPage > 1 ? currentPage - 1 : 1;
+        const nextPage = currentPage < totalPages ? currentPage + 1 : totalPages;
+        pagination.children[1].onclick = () => fetchTransactions(prevPage, pageSize);
+        pagination.children[2].onclick = () => fetchTransactions(nextPage, pageSize);
+    }
+
     window.onload = function() {
-        fetchTransactions();
+        fetchTransactions(currentPage, pageSize);
     };
 </script>
 </body>

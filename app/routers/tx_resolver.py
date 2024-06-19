@@ -1,7 +1,9 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from pydantic import conint
 
+from app.RddlInteraction.utils import table_pagination
 from app.db.tx_store import get_all_txhashes, insert_tx
 
 router = APIRouter(
@@ -12,6 +14,11 @@ router = APIRouter(
 
 
 @router.get("/txs")
-async def resolve_tx() -> List[Dict]:
+async def resolve_tx(
+        page: Optional[conint(gt=0)] = None,
+        page_size: Optional[conint(gt=0)] = None,
+) -> List[Dict]:
     transactions = get_all_txhashes()
-    return [{"txhash": t[0], "cid": t[1], "created_at": t[2]} for t in transactions]
+    tx_data = [{"txhash": t[0], "cid": t[1], "created_at": t[2]} for t in transactions]
+
+    return table_pagination(page, page_size, tx_data)
