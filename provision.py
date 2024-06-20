@@ -12,8 +12,8 @@ trust_wallet = TrustWalletConnector("/dev/ttyACM0")
 slot = 2
 # wrappedPubKey = trust_wallet.create_SE050_keypair_secp256k1(slot)
 
-# wrappedPubKey = trust_wallet.create_se050_keypair_nist(slot)
-wrappedPubKey = trust_wallet.get_public_key_from_se050(slot)
+wrappedPubKey = trust_wallet.create_se050_keypair_nist(slot)
+# wrappedPubKey = trust_wallet.get_public_key_from_se050(slot)
 (valid, pubKey) = trust_wallet.unwrapPublicKey(wrappedPubKey)
 if valid == False:
     exit(-1)
