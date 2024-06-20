@@ -1,4 +1,6 @@
 import logging
+
+from sqlite3 import Error
 from app.db import execute_sql_command
 from app.dependencies import config
 
@@ -28,11 +30,11 @@ def delete_tx(txhash):
     logger.debug("Transaction deleted.")
 
 
-def get_all_txhashes():
+def get_all_txhashes(order="DESC"):
     try:
         cursor = config.db_connection.cursor()
-        cursor.execute("SELECT txhash, cid, created_at FROM transactions")
+        cursor.execute(f"SELECT txhash, cid, created_at FROM transactions ORDER BY created_at {order}")
         result = cursor.fetchall()
         return result  # Returns a list of tuples where each tuple is (txhash, cid, created_at)
-    except sqlite3.Error as e:
+    except Error as e:
         logger.error(f"Failed to fetch all txhashes and cids: {e}")

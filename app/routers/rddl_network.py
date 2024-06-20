@@ -1,8 +1,11 @@
 import json
 import requests
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 from fastapi import APIRouter, HTTPException
+from pydantic import conint
+
+from app.RddlInteraction.utils import table_pagination
 from app.db.tx_store import insert_tx
 from app.db.activity_store import insert_tx_activity_by_response, get_all_activities
 from app.RddlInteraction.cid_tool import store_cid
@@ -204,11 +207,17 @@ async def set_configuration(name: str):
 
 
 @router.get("/activities")
-async def get_activities() -> List[Dict]:
+async def get_activities(
+    page: Optional[conint(gt=0)] = None,  # page > 0
+    page_size: Optional[conint(gt=0)] = None,  # page_size > 0
+) -> List[Dict]:
     activities = get_all_activities()
     if not activities:
         return []
-    return [
+
+    activities_table = [
         {"type": a[0], "tx": a[1], "command": a[2], "result": a[3], "context": a[4], "timestamp": a[5]}
         for a in activities
     ]
+
+    return table_pagination(page, page_size, activities_table)
