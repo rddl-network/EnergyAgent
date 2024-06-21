@@ -1,5 +1,6 @@
 import json
 import asyncio
+
 from gmqtt import Client as MQTTClient
 from gmqtt.mqtt.constants import MQTTv311
 
@@ -8,7 +9,7 @@ from app.RddlInteraction.planetmint_interaction import create_tx_notarize_data
 from app.db.tx_store import insert_tx
 from app.dependencies import config, logger, trust_wallet_instance
 from app.energy_agent.energy_decrypter import decrypt_device
-from app.helpers.config_helper import load_config
+from app.helpers.config_helper import load_config, extract_client_id
 from app.helpers.models import SmartMeterConfig, MQTTConfig
 
 
@@ -60,11 +61,14 @@ class EnergyAgent:
         except Exception as e:
             logger.error(f"Unexpected error processing message: {e}")
 
-    def process_message(self, topic, data):
+    def process_message(self, topic: str, data: str):
+        client_id: str = extract_client_id(topic)
         notarize_data = data
         if self.smart_meter_topic == topic:
             notarize_data = self.process_meter_data(data)
-        self.data_buffer.append(notarize_data)
+        data_dict = {client_id: notarize_data}
+        logger.debug(f"Data to be notarized: {data_dict}")
+        self.data_buffer.append(data_dict)
         if len(self.data_buffer) >= self.max_buffer_size:
             logger.info("Buffer size limit reached. Initiating immediate notarization.")
             asyncio.create_task(self.notarize_data())

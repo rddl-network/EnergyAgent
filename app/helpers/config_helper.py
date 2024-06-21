@@ -18,3 +18,15 @@ def load_config(path_to_config: str) -> dict:
 
 def build_config_path(base_path: str, filename: str) -> str:
     return f"{base_path}/{filename}"
+
+
+def extract_client_id(topic):
+    """
+    Extracts the client ID from the topic.
+    Assumes topic format: rddl/SMD/<client_id>/*
+    """
+    parts = topic.split("/")
+    if len(parts) >= 3:
+        return parts[2]
+    else:
+        return None
