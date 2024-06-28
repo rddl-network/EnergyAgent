@@ -173,7 +173,7 @@ async def redeemClaims(beneficiary: str):
         keys = trust_wallet_instance.get_planetmint_keys()
         accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
         redeem_claims_tx = getRedeemClaimsTx(
-            keys.planetmint_address, beneficiary, config.rddl.chain_id, accountID, sequence
+            beneficiary, config.rddl.chain_id, accountID, sequence
         )
         response = broadcastTX(redeem_claims_tx, config.rddl.planetmint_api)
         insert_tx_activity_by_response(response, "redeem claims")
