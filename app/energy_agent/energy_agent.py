@@ -11,6 +11,7 @@ from app.dependencies import config, logger, trust_wallet_instance
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.config_helper import load_config, extract_client_id
 from app.helpers.models import SmartMeterConfig, MQTTConfig
+from app.helpers.smd_entry_helper import process_data_buffer
 
 
 class EnergyAgent:
@@ -79,6 +80,7 @@ class EnergyAgent:
             try:
                 data = json.dumps(self.data_buffer)
                 notarize_cid = store_cid(data)
+                process_data_buffer(self.data_buffer, notarize_cid)
                 logger.debug(f"Notarize CID transaction: {notarize_cid}, {data}")
                 tx_hash = create_tx_notarize_data(notarize_cid, config.rddl.planetmint_api, config.rddl.chain_id)
                 insert_tx(tx_hash, notarize_cid)

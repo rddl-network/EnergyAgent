@@ -13,6 +13,7 @@ from app.routers import (
     manage_smd,
     rddl_network,
     tx_resolver,
+    smd_entry,
 )
 from app.routers.html import templates, trust_wallet_templates
 from app.RddlInteraction.rddl_client import RDDLAgent
@@ -63,6 +64,7 @@ app.include_router(tx_resolver.router)
 # This routes the HTML
 app.include_router(templates.router)
 app.include_router(trust_wallet_templates.router)
+app.include_router(smd_entry.router)
 
 
 if __name__ == "__main__":

@@ -7,12 +7,19 @@ logger = logging.getLogger(__name__)
 
 
 def transform_result(result):
-    return json.loads(result[0]) if result else None
+    json_str = json.dumps(result[0]) if result else None
+    if json_str:
+        json_obj = json.loads(json_str)[0]
+        return json.loads(json.loads(json_obj))
+    else:
+        return None
 
 
 def cid_exists(cid):
     result = execute_sql_command("SELECT cid FROM key_value_store WHERE cid=?", (cid,), fetch_data=True)
-    return result is not None
+    if result is None or len(result) == 0:
+        return False
+    return True
 
 
 def insert_key_value(cid, json_value):

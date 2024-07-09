@@ -15,11 +15,26 @@ def init_tables(connection) -> bool:
     if connection:
         cursor = connection.cursor()
 
-        # SQL for creating key_value_store table
         create_key_value_store_table_sql = """
         CREATE TABLE IF NOT EXISTS key_value_store (
             cid TEXT PRIMARY KEY,
             json_value TEXT NOT NULL
+        );
+        """
+
+        create_smd_store_table_sql = """
+        CREATE TABLE IF NOT EXISTS smd_store (
+            client_id TEXT PRIMARY KEY
+        );
+        """
+
+        create_smd_store_cid_link_table_sql = """
+        CREATE TABLE IF NOT EXISTS smd_store_cid_link (
+            client_id TEXT,
+            cid TEXT,
+            PRIMARY KEY (client_id, cid),
+            FOREIGN KEY (client_id) REFERENCES smd_store(client_id),
+            FOREIGN KEY (cid) REFERENCES key_value_store(cid)
         );
         """
 
@@ -49,6 +64,8 @@ def init_tables(connection) -> bool:
         cursor.execute(create_key_value_store_table_sql)
         cursor.execute(create_transactions_table_sql)
         cursor.execute(create_activity_timeline_table_sql)
+        cursor.execute(create_smd_store_table_sql)
+        cursor.execute(create_smd_store_cid_link_table_sql)
 
         # Commit the changes
         connection.commit()
@@ -61,6 +78,11 @@ def execute_sql_command(sql_command, params, fetch_data=False):
         cursor = config.db_connection.cursor()
         cursor.execute(sql_command, params)
         if fetch_data:
-            return cursor.fetchone()
+            return cursor.fetchall()
+        else:
+            config.db_connection.commit()
     except sqlite3.Error as e:
         logger.error(f"Failed to carry out SQL command: {e}")
+        raise
+    finally:
+        cursor.close()
