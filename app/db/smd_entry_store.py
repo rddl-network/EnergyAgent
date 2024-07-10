@@ -25,7 +25,6 @@ def insert_smd_store_entry(client_id: str, cid: str):
         )
         if not existing or len(existing) == 0:
             execute_sql_command("INSERT INTO smd_store_cid_link (client_id, cid) VALUES (?, ?)", (client_id, cid))
-        config.db_connection.commit()
         logger.debug(f"SMD store entry added for client_id: {client_id}")
     else:
         logger.debug(f"Client ID {client_id} already exists. No action taken.")
@@ -43,7 +42,6 @@ def update_smd_store_entry(client_id: str, cid: str):
         )
         if not existing or len(existing) == 0:
             execute_sql_command("INSERT INTO smd_store_cid_link (client_id, cid) VALUES (?, ?)", (client_id, cid))
-        config.db_connection.commit()
         logger.debug(f"SMD store entry updated for client_id: {client_id}")
     else:
         logger.debug(f"Client ID {client_id} does not exist. No action taken.")
@@ -55,7 +53,6 @@ def delete_smd_store_entry(client_id: str):
     """
     execute_sql_command("DELETE FROM smd_store_cid_link WHERE client_id=?", (client_id,))
     execute_sql_command("DELETE FROM smd_store WHERE client_id=?", (client_id,))
-    config.db_connection.commit()
     logger.debug(f"SMD store entry deleted for client_id: {client_id}")
 
 

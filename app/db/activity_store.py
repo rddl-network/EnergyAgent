@@ -17,7 +17,6 @@ def insert_mqtt_activity(command, result, context):
         VALUES (?, ?, ?, ?, ?)",
         (MQTT_ACTIVITY, "", command, result, context),
     )
-    config.db_connection.commit()
     logger.debug("Activity added: MQTT.")
 
 
@@ -27,7 +26,6 @@ def insert_tx_activity(tx, result, context):
         VALUES (?, ?, ?, ?, ?)",
         (TX_ACTIVITY, tx, "", result, context),
     )
-    config.db_connection.commit()
     logger.debug("Activity added: TX.")
 
 

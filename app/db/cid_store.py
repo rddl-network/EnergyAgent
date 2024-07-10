@@ -27,7 +27,6 @@ def insert_key_value(cid, json_value):
         execute_sql_command(
             "INSERT INTO key_value_store (cid, json_value) VALUES (?, ?)", (cid, json.dumps(json_value))
         )
-        config.db_connection.commit()
         logger.debug("Key-value pair added.")
     else:
         logger.debug("CID already exists. No action taken.")
@@ -40,5 +39,4 @@ def get_value(cid):
 
 def delete_key(cid):
     execute_sql_command("DELETE FROM key_value_store WHERE cid=?", (cid,))
-    config.db_connection.commit()
     logger.debug("Key-value pair deleted.")
