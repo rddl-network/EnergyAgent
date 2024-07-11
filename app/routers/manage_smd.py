@@ -4,7 +4,6 @@ from fastapi import APIRouter, HTTPException, Body
 import netifaces
 from scapy.all import ARP, Ether, srp
 import requests
-from requests.auth import HTTPDigestAuth
 
 from app.dependencies import config
 

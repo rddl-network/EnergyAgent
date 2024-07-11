@@ -1,7 +1,7 @@
 import ctypes
 import os
 
-from osc4py3.oscbuildparse import *
+from osc4py3.oscbuildparse import encode_packet
 from app.helpers.models import OSCResponse
 
 

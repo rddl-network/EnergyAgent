@@ -1,7 +1,6 @@
 import json
 import logging
 from app.db import execute_sql_command
-from app.dependencies import config
 
 logger = logging.getLogger(__name__)
 

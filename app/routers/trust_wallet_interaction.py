@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
-from app.RddlInteraction.planetmint_interaction import planetmint_slot, pre_attest_slot
+from app.RddlInteraction.planetmint_interaction import pre_attest_slot
 from app.dependencies import trust_wallet_instance, config
 from app.helpers.models import PlanetMintKeys
 

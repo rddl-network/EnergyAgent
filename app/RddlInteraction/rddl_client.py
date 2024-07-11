@@ -19,7 +19,7 @@ from app.RddlInteraction.planetmint_interaction import broadcastTX, getPoPResult
 
 class RDDLAgent:
     def __init__(self):
-        logger.info(f"MQTT RDDL creation")
+        logger.info("MQTT RDDL creation")
 
         # client management
         self.client = None
@@ -31,7 +31,7 @@ class RDDLAgent:
 
     def setup(self):
         try:
-            logger.info(f"MQTT RDDL setup")
+            logger.info("MQTT RDDL setup")
             keys = trust_wallet_instance.get_planetmint_keys()
             self.client = MQTTClient(client_id=keys.planetmint_address)
             self.client.on_message = self.on_message
@@ -42,7 +42,7 @@ class RDDLAgent:
 
     async def connect_to_mqtt(self):
         try:
-            logger.info(f"MQTT RDDL connect")
+            logger.info("MQTT RDDL connect")
             await self.client.connect(
                 config.rddl.mqtt.host, config.rddl.mqtt.port, keepalive=60, version=MQTTv311, ssl=True
             )
@@ -52,7 +52,7 @@ class RDDLAgent:
 
     async def disconnect_from_mqtt(self):
         try:
-            logger.info(f"MQTT RDDL disconnection")
+            logger.info("MQTT RDDL disconnection")
             await self.client.disconnect()
         except Exception as e:
             logger.error(f"MQTT RDDL disconnection error: {e}")
@@ -72,7 +72,7 @@ class RDDLAgent:
             ):
                 asyncio.create_task(self.challenger_2_consume_pop_challenge_response(decoded_payload))
             else:
-                logger.debug(f"MQTT RDDL topic currently not supported: " + topic)
+                logger.debug("MQTT RDDL topic currently not supported: " + topic)
         except UnicodeDecodeError:
             logger.error("MQTT RDDL Error decoding the message payload")
         except Exception as e:
@@ -129,9 +129,9 @@ class RDDLAgent:
         insert_mqtt_activity("PoPChallenge " + data, "receive PoPChallenge", self.pop_context.__dict__)
         cid = data
         cid_data = get_value(cid)
-        logger.info("PoP challenge cid data : " + cid_data)
+        logger.info(f"PoP challenge cid data : {cid_data}")
         cid_data_hex = utils.toHexString(cid_data)
-        logger.info("PoP challenge cid data hex : " + cid_data_hex)
+        logger.info(f"PoP challenge cid data hex : {cid_data_hex}")
 
         payload = '{ "PoPChallenge": { "cid": "' + cid + '", "encoding": "hex", "data": "' + cid_data_hex + '"} }'
         topic = "stat/" + self.pop_context.challengee + "/POPCHALLENGERESULT"
