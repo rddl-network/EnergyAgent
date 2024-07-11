@@ -20,6 +20,7 @@ services:
       TRUST_WALLET_PORT: "/dev/ttyACM0"
       NOTARIZE_INTERVAL: 60
       PORT: 2138
+      RDDL_NETWORK_MODE: mainnet
     ports:
       - 2138:2138
     privileged: true
