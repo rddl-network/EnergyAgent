@@ -1,4 +1,5 @@
 import json
+import os
 
 
 def save_config(path_to_config: str, config_to_save: dict):
@@ -8,9 +9,12 @@ def save_config(path_to_config: str, config_to_save: dict):
 
 def load_config(path_to_config: str) -> dict:
     try:
-        with open(path_to_config, "r") as f:
-            data = json.load(f)
-        return data
+        if os.path.exists(path_to_config):
+            with open(path_to_config, "r") as f:
+                data = json.load(f)
+            return data
+        else:
+            return {}
     except (FileNotFoundError, json.JSONDecodeError) as e:
         print(f"Error loading configuration file: {e}")
         return {}
