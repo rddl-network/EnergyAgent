@@ -1,5 +1,5 @@
 import binascii
-from typing import List, Dict
+from typing import List, Dict, Any
 
 from fastapi import HTTPException
 
@@ -15,7 +15,7 @@ def fromHexString(hexString: str) -> str:
     return dataString
 
 
-def table_pagination(page: int, page_size: int, data: List[Dict]) -> List[Dict]:
+def table_pagination(page: int, page_size: int, data: List[Any]) -> List[Dict]:
     if page is not None and page_size is not None:
         start_idx = (page - 1) * page_size
         end_idx = start_idx + page_size

@@ -1,5 +1,8 @@
+from typing import Optional
 from fastapi import APIRouter
+from pydantic import conint
 
+from app.RddlInteraction.utils import table_pagination
 from app.db.smd_entry_store import (
     get_all_client_ids,
     insert_smd_store_entry,
@@ -18,10 +21,13 @@ router = APIRouter(
 
 
 @router.get("")
-async def get_smd_entries():
+async def get_smd_entries(
+    page: Optional[conint(gt=0)] = None,
+    page_size: Optional[conint(gt=0)] = None,
+):
     results = get_all_client_ids()
     smd_entries = [t[0] for t in results]
-    return {"smds": smd_entries}
+    return table_pagination(page, page_size, smd_entries)
 
 
 @router.post("")
@@ -38,10 +44,14 @@ async def update_smd_entry(client_id: str):
 
 
 @router.get("/cids/{client_id}")
-async def get_cids_for_smd(client_id: str):
+async def get_cids_for_smd(
+    client_id: str,
+    page: Optional[conint(gt=0)] = None,
+    page_size: Optional[conint(gt=0)] = None,
+):
     results = get_cids_for_client_id(client_id)
     cids = [t[1] for t in results]
-    return {"cids": cids}
+    return table_pagination(page, page_size, cids)
 
 
 @router.get("/cid/{cid}")

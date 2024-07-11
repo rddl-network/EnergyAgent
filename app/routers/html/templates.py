@@ -1,3 +1,5 @@
+from urllib import request
+
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
 
@@ -64,3 +66,21 @@ async def read_about(request: Request):
 @router.get("/activities-page")
 async def read_about(request: Request):
     return templates.TemplateResponse("Activities.html", {"request": request, "title": "RDDL Network Activities"})
+
+
+@router.get("/smd-entries")
+async def smd_entries_page(request: Request):
+    return templates.TemplateResponse("SmdEntries.html", {"request": request, "title": "SMD Entries"})
+
+
+@router.get("/smd-cids/{client_id}")
+async def smd_cids_page(request: Request, client_id: str):
+    return templates.TemplateResponse(
+        "SmdCidTable.html",
+        {"request": request, "title": "SMD CIDs", "client_id": client_id},
+    )
+
+
+@router.get("/cid-content/{cid}")
+async def cid_content_page(request: Request, cid: str):
+    return templates.TemplateResponse("CidData.html", {"request": request, "cid": cid, "title": "CID Content"})

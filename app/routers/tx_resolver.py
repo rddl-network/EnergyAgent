@@ -1,10 +1,10 @@
 from typing import Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import conint
 
 from app.RddlInteraction.utils import table_pagination
-from app.db.tx_store import get_all_txhashes, insert_tx
+from app.db.tx_store import get_all_txhashes
 
 router = APIRouter(
     prefix="/tx_resolver",
