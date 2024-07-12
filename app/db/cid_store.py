@@ -1,18 +1,24 @@
 import json
 import logging
 from app.db import execute_sql_command
-from app.dependencies import config
 
 logger = logging.getLogger(__name__)
 
 
 def transform_result(result):
-    return json.loads(result[0]) if result else None
+    json_str = json.dumps(result[0]) if result else None
+    if json_str:
+        json_obj = json.loads(json_str)[0]
+        return json.loads(json.loads(json_obj))
+    else:
+        return None
 
 
 def cid_exists(cid):
     result = execute_sql_command("SELECT cid FROM key_value_store WHERE cid=?", (cid,), fetch_data=True)
-    return result is not None
+    if result is None or len(result) == 0:
+        return False
+    return True
 
 
 def insert_key_value(cid, json_value):
@@ -20,7 +26,6 @@ def insert_key_value(cid, json_value):
         execute_sql_command(
             "INSERT INTO key_value_store (cid, json_value) VALUES (?, ?)", (cid, json.dumps(json_value))
         )
-        config.db_connection.commit()
         logger.debug("Key-value pair added.")
     else:
         logger.debug("CID already exists. No action taken.")
@@ -33,5 +38,4 @@ def get_value(cid):
 
 def delete_key(cid):
     execute_sql_command("DELETE FROM key_value_store WHERE cid=?", (cid,))
-    config.db_connection.commit()
     logger.debug("Key-value pair deleted.")

@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 def insert_tx(txhash, cid):
     execute_sql_command("INSERT INTO transactions (txhash, cid) VALUES (?, ?)", (txhash, cid))
-    config.db_connection.commit()
     logger.debug("Transaction added.")
 
 
@@ -20,13 +19,11 @@ def get_cid(txhash):
 
 def update_cid(txhash, cid):
     execute_sql_command("UPDATE transactions SET cid = ? WHERE txhash = ?", (cid, txhash))
-    config.db_connection.commit()
     logger.debug("Transaction updated.")
 
 
 def delete_tx(txhash):
     execute_sql_command("DELETE FROM transactions WHERE txhash=?", (txhash,))
-    config.db_connection.commit()
     logger.debug("Transaction deleted.")
 
 

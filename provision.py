@@ -1,5 +1,4 @@
 import time
-import hashlib
 from app.RddlInteraction.rddl.signing import getHash
 from app.RddlInteraction.TrustWallet.TrustWalletConnector import TrustWalletConnector
 import binascii
@@ -15,7 +14,7 @@ slot = 2
 wrappedPubKey = trust_wallet.create_se050_keypair_nist(slot)
 # wrappedPubKey = trust_wallet.get_public_key_from_se050(slot)
 (valid, pubKey) = trust_wallet.unwrapPublicKey(wrappedPubKey)
-if valid == False:
+if not valid:
     exit(-1)
 
 print("Wrapped Pubkey: " + wrappedPubKey)

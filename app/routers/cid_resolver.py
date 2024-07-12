@@ -1,5 +1,3 @@
-import json
-
 from fastapi import APIRouter
 
 from app.RddlInteraction.cid_tool import store_cid

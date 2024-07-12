@@ -1,7 +1,7 @@
 import hashlib
 
 from ecdsa import SigningKey, SECP256k1
-from ecdsa.util import sigencode_string_canonize, sigencode_string
+from ecdsa.util import sigencode_string
 
 from ripemd.ripemd160 import ripemd160
 from bitcoinaddress import segwit_addr

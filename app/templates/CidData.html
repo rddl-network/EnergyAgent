@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+    <div class="wrapper">
+        <div class="cid-content">
+            <div class="description">
+                <h2>Content for CID: <span id="cidDisplay">{{ cid }}</span></h2>
+            </div>
+            <div class="section">
+                <code id="cidContentDisplay" class="status-indicator">
+                    <!-- Content will be populated here by JavaScript -->
+                </code>
+                <a href="javascript:history.back()" class="btn mt-20">Back to CIDs</a>
+            </div>
+        </div>
+    </div>
+    <div id="spinner-overlay" class="spinner-overlay">
+        <div class="spinner"></div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        const API_BASE = `/cid_resolver`;
+        const cid = '{{ cid }}';
+
+        function toggleSpinner(visible) {
+            let overlay = document.getElementById('spinner-overlay');
+            overlay.style.display = visible ? 'flex' : 'none';
+        }
+
+        function fetchCIDContent() {
+            toggleSpinner(true);
+            fetch(`${API_BASE}?cid=${encodeURIComponent(cid)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const contentDisplay = document.getElementById('cidContentDisplay');
+                    if (data.data === "Not found") {
+                        contentDisplay.innerHTML = '<p>Content not found for this CID.</p>';
+                    } else {
+                        contentDisplay.innerHTML = `<pre>${JSON.stringify(data.data, null, 2)}</pre>`;
+                    }
+                    document.body.classList.add('fetch-success');
+                })
+                .catch(error => {
+                    console.error('Failed to fetch CID content:', error);
+                    document.body.classList.add('fetch-error');
+                    document.getElementById('cidContentDisplay').innerHTML = '<p>Error fetching content. Please try again later.</p>';
+                }).finally(() => {
+                toggleSpinner(false);
+            });
+        }
+
+        window.onload = function () {
+            toggleSpinner(true);
+            fetchCIDContent();
+        };
+    </script>
+{% endblock %}

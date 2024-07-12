@@ -40,7 +40,7 @@ class TrustWalletConnector(object):
         else:
             sys.exit("unsupported OS, cannot load TA Wallet connector")
 
-        if self.occ_message_sender == None and len(port_name) > 0:
+        if self.occ_message_sender is None and len(port_name) > 0:
             print("New OSC Message Connector: " + port_name)
             self.occ_message_sender = OSCMessageSender(lib_path, port_name)
         self.plmnt_keys = None
@@ -62,7 +62,7 @@ class TrustWalletConnector(object):
             """
             @brief: Derives the private key from the mnemonic seed
             """
-            self.plmnt_keys == None
+            self.plmnt_keys is None
             msg = OSCMessage(f"{PREFIX_IHW}/mnemonicToSeed", ",i", [1])
             occ_message = self.occ_message_sender.send_message(msg)
             print(occ_message)
@@ -84,7 +84,6 @@ class TrustWalletConnector(object):
             """
             @brief: Derives the private key from the mnemonic seed
             """
-            self.plmnt_keys == None
             msg = OSCMessage(f"{PREFIX_IHW}/mnemonicToSeed", ",is", [1, mnemonic])
             occ_message = self.occ_message_sender.send_message(msg)
             self.plmnt_keys = None
@@ -102,7 +101,7 @@ class TrustWalletConnector(object):
                 occ_message = self.occ_message_sender.send_message(msg)
                 self.plmnt_keys = PlanetMintKeys()
                 if len(occ_message.data) < 5:
-                    logger.error(f"Trust Wallet not initialized. Please initialize the wallet.")
+                    logger.error("Trust Wallet not initialized. Please initialize the wallet.")
                     return self.plmnt_keys
                 self.plmnt_keys.planetmint_address = occ_message.data[1]
                 self.plmnt_keys.extended_liquid_pubkey = occ_message.data[2]
@@ -207,7 +206,7 @@ class TrustWalletConnector(object):
             wrapped_pubkey = occ_message.data[1]
             (valid, pubKey) = self.unwrapPublicKey(wrapped_pubkey)
             if not valid:
-                logger.error(f"Inject PlanetMintKey failed: No key found.")
+                logger.error("Inject PlanetMintKey failed: No key found.")
             return pubKey
 
     def sign_with_se050(self, data_to_sign: str, ctx: int) -> str:

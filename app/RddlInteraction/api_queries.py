@@ -124,8 +124,8 @@ async def queryPoPInfo(height: str) -> PoPContext:
                 # Access and print the challenge variables
                 if (
                     data["challenge"]["height"] == height
-                    and data["challenge"]["success"] == False
-                    and data["challenge"]["finished"] == False
+                    and not data["challenge"]["success"]
+                    and not data["challenge"]["finished"]
                 ):
                     pop_context = PoPContext()
 

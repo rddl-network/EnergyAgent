@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="wrapper">
+    <div class="smd-entries">
+        <div class="description">
+            <p class="desc center">Below is the list of all SMD entries with their respective client IDs. Click on a row to view its CIDs.</p>
+        </div>
+        <table id="smdEntriesTable">
+            <thead>
+            <tr>
+                <th>Client ID</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Data will be populated here by JavaScript -->
+            </tbody>
+        </table>
+        <div class="pagination">
+            <button onclick="fetchSMDEntries(currentPage - 1)" disabled>Previous</button>
+            <span id="pageIndicator">Page: 1</span>
+            <button onclick="fetchSMDEntries(currentPage + 1)">Next</button>
+        </div>
+    </div>
+</div>
+<div id="spinner-overlay" class="spinner-overlay">
+    <div class="spinner"></div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    const API_BASE = `/smd-entry`;
+    let currentPage = 1;
+    const pageSize = 10;
+
+    function toggleSpinner(visible) {
+        let overlay = document.getElementById('spinner-overlay');
+        overlay.style.display = visible ? 'flex' : 'none';
+    }
+
+    function fetchSMDEntries(page = 1) {
+        toggleSpinner(true);
+        fetch(`${API_BASE}?page=${page}&page_size=${pageSize}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    currentPage = page; // Update current page
+                    document.getElementById('pageIndicator').innerText = `Page: ${currentPage}`;
+                    const tableBody = document.querySelector('#smdEntriesTable tbody');
+                    tableBody.innerHTML = ''; // Clear existing data
+                    data.   forEach(clientId => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td>${clientId}</td>`;
+                        row.style.cursor = 'pointer';
+                        row.onclick = () => window.location.href = `/smd-cids/${encodeURIComponent(clientId)}`;
+                        tableBody.appendChild(row);
+                    });
+                    document.body.classList.add('fetch-success');
+                    // Enable/disable buttons based on data availability
+                    document.querySelector('.pagination button:nth-child(1)').disabled = currentPage === 1;
+                    document.querySelector('.pagination button:nth-child(3)').disabled = data.length < pageSize; // Assume end of data if less than full page returned
+                })
+                .catch(error => {
+                    console.error('Failed to fetch SMD entries:', error);
+                    document.body.classList.add('fetch-error');
+                }).finally(() => {
+            toggleSpinner(false);
+        });
+    }
+
+    window.onload = function () {
+        toggleSpinner(true);
+        fetchSMDEntries(currentPage);
+    };
+</script>
+{% endblock %}

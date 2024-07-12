@@ -12,23 +12,32 @@ TX_ACTIVITY = "tx"
 
 
 def insert_mqtt_activity(command, result, context):
+    context_str = convert_context_to_str(context)
     execute_sql_command(
         "INSERT INTO activities (type, txhash, command, result, context)\
         VALUES (?, ?, ?, ?, ?)",
-        (MQTT_ACTIVITY, "", command, result, context),
+        (MQTT_ACTIVITY, "", command, result, context_str),
     )
-    config.db_connection.commit()
     logger.debug("Activity added: MQTT.")
 
 
 def insert_tx_activity(tx, result, context):
+    context_str = convert_context_to_str(context)
     execute_sql_command(
         "INSERT INTO activities (type, txhash, command, result, context)\
         VALUES (?, ?, ?, ?, ?)",
-        (TX_ACTIVITY, tx, "", result, context),
+        (TX_ACTIVITY, tx, "", result, context_str),
     )
-    config.db_connection.commit()
     logger.debug("Activity added: TX.")
+
+
+def convert_context_to_str(context):
+    if isinstance(context, dict):
+        return json.dumps(context)
+    elif isinstance(context, str):
+        return context
+    else:
+        return str(context)
 
 
 def insert_tx_activity_by_response(response: requests.Response, context):

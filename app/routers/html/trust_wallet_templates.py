@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
 
-from app.dependencies import config
 
 jinja2_templates = Jinja2Templates(directory="app/templates")
 
@@ -23,7 +22,7 @@ async def get_der_subscription(request: Request):
 
 
 @router.get("/recover-mnemonic")
-async def create_der_smart_meter(request: Request):
+async def recover_mnemonic(request: Request):
     return jinja2_templates.TemplateResponse("trust_wallet/RecoverMnemonic.html", {"request": request})
 
 
