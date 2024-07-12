@@ -82,3 +82,8 @@ async def smd_cids_page(request: Request, client_id: str):
 @router.get("/cid-content/{cid}")
 async def cid_content_page(request: Request, cid: str):
     return templates.TemplateResponse("CidData.html", {"request": request, "cid": cid, "title": "CID Content"})
+
+
+@router.get("/claim-rewards")
+async def claim_rewards_page(request: Request):
+    return templates.TemplateResponse("ClaimRewards.html", {"request": request, "title": "Claim Rewards"})
