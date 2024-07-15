@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="wrapper">
+    <div class="section">
+        <h2>Claim Rewards</h2>
+        <div class="inputs">
+            <div class="input-group">
+                <label for="claimableCRDDL">Claimable Rewards:</label>
+                <input class="value" id="claimableCRDDL" type="text" readonly>      
+            </div>
+            <div class="input-group">
+                <label for="beneficiary">Beneficiary:</label>
+                <input class="value" id="beneficiary" type="text" placeholder="Enter Beneficiary Address" required>
+            </div>
+        </div>
+        <div class="buttons">
+            <button class="btn" onclick="claimRewards()" id="claimButton" type="button">Claim Rewards</button>
+        </div>
+    </div>
+</div>
+<div class="spinner-overlay" id="spinner-overlay">
+    <div class="spinner"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    let planetmintAddress = '';
+
+    window.onload = function() {
+        fetchPlanetmintAddress()
+            .then(fetchClaimableRewards)
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('claimableCRDDL').value = "Failed to load";
+            });
+    };
+
+    function fetchPlanetmintAddress() {
+        return fetch('/twi/get-planetmint-keys')
+            .then(response => response.json())
+            .then(data => {
+                planetmintAddress = data.planetmint_address;
+                if (planetmintAddress === undefined) {
+                    throw new Error('No address found');
+                }
+                return planetmintAddress;
+            });
+    }
+
+    function fetchClaimableRewards(address) {
+        document.getElementById('spinner-overlay').style.display = 'flex';
+        return fetch(`/rddl/balance/${address}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    const crddlBalance = data.balance.find(b => b.denom === "crddl");
+                    if (crddlBalance) {
+                        document.getElementById('claimableCRDDL').value = `${crddlBalance.amount} CRDDL`;
+                    } else {
+                        document.getElementById('claimableCRDDL').value = "No claimable rewards";
+                    }
+                } else {
+                    throw new Error('Failed to fetch balance');
+                }
+                document.getElementById('spinner-overlay').style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error fetching balance:', error);
+                document.getElementById('claimableCRDDL').value = "Failed to load";
+                document.getElementById('spinner-overlay').style.display = 'none';
+            });
+    }
+
+    function claimRewards() {
+        const beneficiary = document.getElementById("beneficiary").value;
+        if (!beneficiary) {
+            alert("Beneficiary address is required.");
+            return;
+        }
+
+        document.getElementById('spinner-overlay').style.display = 'flex';
+
+        fetch(`/rddl/redeemclaims/${beneficiary}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    alert("Rewards claimed successfully!");
+                    fetchClaimableRewards(planetmintAddress);  // Refresh the claimable rewards
+                } else {
+                    alert("Failed to claim rewards: " + data.error);
+                }
+                document.getElementById('spinner-overlay').style.display = 'none';
+            })
+            .catch(error => {
+                alert("An error occurred while claiming rewards: " + error);
+                document.getElementById('spinner-overlay').style.display = 'none';
+            });
+    }
+</script>
+{% endblock %}
