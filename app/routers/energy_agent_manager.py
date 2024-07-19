@@ -5,16 +5,23 @@ import logging
 from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
 from app.dependencies import config
 from app.energy_agent.energy_agent import EnergyAgent
+from app.helpers.config_helper import load_config, save_config
 
 logger = logging.getLogger(__name__)
 
 _manager_instance = None
+
+METADATA_CONFIG_PATH = config.config_base_path + "/energy_agent_metadata.json"
 
 
 class EnergyAgentManager:
     def __init__(self):
         self.energy_agent = None
         self.task = None
+        loaded_status = load_config(METADATA_CONFIG_PATH).get("status")
+        if loaded_status == "":
+            loaded_status = "stopped"
+        self.status = loaded_status
 
     def is_running(self):
         if self.task and not self.task.done():
@@ -31,6 +38,8 @@ class EnergyAgentManager:
             self.energy_agent = EnergyAgent()
             self.energy_agent.setup()
             self.task = asyncio.create_task(self.energy_agent.run())
+            self.status = "running"
+            save_config(METADATA_CONFIG_PATH, {"status": self.status})
             logger.info("Async data agent started")
         else:
             logger.info("Async data agent is already running")
@@ -41,6 +50,8 @@ class EnergyAgentManager:
             await self.task
             await self.energy_agent.disconnect_from_mqtt()
             self.energy_agent = None
+            self.status = "stopped"
+            save_config(METADATA_CONFIG_PATH, {"status": self.status})
             logger.info("Async data agent stopped")
         else:
             logger.info("Async data agent is not running")
@@ -53,6 +64,10 @@ class EnergyAgentManager:
         if self.is_running():
             return "running"
         return "stopped"
+
+    async def check_and_restart(self):
+        if self.status == "running" and not self.is_running():
+            await self.start()
 
 
 def get_manager():

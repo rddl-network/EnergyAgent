@@ -15,6 +15,7 @@ from app.routers import (
     tx_resolver,
     smd_entry,
 )
+from app.routers.energy_agent_manager import get_manager
 from app.routers.html import templates, trust_wallet_templates
 from app.RddlInteraction.rddl_client import RDDLAgent
 
@@ -29,9 +30,21 @@ async def startup_event():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting up...")
-    asyncio.create_task(startup_event())
+    rddl_task = asyncio.create_task(startup_event())
+
+    energy_manager = get_manager()
+    await energy_manager.check_and_restart()
+
     yield  # This is where your application starts handling requests
     print("Shutting down...")
+
+    rddl_task.cancel()
+    try:
+        await rddl_task
+    except asyncio.CancelledError:
+        pass
+
+    await energy_manager.await_and_stop()
 
 
 app = FastAPI(
@@ -48,7 +61,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 # This routes the API
 app.mount("/static", StaticFiles(directory="app/templates/static"), name="static")
