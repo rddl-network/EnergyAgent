@@ -91,7 +91,7 @@ def get_logs(log_file_path: str, filter: LogFilter = None) -> List[LogEntry]:
 
                 parsed_logs.append(log_entry)
 
-        return parsed_logs
+        return sorted(parsed_logs, key=lambda x: x.timestamp, reverse=True)
     except Exception as e:
         logger.error(f"Failed to retrieve logs: {str(e)}")
         return []
