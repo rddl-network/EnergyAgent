@@ -23,13 +23,13 @@ class EnergyAgentManager:
 
     @log
     def is_running(self):
-        if self.task and not self.task.done():
+        if self.task is None:
+            return False
+        if not self.task.done():
             return True
-        if self.task:
-            if self.task.exception():
-                logger.error(f"Task ended with exception: {self.task.exception()}")
-            else:
-                logger.info("Task completed successfully.")
+        exception = self.task.exception()
+        if exception:
+            logger.error(f"Task ended with exception: {exception}")
         return False
 
     @log
@@ -45,14 +45,15 @@ class EnergyAgentManager:
             logger.info("Async data agent is already running")
 
     @log
-    async def await_and_stop(self):
+    async def await_and_stop(self, update_status=True):
         if self.is_running():
             self.energy_agent.stopped = True
             await self.task
             await self.energy_agent.disconnect_from_mqtt()
             self.energy_agent = None
-            self.status = "stopped"
-            save_config(METADATA_CONFIG_PATH, {"status": self.status})
+            if update_status:
+                self.status = "stopped"
+                save_config(METADATA_CONFIG_PATH, {"status": self.status})
             logger.info("Async data agent stopped")
         else:
             logger.info("Async data agent is not running")

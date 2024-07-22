@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
 from starlette.staticfiles import StaticFiles
+from app.helpers.logs import logger
 
 from app.routers import (
     configuration,
@@ -43,9 +44,10 @@ async def lifespan(app: FastAPI):
     try:
         await rddl_task
     except asyncio.CancelledError:
+        logger.info("RDDL task cancelled")
         pass
 
-    await energy_manager.await_and_stop()
+    await energy_manager.await_and_stop(update_status=False)
 
 
 app = FastAPI(

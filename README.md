@@ -11,7 +11,7 @@ But there is more to be configured! The following set of environment variables c
 
 ```
 LOG_LEVEL =          "INFO"                # the log level
-RDDL_TOPIC =         "rddl/SMD/#""         # the channel to subscribe to SMD data updates
+SMD_TOPIC =         "rddl/SMD/#""         # the channel to subscribe to SMD data updates
 TRUST_WALLET_PORT =  "/dev/ttyACM0"        # the serial devices port to the TrustWallet
 NOTARIZE_INTERVAL =  60                    # in minutes 60 min = 1 hour
 RDDL_NETWORK_MODE =  testnet               # testnet, mainnet, or custom

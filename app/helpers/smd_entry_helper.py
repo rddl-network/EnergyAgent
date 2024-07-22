@@ -5,7 +5,7 @@ from app.helpers.logs import log, logger
 
 
 @log
-def process_data_buffer(data_buffer: List[Dict[str, str]], cid: str):
+async def process_data_buffer(data_buffer: List[Dict[str, str]], cid: str):
     """
     Process the data buffer, extract unique client_ids, store them in smd_store,
     and link them to the provided CID.

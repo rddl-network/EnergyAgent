@@ -1,7 +1,6 @@
-from typing import List, Optional
+from typing import Optional
 from pydantic import conint
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
 
 from app.RddlInteraction.utils import table_pagination
 from app.dependencies import config

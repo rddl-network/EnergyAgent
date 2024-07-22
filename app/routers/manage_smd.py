@@ -171,7 +171,7 @@ def configure_device(
     mqtt_password: str = Body(...),
     telemetry_interval: int = Body(default=60),
 ):
-    custom_topic = build_mqtt_topic(remove_hashtag_from_topic(config.rddl_topic), device_name)
+    custom_topic = build_mqtt_topic(remove_hashtag_from_topic(config.smd_topic), device_name)
     if device_type.lower() == "shelly":
         logger.info(f"Configuring Shelly device at {device_ip}")
         configure_shelly_mqtt(device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, custom_topic)

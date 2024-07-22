@@ -15,9 +15,8 @@ FILE_MQTT_CONFIG = "mqtt_config.json"
 class Config:
     def __init__(self):
         # general config
-        self.log_level = os.environ.get("LOG_LEVEL") or "INFO"
         self.config_base_path = os.environ.get("CONFIG_PATH") or "/tmp"
-        self.rddl_topic = os.environ.get("RDDL_TOPIC") or "rddl/SMD/#"
+        self.smd_topic = os.environ.get("SMD_TOPIC") or "rddl/SMD/#"
         self.path_to_smart_meter_config = build_config_path(self.config_base_path, FILE_SMART_METER_CONFIG)
         self.path_to_mqtt_config = build_config_path(self.config_base_path, FILE_MQTT_CONFIG)
         self.trust_wallet_port = os.environ.get("TRUST_WALLET_PORT") or "/dev/ttyACM0"
@@ -26,7 +25,7 @@ class Config:
         self.rddl = get_rddl_network_settings(self.rddl_network_mode)
 
         # logging config
-        self.log_level = os.environ.get("LOG_LEVEL") or "DEBUG"
+        self.log_level = os.environ.get("LOG_LEVEL") or "INFO"
         self.json_logs = os.environ.get("JSON_LOGS") or "0"
         self.log_file_path = os.environ.get("LOG_FILE_PATH") or "/tmp/log/energy-agent.log"
         self.log_rotation_size = os.environ.get("LOG_ROTATION_SIZE") or "100 MB"

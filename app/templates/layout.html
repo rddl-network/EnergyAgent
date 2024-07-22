@@ -100,7 +100,10 @@
             fetch(`${API_BASE_AGENT}/start`)
                 .then(response => response.json())
                 .then(data => updateStatus())
-                .catch(error => console.error('Failed to start agent:', error));
+                .catch(error => {
+                    console.error('Failed to start agent:', error)
+                    alert('Failed to start agent: ' + error);
+                });
         }
 
         function stopAgent() {

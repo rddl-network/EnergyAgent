@@ -17,7 +17,7 @@ services:
       - mqtt
     environment:
       CONFIG_PATH: "/data"
-      RDDL_TOPIC: "rddl/SMD/#"
+      SMD_TOPIC: "rddl/SMD/#"
       TRUST_WALLET_PORT: "/dev/ttyACM0"
       NOTARIZE_INTERVAL: 60
       PORT: 2138

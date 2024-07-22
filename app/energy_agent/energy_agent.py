@@ -1,5 +1,6 @@
 import json
 import asyncio
+import threading
 
 from gmqtt import Client as MQTTClient
 from gmqtt.mqtt.constants import MQTTv311
@@ -10,7 +11,7 @@ from app.db.tx_store import insert_tx
 from app.dependencies import config, trust_wallet_instance
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.config_helper import load_config, extract_client_id
-from app.helpers.models import SmartMeterConfig, MQTTConfig
+from app.helpers.models import MQTTConfig
 from app.helpers.smd_entry_helper import process_data_buffer
 from app.helpers.logs import log, logger
 
@@ -23,8 +24,9 @@ class EnergyAgent:
         self.mqtt_config = MQTTConfig()
         self.stopped = False
         self.data_buffer = []
-        self.max_buffer_size = 1000
+        self.max_buffer_size = 10000
         self.retry_attempts = 6
+        self.lock = threading.Lock()
 
     @log
     def setup(self):
@@ -58,10 +60,10 @@ class EnergyAgent:
             logger.error(f"MQTT disconnection error: {e}")
 
     @log
-    async def on_message(self, client, topic, payload, qos, properties):
+    def on_message(self, client, topic, payload, qos, properties):
         try:
             decoded_payload = payload.decode()
-            self.process_message(topic, decoded_payload)
+            asyncio.create_task(self.process_message(topic, decoded_payload))
             logger.info(f"Received message: {topic}, {decoded_payload}")
         except UnicodeDecodeError:
             logger.error("Error decoding the message payload")
@@ -69,31 +71,30 @@ class EnergyAgent:
             logger.error(f"Unexpected error processing message: {e}")
 
     @log
-    def process_message(self, topic: str, data: str):
+    async def process_message(self, topic: str, data: str):
         client_id: str = extract_client_id(topic)
-        notarize_data = data
-        if self.smart_meter_topic == topic:
-            notarize_data = self.process_meter_data(data)
-        data_dict = {client_id: notarize_data}
+        data_dict = {client_id: data}
         logger.debug(f"Data to be notarized: {data_dict}")
-        self.data_buffer.append(data_dict)
+        with self.lock:
+            self.data_buffer.append(data_dict)
         if len(self.data_buffer) >= self.max_buffer_size:
             logger.info("Buffer size limit reached. Initiating immediate notarization.")
-            asyncio.create_task(self.notarize_data())
+            await self.notarize_data()
 
     @log
     async def notarize_data(self):
         attempts = 0
         while attempts < self.retry_attempts:
             try:
-                data = json.dumps(self.data_buffer)
-                notarize_cid = store_cid(data)
-                process_data_buffer(self.data_buffer, notarize_cid)
-                logger.debug(f"Notarize CID transaction: {notarize_cid}, {data}")
-                tx_hash = create_tx_notarize_data(notarize_cid, config.rddl.planetmint_api, config.rddl.chain_id)
-                insert_tx(tx_hash, notarize_cid)
-                logger.info(f"Planetmint transaction response: {tx_hash}")
-                self.data_buffer.clear()
+                with self.lock:
+                    data = json.dumps(self.data_buffer)
+                    notarize_cid = store_cid(data)
+                    await process_data_buffer(self.data_buffer, notarize_cid)
+                    logger.debug(f"Notarize CID transaction: {notarize_cid}, {data}")
+                    tx_hash = create_tx_notarize_data(notarize_cid, config.rddl.planetmint_api, config.rddl.chain_id)
+                    insert_tx(tx_hash, notarize_cid)
+                    logger.info(f"Planetmint transaction response: {tx_hash}")
+                    self.data_buffer.clear()
                 break
             except Exception as e:
                 attempts += 1
@@ -123,16 +124,6 @@ class EnergyAgent:
             raise
 
     @log
-    def update_smart_meter_topic(self):
-        try:
-            smart_meter_topic_dict = load_config(config.path_to_smart_meter_config)
-            sm_topic = SmartMeterConfig.model_validate(smart_meter_topic_dict)
-            self.smart_meter_topic = sm_topic.smart_meter_topic
-        except Exception as e:
-            logger.error(f"Error loading smart meter topic configuration: {e}")
-            raise
-
-    @log
     def process_meter_data(self, data):
         try:
             metric = decrypt_device(data)
@@ -159,9 +150,10 @@ class EnergyAgent:
 
     @log
     async def run(self):
+        notarization_task = None
         try:
             await self.connect_to_mqtt()
-            self.client.subscribe(config.rddl_topic)
+            self.client.subscribe(config.smd_topic)
             notarization_task = asyncio.create_task(self.notarize_data_with_interval())
 
             while not self.stopped:
@@ -169,6 +161,8 @@ class EnergyAgent:
 
         except Exception as e:
             logger.error(f"Error in DataAgent run loop: {e}")
+            raise
         finally:
             await self.disconnect_from_mqtt()
-            notarization_task.cancel()
+            if notarization_task:
+                notarization_task.cancel()
