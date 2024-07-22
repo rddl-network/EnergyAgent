@@ -1,17 +1,14 @@
 import os
 import sys
 import platform
-import logging
 import threading
 from osc4py3.oscbuildparse import OSCMessage
 
 from app.RddlInteraction.TrustWallet.osc_message_sender import OSCMessageSender
 from app.helpers.models import PlanetMintKeys
-
+from app.helpers.logs import logger, log
 
 PREFIX_IHW = "/IHW"
-
-logger = logging.getLogger(__name__)
 
 
 class TrustWalletConnector(object):
@@ -45,6 +42,7 @@ class TrustWalletConnector(object):
             self.occ_message_sender = OSCMessageSender(lib_path, port_name)
         self.plmnt_keys = None
 
+    @log
     def valise_get(self) -> str:
         with self._lock:
             """
@@ -57,6 +55,7 @@ class TrustWalletConnector(object):
 
     # mnemonicToSeed
 
+    @log
     def create_mnemonic(self):
         with self._lock:
             """
@@ -69,6 +68,7 @@ class TrustWalletConnector(object):
             self.plmnt_keys = None
             return occ_message.data[1]
 
+    @log
     def inject_planetmintkey_to_se050(self, slot: int):
         with self._lock:
             msg = OSCMessage(f"{PREFIX_IHW}/se050InjectSECPKeys", ",i", [slot])
@@ -79,6 +79,7 @@ class TrustWalletConnector(object):
                 logger.error(f"Inject PlanetMintKey failed with errorcode {occ_message.data[1]}")
                 return False
 
+    @log
     def recover_from_mnemonic(self, mnemonic: str) -> str:
         with self._lock:
             """
@@ -89,6 +90,7 @@ class TrustWalletConnector(object):
             self.plmnt_keys = None
             return occ_message.data[1]
 
+    @log
     def get_planetmint_keys(self) -> PlanetMintKeys:
         with self._lock:
             """
@@ -109,12 +111,14 @@ class TrustWalletConnector(object):
                 self.plmnt_keys.raw_planetmint_pubkey = occ_message.data[4]
             return self.plmnt_keys
 
+    @log
     def get_seed_se050(self):
         with self._lock:
             msg = OSCMessage(f"{PREFIX_IHW}/se050GetSeed", ",", [])
             occ_message = self.occ_message_sender.send_message(msg)
             return occ_message
 
+    @log
     def sign_hash_with_planetmint(self, data_to_sign: str) -> str:
         with self._lock:
             """
@@ -127,6 +131,7 @@ class TrustWalletConnector(object):
             signature = occ_message.data[1]
             return signature
 
+    @log
     def sign_hash_with_rddl(self, data_to_sign: str) -> str:
         with self._lock:
             """
@@ -139,6 +144,7 @@ class TrustWalletConnector(object):
             signature = occ_message.data[1]
             return signature
 
+    @log
     def create_optega_keypair(self, ctx: int) -> str:
         with self._lock:
             """
@@ -151,6 +157,7 @@ class TrustWalletConnector(object):
             pubkey = occ_message.data[1]
             return pubkey
 
+    @log
     def sign_with_optega(self, ctx: int, data_to_sign: str, pubkey: str) -> str:
         with self._lock:
             """
@@ -166,6 +173,7 @@ class TrustWalletConnector(object):
             signature = occ_message.data[1]
             return signature
 
+    @log
     def unwrapPublicKey(self, public_key: str) -> tuple[bool, str]:
         if len(public_key) == 136:
             return True, public_key[-128:]
@@ -176,12 +184,14 @@ class TrustWalletConnector(object):
         else:
             return False, public_key
 
+    @log
     def calculate_hash(self, data_to_sign: str) -> str:
         with self._lock:
             msg = OSCMessage(f"{PREFIX_IHW}/se050CalculateHash", ",s", [data_to_sign])
             occ_message = self.occ_message_sender.send_message(msg)
             return occ_message.data[1]
 
+    @log
     def create_se050_keypair_nist(self, ctx: int) -> str:
         with self._lock:
             """
@@ -194,6 +204,7 @@ class TrustWalletConnector(object):
             pubkey = occ_message.data[1]
             return pubkey
 
+    @log
     def get_public_key_from_se050(self, ctx: int) -> str:
         with self._lock:
             """
@@ -209,6 +220,7 @@ class TrustWalletConnector(object):
                 logger.error("Inject PlanetMintKey failed: No key found.")
             return pubKey
 
+    @log
     def sign_with_se050(self, data_to_sign: str, ctx: int) -> str:
         with self._lock:
             """
@@ -224,6 +236,7 @@ class TrustWalletConnector(object):
             signature = occ_message.data[1]
             return signature
 
+    @log
     def verify_se050_signature(self, data_to_sign: str, signature: str, ctx: int) -> bool:
         with self._lock:
             """

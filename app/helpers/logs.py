@@ -14,18 +14,16 @@ DISABLE_THIRD_PARTY_LOG = False if os.getenv("DISABLE_THIRD_PARTY_LOG", "0") == 
 
 
 # If we want to disable the logs of a third party app, we can add it to this list and vice versa
-log_disabled_third_party_apps_list = ["pika", "urllib3", "asyncio", "web3"]
+log_disabled_third_party_apps_list = []
 
 
 class InterceptHandler(logging.Handler):
     def emit(self, record):
-        # Get corresponding Loguru level if it exists
         try:
             level = logger.level(record.levelname).name
         except ValueError:
             level = record.levelno
 
-        # Find caller from where originated the logged message
         frame, depth = logging.currentframe(), 2
         while frame.f_code.co_filename == logging.__file__:
             frame = frame.f_back
@@ -35,21 +33,16 @@ class InterceptHandler(logging.Handler):
 
 
 def setup_logging():
-    # intercept everything at the root logger
     logging.root.handlers = [InterceptHandler()]
     logging.root.setLevel(LOG_LEVEL)
 
-    # remove every other logger's handlers
-    # and propagate to root logger
     for name in logging.root.manager.loggerDict.keys():
         logging.getLogger(name).handlers = []
         if DISABLE_THIRD_PARTY_LOG and name in log_disabled_third_party_apps_list:
-            # Disable the log propagation of the specific app to the root logger
             logging.getLogger(name).propagate = False
         else:
             logging.getLogger(name).propagate = True
 
-    # configure loguru
     logger.remove()
     logger.configure(handlers=[{"sink": sys.stdout, "serialize": JSON_LOGS, "level": LOG_LEVEL}])
     if LOG_FILE_PATH is not None:

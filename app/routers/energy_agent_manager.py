@@ -1,13 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 import asyncio
-import logging
 
 from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
 from app.dependencies import config
 from app.energy_agent.energy_agent import EnergyAgent
 from app.helpers.config_helper import load_config, save_config
-
-logger = logging.getLogger(__name__)
+from app.helpers.logs import log, logger
 
 _manager_instance = None
 
@@ -23,6 +21,7 @@ class EnergyAgentManager:
             loaded_status = "stopped"
         self.status = loaded_status
 
+    @log
     def is_running(self):
         if self.task and not self.task.done():
             return True
@@ -33,6 +32,7 @@ class EnergyAgentManager:
                 logger.info("Task completed successfully.")
         return False
 
+    @log
     async def start(self):
         if not self.is_running():
             self.energy_agent = EnergyAgent()
@@ -44,6 +44,7 @@ class EnergyAgentManager:
         else:
             logger.info("Async data agent is already running")
 
+    @log
     async def await_and_stop(self):
         if self.is_running():
             self.energy_agent.stopped = True
@@ -56,20 +57,24 @@ class EnergyAgentManager:
         else:
             logger.info("Async data agent is not running")
 
+    @log
     async def restart(self):
         await self.await_and_stop()
         await self.start()
 
+    @log
     def get_status(self):
         if self.is_running():
             return "running"
         return "stopped"
 
+    @log
     async def check_and_restart(self):
         if self.status == "running" and not self.is_running():
             await self.start()
 
 
+@log
 def get_manager():
     global _manager_instance
     if _manager_instance is None:

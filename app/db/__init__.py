@@ -1,15 +1,16 @@
 import sqlite3
-import logging
 
-logger = logging.getLogger(__name__)
+from app.helpers.logs import log, logger
 
 
+@log
 def create_connection(database_path: str) -> sqlite3.Connection:
     """Create a database connection to the SQLite database"""
     conn = sqlite3.connect(database_path)
     return conn
 
 
+@log
 def init_tables(connection) -> bool:
     """Initialize the tables if they do not exist"""
     if connection:
@@ -71,6 +72,7 @@ def init_tables(connection) -> bool:
         connection.commit()
 
 
+@log
 def execute_sql_command(sql_command, params, fetch_data=False):
     from app.dependencies import config
 

@@ -1,16 +1,16 @@
-import logging
 import json
 import requests
 from sqlite3 import Error
 from app.db import execute_sql_command
 from app.dependencies import config
 
-logger = logging.getLogger(__name__)
+from app.helpers.logs import log, logger
 
 MQTT_ACTIVITY = "mqtt"
 TX_ACTIVITY = "tx"
 
 
+@log
 def insert_mqtt_activity(command, result, context):
     context_str = convert_context_to_str(context)
     execute_sql_command(
@@ -21,6 +21,7 @@ def insert_mqtt_activity(command, result, context):
     logger.debug("Activity added: MQTT.")
 
 
+@log
 def insert_tx_activity(tx, result, context):
     context_str = convert_context_to_str(context)
     execute_sql_command(
@@ -31,6 +32,7 @@ def insert_tx_activity(tx, result, context):
     logger.debug("Activity added: TX.")
 
 
+@log
 def convert_context_to_str(context):
     if isinstance(context, dict):
         return json.dumps(context)
@@ -40,6 +42,7 @@ def convert_context_to_str(context):
         return str(context)
 
 
+@log
 def insert_tx_activity_by_response(response: requests.Response, context):
     tx_hash = ""
     msg = response.reason + " " + response.text
@@ -50,6 +53,7 @@ def insert_tx_activity_by_response(response: requests.Response, context):
     insert_tx_activity(tx_hash, msg, context)
 
 
+@log
 def get_all_activities(order="DESC"):
     try:
         cursor = config.db_connection.cursor()

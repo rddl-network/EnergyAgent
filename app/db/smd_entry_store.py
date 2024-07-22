@@ -1,10 +1,10 @@
-import logging
 from app.db import execute_sql_command
 from typing import List, Optional
 
-logger = logging.getLogger(__name__)
+from app.helpers.logs import log, logger
 
 
+@log
 def client_exists(client_id: str) -> bool:
     """Check if a client_id exists in the smd_store table."""
     result = execute_sql_command("SELECT client_id FROM smd_store WHERE client_id=?", (client_id,), fetch_data=True)
@@ -13,6 +13,7 @@ def client_exists(client_id: str) -> bool:
     return True
 
 
+@log
 def insert_smd_store_entry(client_id: str, cid: str):
     """
     Insert a new entry into smd_store and link it with cids in smd_store_cid_link.
@@ -29,6 +30,7 @@ def insert_smd_store_entry(client_id: str, cid: str):
         logger.debug(f"Client ID {client_id} already exists. No action taken.")
 
 
+@log
 def update_smd_store_entry(client_id: str, cid: str):
     """
     Add new cids linked to a client_id in smd_store_cid_link.
@@ -46,6 +48,7 @@ def update_smd_store_entry(client_id: str, cid: str):
         logger.debug(f"Client ID {client_id} does not exist. No action taken.")
 
 
+@log
 def delete_smd_store_entry(client_id: str):
     """
     Delete an entry from smd_store and its associated links in smd_store_cid_link.
@@ -55,6 +58,7 @@ def delete_smd_store_entry(client_id: str):
     logger.debug(f"SMD store entry deleted for client_id: {client_id}")
 
 
+@log
 def get_all_client_ids() -> List[str]:
     """
     Retrieve all unique client_ids from the smd_store table.
@@ -66,6 +70,7 @@ def get_all_client_ids() -> List[str]:
     return results if results else []
 
 
+@log
 def get_smd_client_id_from_cid(cid: str) -> Optional[str]:
     """
     Retrieve the client_id associated with a specific CID.
@@ -74,6 +79,7 @@ def get_smd_client_id_from_cid(cid: str) -> Optional[str]:
     return result if result else None
 
 
+@log
 def get_cids_for_client_id(client_id: str) -> List[str]:
     """
     Retrieve all CIDs associated with a specific client_id.
