@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rddl-energy-agent"
-version = "0.1.0"
+version = "0.3.1"
 description = ""
 authors = ["Cybnon <stefan.weber93@googlemail.com>"]
 readme = "README.md"
