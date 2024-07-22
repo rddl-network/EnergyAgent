@@ -17,9 +17,9 @@ router = APIRouter(
 
 @router.get("/")
 async def retrieve_logs(
-        page: Optional[conint(gt=0)] = None,
-        page_size: Optional[conint(gt=0)] = None,
-        ui_filter: Optional[LogFilter] = None,
+    page: Optional[conint(gt=0)] = None,
+    page_size: Optional[conint(gt=0)] = None,
+    ui_filter: Optional[LogFilter] = None,
 ):
     try:
         logs = get_logs(log_file_path=config.log_file_path, filter=ui_filter)

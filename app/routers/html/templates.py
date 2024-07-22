@@ -96,4 +96,4 @@ async def logs_page(request: Request):
 
 @router.get("/stats-page")
 async def stats_page(request: Request):
-    return templates.TemplateResponse("EnergyAgentStats.html", {"request": request})    
+    return templates.TemplateResponse("EnergyAgentStats.html", {"request": request})

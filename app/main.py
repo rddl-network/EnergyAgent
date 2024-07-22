@@ -13,7 +13,8 @@ from app.routers import (
     manage_smd,
     rddl_network,
     tx_resolver,
-    smd_entry, energy_agent_logs,
+    smd_entry,
+    energy_agent_logs,
 )
 from app.routers.energy_agent_manager import get_manager
 from app.routers.html import templates, trust_wallet_templates
