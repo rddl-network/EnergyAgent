@@ -28,7 +28,7 @@ class Config:
         # logging config
         self.log_level = os.environ.get("LOG_LEVEL") or "DEBUG"
         self.json_logs = os.environ.get("JSON_LOGS") or "0"
-        self.log_file_path = os.environ.get("LOG_FILE_PATH") or "/tmp/log/app_logs.log"
+        self.log_file_path = os.environ.get("LOG_FILE_PATH") or "/tmp/log/energy-agent.log"
         self.log_rotation_size = os.environ.get("LOG_ROTATION_SIZE") or "100 MB"
         self.log_retention = os.environ.get("LOG_RETENTION") or "1 month"
         self.disable_third_party_log = os.environ.get("DISABLE_THIRD_PARTY_LOG") or "0"

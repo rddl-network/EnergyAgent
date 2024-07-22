@@ -47,17 +47,17 @@ async def rddl_page(request: Request):
 
 
 @router.get("/create-account")
-async def create_account(request: Request):
+async def create_account_page(request: Request):
     return templates.TemplateResponse("CreateAccount.html", {"request": request, "title": "Create On Chain Account"})
 
 
 @router.get("/recover-mnemonic")
-async def recover_mnemonic(request: Request):
+async def recover_mnemonic_page(request: Request):
     return templates.TemplateResponse("RecoverMnemonic.html", {"request": request, "title": "Recover Mnemonic"})
 
 
 @router.get("/create-mnemonic")
-async def create_mnemonic(request: Request):
+async def create_mnemonic_page(request: Request):
     return templates.TemplateResponse("CreateMnemonic.html", {"request": request, "title": "Create Mnemonic"})
 
 
@@ -87,3 +87,13 @@ async def cid_content_page(request: Request, cid: str):
 @router.get("/claim-rewards")
 async def claim_rewards_page(request: Request):
     return templates.TemplateResponse("ClaimRewards.html", {"request": request, "title": "Claim Rewards"})
+
+
+@router.get("/logs-page")
+async def logs_page(request: Request):
+    return templates.TemplateResponse("EnergyAgentLogs.html", {"request": request})
+
+
+@router.get("/stats-page")
+async def stats_page(request: Request):
+    return templates.TemplateResponse("EnergyAgentStats.html", {"request": request})    

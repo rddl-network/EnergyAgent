@@ -57,7 +57,7 @@ def setup_logging(
     logger.remove()
     logger.configure(handlers=[{"sink": sys.stdout, "serialize": json_logs, "level": log_level}])
     logger.add(
-        log_file_path + "log-{time:YYYYMMDD-HHMM}.log",
+        log_file_path,
         rotation=log_rotation_size,
         retention=log_retention,
         compression="zip",
@@ -65,10 +65,10 @@ def setup_logging(
     )
 
 
-def get_logs(log_file_path: str, limit: int = 100, filter: LogFilter = None) -> List[LogEntry]:
+def get_logs(log_file_path: str, filter: LogFilter = None) -> List[LogEntry]:
     try:
         with open(log_file_path, "r") as log_file:
-            logs = log_file.readlines()[-limit:]
+            logs = log_file.readlines()
 
         parsed_logs = []
         for log in logs:
