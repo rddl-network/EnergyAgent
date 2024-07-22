@@ -1,20 +1,24 @@
 import functools
 import logging
-import os
 import sys
 
+from typing import List, Optional
 from loguru import logger
+from pydantic import BaseModel
 
-LOG_LEVEL = logging.getLevelName(os.getenv("LOG_LEVEL", "DEBUG"))
-JSON_LOGS = False if os.getenv("JSON_LOGS") == "0" else True
-LOG_FILE_PATH = os.getenv("LOG_FILE_PATH")
-LOG_ROTATION_SIZE = os.getenv("LOG_ROTATION_SIZE", "100 MB")
-LOG_RETENTION = os.getenv("LOG_RETENTION", "1 month")
-DISABLE_THIRD_PARTY_LOG = False if os.getenv("DISABLE_THIRD_PARTY_LOG", "0") == "0" else True
-
-
-# If we want to disable the logs of a third party app, we can add it to this list and vice versa
 log_disabled_third_party_apps_list = []
+
+
+class LogEntry(BaseModel):
+    timestamp: str
+    level: str
+    message: str
+
+
+class LogFilter(BaseModel):
+    level: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
 
 
 class InterceptHandler(logging.Handler):
@@ -32,27 +36,75 @@ class InterceptHandler(logging.Handler):
         logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
 
 
-def setup_logging():
+def setup_logging(
+    log_level: str,
+    json_logs: str,
+    log_rotation_size: str,
+    log_retention: str,
+    disable_third_party_log: str,
+    log_file_path: str,
+):
     logging.root.handlers = [InterceptHandler()]
-    logging.root.setLevel(LOG_LEVEL)
+    logging.root.setLevel(log_level)
 
     for name in logging.root.manager.loggerDict.keys():
         logging.getLogger(name).handlers = []
-        if DISABLE_THIRD_PARTY_LOG and name in log_disabled_third_party_apps_list:
+        if disable_third_party_log and name in log_disabled_third_party_apps_list:
             logging.getLogger(name).propagate = False
         else:
             logging.getLogger(name).propagate = True
 
     logger.remove()
-    logger.configure(handlers=[{"sink": sys.stdout, "serialize": JSON_LOGS, "level": LOG_LEVEL}])
-    if LOG_FILE_PATH is not None:
-        logger.add(
-            LOG_FILE_PATH + "log-{time:YYYYMMDD-HHMM}.log",
-            rotation=LOG_ROTATION_SIZE,
-            retention=LOG_RETENTION,
-            compression="zip",
-            level=LOG_LEVEL,
-        )
+    logger.configure(handlers=[{"sink": sys.stdout, "serialize": json_logs, "level": log_level}])
+    logger.add(
+        log_file_path + "log-{time:YYYYMMDD-HHMM}.log",
+        rotation=log_rotation_size,
+        retention=log_retention,
+        compression="zip",
+        level=log_level,
+    )
+
+
+def get_logs(log_file_path: str, limit: int = 100, filter: LogFilter = None) -> List[LogEntry]:
+    try:
+        with open(log_file_path, "r") as log_file:
+            logs = log_file.readlines()[-limit:]
+
+        parsed_logs = []
+        for log in logs:
+            parts = log.split("|")
+            if len(parts) >= 3:
+                timestamp, level, message = parts[0], parts[1], "|".join(parts[2:])
+                log_entry = LogEntry(
+                    timestamp=timestamp.strip(),
+                    level=level.strip(),
+                    message=message.strip(),
+                )
+
+                if filter:
+                    if filter.level and log_entry.level != filter.level:
+                        continue
+                    if filter.start_date and log_entry.timestamp < filter.start_date:
+                        continue
+                    if filter.end_date and log_entry.timestamp > filter.end_date:
+                        continue
+
+                parsed_logs.append(log_entry)
+
+        return parsed_logs
+    except Exception as e:
+        logger.error(f"Failed to retrieve logs: {str(e)}")
+        return []
+
+
+def clear_logs(log_file_path: str):
+    try:
+        open(log_file_path, "w").close()
+        logger.info("Logs cleared successfully")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to clear logs: {str(e)}")
+        return False
 
 
 def log(func):
