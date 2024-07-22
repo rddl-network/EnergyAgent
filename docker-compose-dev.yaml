@@ -21,6 +21,7 @@ services:
       SMD_TOPIC: "rddl/SMD/#"
       TRUST_WALLET_PORT: "/dev/ttyACM0"
       NOTARIZE_INTERVAL: 60
+      RDDL_NETWORK_MODE: testnet
       PORT: 2138
       LOG_LEVEL: DEBUG
       LOG_FILE_PATH: "/data/log/energy_agent.log"
