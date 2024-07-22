@@ -62,7 +62,7 @@ class RDDLAgent:
             logger.error(f"MQTT RDDL disconnection error: {e}")
 
     @log
-    async def on_message(self, client, topic, payload, qos, properties):
+    def on_message(self, client, topic, payload, qos, properties):
         try:
             decoded_payload = payload.decode()
             logger.info(f"MQTT RDDL Received message: {topic}, {decoded_payload}")
@@ -250,8 +250,6 @@ class RDDLAgent:
 
             self.client.subscribe("cmnd/" + keys.planetmint_address + "/PoPChallenge")
             self.client.subscribe("cmnd/" + keys.planetmint_address + "/PoPInit")
-
-            self.client.subscribe(config.rddl_topic)
 
             while not self.stopped:
                 logger.info("RDDL MQTT enter wait loop.")
