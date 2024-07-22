@@ -1,5 +1,3 @@
-import logging
-
 from sqlite3 import Error
 from app.db import execute_sql_command
 from app.dependencies import config

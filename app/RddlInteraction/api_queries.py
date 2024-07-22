@@ -137,8 +137,8 @@ async def queryPoPInfo(height: str) -> PoPContext:
                     pop_context.isChallenger = pop_context.challenger == keys.planetmint_address
                     try:
                         pop_context.pop_height = int(data["challenge"]["height"])
-                    except:
-                        logger.error("Erro: cannot convert string to int (pop height)")
+                    except Exception as e:
+                        logger.error("Error: cannot convert string to int (pop height): " + str(e))
                     if pop_context.isChallenger or (pop_context.challengee == keys.planetmint_address):
                         pop_context.isActive = True
                         return pop_context
