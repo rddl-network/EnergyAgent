@@ -138,7 +138,7 @@ class RDDLAgent:
         cid = data
         cid_data = get_value(cid)
         logger.info(f"PoP challenge cid data : {cid_data}")
-        cid_data_hex = utils.toHexString(cid_data)
+        cid_data_hex = utils.toHexString(json.dumps(cid_data))
         logger.info(f"PoP challenge cid data hex : {cid_data_hex}")
 
         payload = '{ "PoPChallenge": { "cid": "' + cid + '", "encoding": "hex", "data": "' + cid_data_hex + '"} }'

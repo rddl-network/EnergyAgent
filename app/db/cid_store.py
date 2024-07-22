@@ -9,7 +9,7 @@ def transform_result(result):
     json_str = json.dumps(result[0]) if result else None
     if json_str:
         json_obj = json.loads(json_str)[0]
-        return json.loads(json_obj)
+        return json.loads(json.loads(json_obj))
     else:
         return None
 
@@ -34,7 +34,7 @@ def insert_key_value(cid, json_value):
 
 
 @log
-def get_value(cid):
+def get_value(cid) -> dict:
     result = execute_sql_command("SELECT json_value FROM key_value_store WHERE cid=?", (cid,), fetch_data=True)
     return transform_result(result)
 
