@@ -9,7 +9,7 @@ def transform_result(result):
     json_str = json.dumps(result[0]) if result else None
     if json_str:
         json_obj = json.loads(json_str)[0]
-        return json.loads(json.loads(json_obj))
+        return json.loads(json_obj)
     else:
         return None
 
