@@ -7,11 +7,12 @@ from gmqtt.mqtt.constants import MQTTv311
 from app.RddlInteraction.cid_tool import store_cid
 from app.RddlInteraction.planetmint_interaction import create_tx_notarize_data
 from app.db.tx_store import insert_tx
-from app.dependencies import config, logger, trust_wallet_instance
+from app.dependencies import config, trust_wallet_instance
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.config_helper import load_config, extract_client_id
 from app.helpers.models import SmartMeterConfig, MQTTConfig
 from app.helpers.smd_entry_helper import process_data_buffer
+from app.helpers.logs import log, logger
 
 
 class EnergyAgent:
@@ -25,6 +26,7 @@ class EnergyAgent:
         self.max_buffer_size = 1000
         self.retry_attempts = 6
 
+    @log
     def setup(self):
         try:
             self.update_mqtt_connection_params()
@@ -33,12 +35,14 @@ class EnergyAgent:
             logger.error(f"Setup error: {e}")
             raise
 
+    @log
     def initialize_mqtt_client(self):
         keys = trust_wallet_instance.get_planetmint_keys()
         self.client = MQTTClient(client_id=keys.planetmint_address)
         self.client.on_message = self.on_message
         self.client.set_auth_credentials(self.mqtt_config.username, self.mqtt_config.password)
 
+    @log
     async def connect_to_mqtt(self):
         try:
             await self.client.connect(self.mqtt_config.host, self.mqtt_config.port, keepalive=60, version=MQTTv311)
@@ -46,12 +50,14 @@ class EnergyAgent:
             logger.error(f"MQTT connection error: {e}")
             raise
 
+    @log
     async def disconnect_from_mqtt(self):
         try:
             await self.client.disconnect()
         except Exception as e:
             logger.error(f"MQTT disconnection error: {e}")
 
+    @log
     async def on_message(self, client, topic, payload, qos, properties):
         try:
             decoded_payload = payload.decode()
@@ -62,6 +68,7 @@ class EnergyAgent:
         except Exception as e:
             logger.error(f"Unexpected error processing message: {e}")
 
+    @log
     def process_message(self, topic: str, data: str):
         client_id: str = extract_client_id(topic)
         notarize_data = data
@@ -74,6 +81,7 @@ class EnergyAgent:
             logger.info("Buffer size limit reached. Initiating immediate notarization.")
             asyncio.create_task(self.notarize_data())
 
+    @log
     async def notarize_data(self):
         attempts = 0
         while attempts < self.retry_attempts:
@@ -95,6 +103,7 @@ class EnergyAgent:
                     logger.error("Max retry attempts reached. Data notarization failed.")
                     raise Exception("Data notarization failed")
 
+    @log
     async def notarize_data_with_interval(self):
         while not self.stopped:
             logger.debug(f"Data buffer: {self.data_buffer}")
@@ -104,6 +113,7 @@ class EnergyAgent:
                 logger.debug("No data to notarize")
             await asyncio.sleep(config.notarize_interval * 60)
 
+    @log
     def update_mqtt_connection_params(self):
         try:
             mqtt_config_dict = load_config(config.path_to_mqtt_config)
@@ -112,6 +122,7 @@ class EnergyAgent:
             logger.error(f"Error loading MQTT configuration: {e}")
             raise
 
+    @log
     def update_smart_meter_topic(self):
         try:
             smart_meter_topic_dict = load_config(config.path_to_smart_meter_config)
@@ -121,6 +132,7 @@ class EnergyAgent:
             logger.error(f"Error loading smart meter topic configuration: {e}")
             raise
 
+    @log
     def process_meter_data(self, data):
         try:
             metric = decrypt_device(data)
@@ -131,6 +143,7 @@ class EnergyAgent:
             raise
 
     @staticmethod
+    @log
     def enrich_metric(data):
         metric_dict = data
         try:
@@ -144,6 +157,7 @@ class EnergyAgent:
             logger.error(f"Data conversion error in metric: {e}")
         return metric_dict
 
+    @log
     async def run(self):
         try:
             await self.connect_to_mqtt()
