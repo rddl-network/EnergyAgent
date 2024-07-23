@@ -25,9 +25,6 @@ class RDDLAgent:
         # client management
         self.client = None
         self.stopped = False
-        self.data_buffer = []
-        self.max_buffer_size = 3000
-        self.retry_attempts = 3
         self.pop_context = PoPContext()
 
     @log

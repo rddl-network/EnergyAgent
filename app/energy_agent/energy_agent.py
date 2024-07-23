@@ -20,11 +20,9 @@ class EnergyAgent:
     def __init__(self):
         logger.info("MQTT Energy Agent setup")
         self.client = None
-        self.smart_meter_topic = ""
         self.mqtt_config = MQTTConfig()
         self.stopped = False
         self.data_buffer = []
-        self.max_buffer_size = 10000
         self.retry_attempts = 6
         self.lock = threading.Lock()
 
@@ -77,9 +75,6 @@ class EnergyAgent:
         logger.debug(f"Data to be notarized: {data_dict}")
         with self.lock:
             self.data_buffer.append(data_dict)
-        if len(self.data_buffer) >= self.max_buffer_size:
-            logger.info("Buffer size limit reached. Initiating immediate notarization.")
-            await self.notarize_data()
 
     @log
     async def notarize_data(self):
