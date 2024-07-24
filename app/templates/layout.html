@@ -1,139 +1,127 @@
-    <!DOCTYPE html>
-    <html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{{ title }}</title>
-        <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
-        <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='/img/favicon.ico') }}">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='/img/favicon.ico') }}">
+</head>
 
-    <body>
-    <div class="wrapper-container">
-        <div class="left-side">
-            <a href="/smd-entries">
-                <button class="btn-big" type="button">
-                    <img class="device" src="{{ url_for('static', path='img/smd.png') }}" alt="Smart Metering Devices" width="135"/>
-                    <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots"/>
-                    Smart Metering Devices
-                </button>
-            </a>
-
-            <a href="/trust-wallet">
-                <button class="btn-big" type="button">
-                    <img class="device" src="{{ url_for('static', path='img/trust-wallet.png') }}" width="135"
-                         alt="Trust Wallet"/>
-                    <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots"/>
-                    Trust Wallet
-                </button>
-                <img class="arrow" src="{{ url_for('static', path='img/arrow-down.png') }}"/>
-            </a>
-            <a href="/rddl-page">
-                <button class="btn-big" type="button">
-                    <img class="device" src="{{ url_for('static', path='img/attestation.png') }}" alt="RDDL Network"/>
-                    <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots"/>
-                    RDDL Network
-                </button>
-                <img class="arrow" src="{{ url_for('static', path='img/arrow-down.png') }}"/>
-            </a>
-            <a href="/mqtt-page">
-                <button class="btn-big" type="button">
-                    <img class="device" src="{{ url_for('static', path='img/mqtt.png') }}" alt="MQTT config"/>
-                    <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots"/>
-                    MQTT Config
-                </button>
-                <img class="arrow" src="{{ url_for('static', path='img/arrow-down.png') }}"/>
-            </a>
-            <a href="/cid-page">
-                <button class="btn-big" type="button">
-                    <img class="device" src="{{ url_for('static', path='img/cid.png') }}" alt="CID Resolver"/>
-                    <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots"/>
-                    CID Resolver
-                </button>
-            </a>
-            <a href="/activities-page">
-                <button class="btn-big" type="button">
-                    <img class="device" src="{{ url_for('static', path='img/cid.png') }}" alt="Activities"/>
-                    <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots"/>
-                    Activities
-                </button>
-            </a>
-        </div>
-        <div class="main-container">
-            <header class="header-top">
-                <nav>
-                    <a href="/">Home</a>
-                    <div class="buttons">
-                        <button class="btn-small" id="startButton" onclick="startAgent()">Start Agent</button>
-                        <button class="btn-small" id="stopButton" onclick="stopAgent()">Stop Agent</button>
-                        <button class="btn-small" id="restartButton" onclick="restartAgent()">Restart Agent</button>
-                        <div id="status" class="">Status: <span id="statusText">Checking...</span></div>
-                        <div id="attestationStatus"></div> <!-- New element for displaying the attestation status -->
-                    </div>
-                </nav>
-            </header>
-
-
-            <main>
-                <div class="header">
-                    <div class="center">
-                        <h1 class="block mx-auto">{{title}}</h1>
-                    </div>
-                </div>
-                {% block content %}{% endblock %}
-            </main>
-        </div>
+<body>
+<div class="wrapper-container">
+    <div class="left-side">
+        <a href="/trust-wallet">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img/trust-wallet.png') }}" width="135"
+                     alt="Trust Wallet"/>
+                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots"/>
+                Trust Wallet
+            </button>
+            <img class="arrow" src="{{ url_for('static', path='img/arrow-down.png') }}"/>
+        </a>
+        <a href="/rddl-page">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img/attestation.png') }}" alt="RDDL Network"/>
+                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots"/>
+                RDDL Network
+            </button>
+            <img class="arrow" src="{{ url_for('static', path='img/arrow-down.png') }}"/>
+        </a>
+        <a href="/mqtt-page">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img/mqtt.png') }}" alt="MQTT config"/>
+                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots"/>
+                MQTT Config
+            </button>
+            <img class="arrow" src="{{ url_for('static', path='img/arrow-down.png') }}"/>
+        </a>
+        <a href="/stats-page">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img/nodata.svg') }}" alt="Stats"/>
+                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots"/>
+                Stats
+            </button>
+        </a>
     </div>
-    {% block scripts %}
+    <div class="main-container">
+        <header class="header-top">
+            <nav>
+                <a href="/">Home</a>
+                <div class="buttons">
+                    <button class="btn-small" id="startButton" onclick="startAgent()">Start Agent</button>
+                    <button class="btn-small" id="stopButton" onclick="stopAgent()">Stop Agent</button>
+                    <button class="btn-small" id="restartButton" onclick="restartAgent()">Restart Agent</button>
+                    <div id="status" class="">Status: <span id="statusText">Checking...</span></div>
+                    <div id="attestationStatus"></div> <!-- New element for displaying the attestation status -->
+                </div>
+            </nav>
+        </header>
+
+
+        <main>
+            <div class="header">
+                <div class="center">
+                    <h1 class="block mx-auto">{{ title }}</h1>
+                </div>
+            </div>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% block scripts %}
 
     <script>
         const API_BASE_AGENT = `/energy_agent`;
 
         function updateStatus() {
             fetch(`${API_BASE_AGENT}/status`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Update the status text
-                        document.getElementById('statusText').textContent = data.status;
-                        // Update the status color
-                        document.getElementById('status').className = `status-indicator ${data.status}`;
-                    })
-                    .catch(error => {
-                        console.error('Failed to fetch status:', error);
-                    });
+                .then(response => response.json())
+                .then(data => {
+                    // Update the status text
+                    document.getElementById('statusText').textContent = data.status;
+                    // Update the status color
+                    document.getElementById('status').className = `status-indicator ${data.status}`;
+                })
+                .catch(error => {
+                    console.error('Failed to fetch status:', error);
+                });
         }
 
         function startAgent() {
             fetch(`${API_BASE_AGENT}/start`)
-                    .then(response => response.json())
-                    .then(data => updateStatus())
-                    .catch(error => console.error('Failed to start agent:', error));
+                .then(response => response.json())
+                .then(data => updateStatus())
+                .catch(error => {
+                    console.error('Failed to start agent:', error)
+                    alert('Failed to start agent: ' + error);
+                });
         }
 
         function stopAgent() {
             fetch(`${API_BASE_AGENT}/stop`)
-                    .then(response => response.json())
-                    .then(data => updateStatus())
-                    .catch(error => console.error('Failed to stop agent:', error));
+                .then(response => response.json())
+                .then(data => updateStatus())
+                .catch(error => console.error('Failed to stop agent:', error));
         }
 
         function restartAgent() {
             fetch(`${API_BASE_AGENT}/restart`)
-                    .then(response => response.json())
-                    .then(data => updateStatus())
-                    .catch(error => console.error('Failed to restart agent:', error));
+                .then(response => response.json())
+                .then(data => updateStatus())
+                .catch(error => console.error('Failed to restart agent:', error));
         }
 
         function checkAttestation() {
             fetch(`/rddl/machine`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(response.status);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
                         if (data.status === "error") {
                             // Disable the buttons if the status is "error"
                             document.getElementById('startButton').disabled = true;
@@ -149,26 +137,28 @@
 
                             document.getElementById('attestationStatus').textContent = 'Machine ready';
                             document.getElementById('attestationStatus').className = 'attested';
-                        }}
-                    )
-                    .catch(error => {
-                            console.log(error.message)
-                            if (error.message === '404') {
-                                document.getElementById('startButton').disabled = true;
-                                document.getElementById('stopButton').disabled = true;
-                                document.getElementById('restartButton').disabled = true;
-
-                                document.getElementById('attestationStatus').textContent = 'Machine Could Not Be Found';
-                                document.getElementById('attestationStatus').className = 'not-attested';
-
-                            }
-                            console.error('Failed to fetch attestation:', error);
-                        });
+                        }
                     }
-            updateStatus();
-            checkAttestation();
-    </script>
-    {% endblock %}
-    </body>
+                )
+                .catch(error => {
+                    console.log(error.message)
+                    if (error.message === '404') {
+                        document.getElementById('startButton').disabled = true;
+                        document.getElementById('stopButton').disabled = true;
+                        document.getElementById('restartButton').disabled = true;
 
-    </html>
+                        document.getElementById('attestationStatus').textContent = 'Machine Could Not Be Found';
+                        document.getElementById('attestationStatus').className = 'not-attested';
+
+                    }
+                    console.error('Failed to fetch attestation:', error);
+                });
+        }
+
+        updateStatus();
+        checkAttestation();
+    </script>
+{% endblock %}
+</body>
+
+</html>

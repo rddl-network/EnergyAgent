@@ -12,15 +12,18 @@ services:
   energy-agent:
     image: ghcr.io/rddl-network/energyagent:latest
     container_name: energy-agent
+    pull_policy: always
     depends_on:
       - mqtt
     environment:
       CONFIG_PATH: "/data"
-      RDDL_TOPIC: "rddl/SMD/#"
+      SMD_TOPIC: "rddl/SMD/#"
       TRUST_WALLET_PORT: "/dev/ttyACM0"
       NOTARIZE_INTERVAL: 60
       PORT: 2138
       RDDL_NETWORK_MODE: mainnet
+      LOG_LEVEL: INFO
+      LOG_FILE_PATH: "/data/log/energy_agent.log"
     ports:
       - 2138:2138
     privileged: true

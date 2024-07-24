@@ -1,12 +1,11 @@
-import logging
 from typing import List, Dict
 
 from app.db.smd_entry_store import client_exists, insert_smd_store_entry, update_smd_store_entry
+from app.helpers.logs import log, logger
 
-logger = logging.getLogger(__name__)
 
-
-def process_data_buffer(data_buffer: List[Dict[str, str]], cid: str):
+@log
+async def process_data_buffer(data_buffer: List[Dict[str, str]], cid: str):
     """
     Process the data buffer, extract unique client_ids, store them in smd_store,
     and link them to the provided CID.

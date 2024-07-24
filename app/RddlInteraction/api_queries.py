@@ -1,11 +1,13 @@
 import json
 import requests
 from typing import Tuple, List
-from app.dependencies import config, logger
+from app.dependencies import config
 from app.dependencies import trust_wallet_instance
 from app.helpers.models import PoPContext
+from app.helpers.logs import log, logger
 
 
+@log
 def createAccountOnNetwork(
     ta_service_base_url: str, machineId: str, plmnt_address: str, signature: str
 ) -> requests.Response:
@@ -21,6 +23,7 @@ def createAccountOnNetwork(
     return response
 
 
+@log
 def getAccountInfo(apiURL: str, address: str) -> Tuple[int, int, str]:
     queryURL = apiURL + "/cosmos/auth/v1beta1/account_info/" + address
     headers = {"Content-Type": "application/json"}
@@ -42,6 +45,7 @@ def getAccountInfo(apiURL: str, address: str) -> Tuple[int, int, str]:
     return (accountID, sequence, statusMsg)
 
 
+@log
 def getMachineInfo(apiURL: str, address: str) -> Tuple[str, str]:
     queryURL = apiURL + "/planetmint/machine/address/" + address
     headers = {"Content-Type": "application/json"}
@@ -60,6 +64,7 @@ def getMachineInfo(apiURL: str, address: str) -> Tuple[str, str]:
     return (machinedata, statusMsg)
 
 
+@log
 def getBalance(address: str) -> dict:
     url = f"{config.rddl.planetmint_api}/cosmos/bank/v1beta1/balances/{address}"
     headers = {"Content-Type": "application/json"}
@@ -74,6 +79,7 @@ def getBalance(address: str) -> dict:
     return balance
 
 
+@log
 async def queryNotatizedAssets(challengee: str, num_cids: int) -> List[str]:
     # Define the API endpoint URL
     url = config.rddl.planetmint_api + "/planetmint/asset/address/" + challengee + "/" + str(num_cids)
@@ -101,6 +107,7 @@ async def queryNotatizedAssets(challengee: str, num_cids: int) -> List[str]:
     return None
 
 
+@log
 async def queryPoPInfo(height: str) -> PoPContext:
     # Define the API endpoint URL
     url = config.rddl.planetmint_api + "/planetmint/dao/challenge/" + height
@@ -137,8 +144,8 @@ async def queryPoPInfo(height: str) -> PoPContext:
                     pop_context.isChallenger = pop_context.challenger == keys.planetmint_address
                     try:
                         pop_context.pop_height = int(data["challenge"]["height"])
-                    except:
-                        logger.error("Erro: cannot convert string to int (pop height)")
+                    except Exception as e:
+                        logger.error("Error: cannot convert string to int (pop height): " + str(e))
                     if pop_context.isChallenger or (pop_context.challengee == keys.planetmint_address):
                         pop_context.isActive = True
                         return pop_context

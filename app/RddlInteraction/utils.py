@@ -1,10 +1,12 @@
 import binascii
 from typing import List, Dict, Any
+from app.helpers.logs import logger
 
 from fastapi import HTTPException
 
 
 def toHexString(data: str) -> str:
+    logger.debug(f"toHexString: {data}")
     hexBytes = binascii.hexlify(data.encode("utf-8"))
     hexString = hexBytes.decode("utf-8")
     return hexString

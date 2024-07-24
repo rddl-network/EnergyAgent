@@ -1,60 +1,81 @@
 from fastapi import APIRouter, Depends, HTTPException
 import asyncio
-import logging
 
 from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
 from app.dependencies import config
 from app.energy_agent.energy_agent import EnergyAgent
-
-logger = logging.getLogger(__name__)
+from app.helpers.config_helper import load_config, save_config
+from app.helpers.logs import log, logger
 
 _manager_instance = None
+
+METADATA_CONFIG_PATH = config.config_base_path + "/energy_agent_metadata.json"
 
 
 class EnergyAgentManager:
     def __init__(self):
         self.energy_agent = None
         self.task = None
+        loaded_status = load_config(METADATA_CONFIG_PATH).get("status")
+        if loaded_status == "":
+            loaded_status = "stopped"
+        self.status = loaded_status
 
+    @log
     def is_running(self):
-        if self.task and not self.task.done():
+        if self.task is None:
+            return False
+        if not self.task.done():
             return True
-        if self.task:
-            if self.task.exception():
-                logger.error(f"Task ended with exception: {self.task.exception()}")
-            else:
-                logger.info("Task completed successfully.")
+        exception = self.task.exception()
+        if exception:
+            logger.error(f"Task ended with exception: {exception}")
         return False
 
+    @log
     async def start(self):
         if not self.is_running():
             self.energy_agent = EnergyAgent()
             self.energy_agent.setup()
             self.task = asyncio.create_task(self.energy_agent.run())
+            self.status = "running"
+            save_config(METADATA_CONFIG_PATH, {"status": self.status})
             logger.info("Async data agent started")
         else:
             logger.info("Async data agent is already running")
 
-    async def await_and_stop(self):
+    @log
+    async def await_and_stop(self, update_status=True):
         if self.is_running():
             self.energy_agent.stopped = True
             await self.task
             await self.energy_agent.disconnect_from_mqtt()
             self.energy_agent = None
+            if update_status:
+                self.status = "stopped"
+                save_config(METADATA_CONFIG_PATH, {"status": self.status})
             logger.info("Async data agent stopped")
         else:
             logger.info("Async data agent is not running")
 
+    @log
     async def restart(self):
         await self.await_and_stop()
         await self.start()
 
+    @log
     def get_status(self):
         if self.is_running():
             return "running"
         return "stopped"
 
+    @log
+    async def check_and_restart(self):
+        if self.status == "running" and not self.is_running():
+            await self.start()
 
+
+@log
 def get_manager():
     global _manager_instance
     if _manager_instance is None:

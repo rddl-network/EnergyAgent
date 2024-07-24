@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="wrapper">
+    <div class="log-entries">
+        <div class="description">
+            <p class="desc center">Below is the list of all log entries. Use the filter options to refine the
+                results.</p>
+        </div>
+        <table id="logEntriesTable">
+            <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Level</th>
+                <th>Message</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Data will be populated here by JavaScript -->
+            </tbody>
+        </table>
+        <div class="pagination">
+            <button onclick="fetchLogs(currentPage - 1)" disabled>Previous</button>
+            <span id="pageIndicator">Page: 1</span>
+            <button onclick="fetchLogs(currentPage + 1)">Next</button>
+        </div>
+    </div>
+</div>
+<div id="spinner-overlay" class="spinner-overlay">
+    <div class="spinner"></div>
+</div>
+
+<script>
+    const API_BASE = `/logs`;
+    let currentPage = 1;
+    const pageSize = 100;
+
+    function toggleSpinner(visible) {
+        let overlay = document.getElementById('spinner-overlay');
+        overlay.style.display = visible ? 'flex' : 'none';
+    }
+
+    function fetchLogs(page = 1) {
+        toggleSpinner(true);
+        let url = `${API_BASE}?page=${page}&page_size=${pageSize}`;
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                currentPage = page;
+                document.getElementById('pageIndicator').innerText = `Page: ${currentPage}`;
+                const tableBody = document.querySelector('#logEntriesTable tbody');
+                tableBody.innerHTML = '';
+                data.forEach(log => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                            <td>${log.timestamp}</td>
+                            <td>${log.level}</td>
+                            <td>${log.message}</td>
+                        `;
+                    tableBody.appendChild(row);
+                });
+                document.querySelector('.pagination button:nth-child(1)').disabled = currentPage === 1;
+                document.querySelector('.pagination button:nth-child(3)').disabled = data.length < pageSize;
+            })
+            .catch(error => {
+                console.error('Failed to fetch log entries:', error);
+                alert('Failed to fetch log entries. Please try again.');
+            })
+            .finally(() => {
+                toggleSpinner(false);
+            });
+    }
+
+    window.onload = function () {
+        fetchLogs(currentPage);
+    };
+</script>
+{% endblock %}

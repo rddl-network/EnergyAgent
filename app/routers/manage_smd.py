@@ -1,4 +1,3 @@
-import logging
 from typing import Tuple
 from fastapi import APIRouter, HTTPException, Body
 import netifaces
@@ -6,8 +5,7 @@ from scapy.all import ARP, Ether, srp
 import requests
 
 from app.dependencies import config
-
-logger = logging.getLogger(__name__)
+from app.helpers.logs import log, logger
 
 router = APIRouter(
     prefix="/smd",
@@ -16,6 +14,7 @@ router = APIRouter(
 )
 
 
+@log
 def get_ip_address():
     try:
         gateway_info = netifaces.gateways()
@@ -30,6 +29,7 @@ def get_ip_address():
     return None
 
 
+@log
 def get_ip_range():
     ip_address = get_ip_address()
     if not ip_address:
@@ -39,6 +39,7 @@ def get_ip_range():
     return ip_network
 
 
+@log
 def scan_network(ip_range) -> Tuple[list[dict[str, str]], bool, str]:
     arp = ARP(pdst=ip_range)
     ether = Ether(dst="ff:ff:ff:ff:ff:ff")
@@ -53,6 +54,7 @@ def scan_network(ip_range) -> Tuple[list[dict[str, str]], bool, str]:
     return [devices, True, ""]
 
 
+@log
 def identify_shelly(ip_address):
     try:
         response = requests.get(f"http://{ip_address}/shelly", timeout=3)
@@ -65,6 +67,7 @@ def identify_shelly(ip_address):
     return None
 
 
+@log
 def identify_tasmota(ip_address):
     try:
         response = requests.get(f"http://{ip_address}/cm?cmnd=status", timeout=3)
@@ -77,6 +80,7 @@ def identify_tasmota(ip_address):
     return None
 
 
+@log
 @router.get("/scan-devices")
 def scan_and_identify_devices():
     ip_range = get_ip_range()
@@ -105,6 +109,7 @@ def scan_and_identify_devices():
     }
 
 
+@log
 def configure_shelly_mqtt(device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, custom_topic):
     config_url = f"http://{device_ip}/rpc/MQTT.SetConfig"
     reboot_url = f"http://{device_ip}/rpc"
@@ -140,6 +145,7 @@ def configure_shelly_mqtt(device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_passw
         raise HTTPException(status_code=500, detail=f"Error configuring MQTT on Shelly device {device_ip}: {e}")
 
 
+@log
 def configure_tasmota_mqtt(device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, topic, telemetry_interval=60):
     base_url = f"http://{device_ip}/cm"
     try:
@@ -165,7 +171,7 @@ def configure_device(
     mqtt_password: str = Body(...),
     telemetry_interval: int = Body(default=60),
 ):
-    custom_topic = build_mqtt_topic(remove_hashtag_from_topic(config.rddl_topic), device_name)
+    custom_topic = build_mqtt_topic(remove_hashtag_from_topic(config.smd_topic), device_name)
     if device_type.lower() == "shelly":
         logger.info(f"Configuring Shelly device at {device_ip}")
         configure_shelly_mqtt(device_ip, mqtt_host, mqtt_port, mqtt_user, mqtt_password, custom_topic)
@@ -178,10 +184,12 @@ def configure_device(
     return {"detail": f"{device_type} device at {device_ip} configured successfully."}
 
 
+@log
 def remove_hashtag_from_topic(topic):
     return topic.replace("#", "")
 
 
+@log
 def build_mqtt_topic(base_topic, device_name):
     if base_topic.endswith("/"):
         base_topic = base_topic[:-1]

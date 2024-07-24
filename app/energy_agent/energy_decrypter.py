@@ -3,16 +3,18 @@ from datetime import datetime, timezone
 
 from Crypto.Cipher import AES
 
-from app.dependencies import config, logger
+from app.dependencies import config
 from binascii import unhexlify
 from gurux_dlms.GXDLMSTranslator import GXDLMSTranslator
 import xml.etree.ElementTree as ET
+from app.helpers.logs import log, logger
 
 # CRC-STUFF BEGIN
 CRC_INIT = 0xFFFF
 POLYNOMIAL = 0x1021
 
 
+@log
 def byte_mirror(c):
     c = (c & 0xF0) >> 4 | (c & 0x0F) << 4
     c = (c & 0xCC) >> 2 | (c & 0x33) << 2
@@ -20,6 +22,7 @@ def byte_mirror(c):
     return c
 
 
+@log
 def calc_crc16(data):
     crc = CRC_INIT
     for i in range(len(data)):
@@ -35,6 +38,7 @@ def calc_crc16(data):
     return 256 * byte_mirror(crc // 256) + byte_mirror(crc % 256)
 
 
+@log
 def verify_crc16(input, skip=0, last=2, cut=0):
     lenn = len(input)
     data = input[skip : lenn - last - cut]
@@ -46,6 +50,7 @@ def verify_crc16(input, skip=0, last=2, cut=0):
     return False
 
 
+@log
 def bytes_to_int(bytes):
     result = 0
     for b in bytes:
@@ -73,6 +78,7 @@ SYSTEM_TITLE_SLICE = slice(22, 38)
 FRAME_COUNTER_SLICE = slice(44, 52)
 
 
+@log
 def parse_root_items(root) -> list:
     found_lines, momentan = [], []
     iterator = iter(root.iter())
@@ -92,6 +98,7 @@ def parse_root_items(root) -> list:
     return found_lines
 
 
+@log
 def decrypt_device(data_hex):
     if config.device_type == "LG":
         dec = decrypt_aes_gcm_landis_and_gyr(
@@ -110,6 +117,7 @@ def decrypt_device(data_hex):
         logger.error(f"Unknown device: {config.device_type}")
 
 
+@log
 def decrypt_evn_data(data: str):
     mbus_start = data[MBUS_START_SLICE]
     frame_len = int(data[FRAME_LEN_SLICE], 16)
@@ -131,6 +139,7 @@ def decrypt_evn_data(data: str):
     return parse_root_items(root)
 
 
+@log
 def evn_decrypt(frame, system_title, frame_counter):
     frame = unhexlify(frame)
     encryption_key = unhexlify(config.evn_key)
@@ -139,6 +148,7 @@ def evn_decrypt(frame, system_title, frame_counter):
     return cipher.decrypt(frame).hex()
 
 
+@log
 def decrypt_aes_gcm_landis_and_gyr(data_hex, encryption_key=None, authentication_key=None):
     if len(data_hex) != 282:
         raise ValueError(
@@ -151,6 +161,7 @@ def decrypt_aes_gcm_landis_and_gyr(data_hex, encryption_key=None, authentication
     return parse_root_items(root)
 
 
+@log
 def decrypt_sagemcom(data_hex, encryption_key=None, authentication_key=None):
     apdu = decrypt_gcm(authentication_key, data_hex, encryption_key)
     obis_dict = parse_dsmr_frame(apdu)
@@ -163,6 +174,7 @@ def decrypt_sagemcom(data_hex, encryption_key=None, authentication_key=None):
     return data_list
 
 
+@log
 def decrypt_gcm(authentication_key, cipher_text_str, encryption_key):
     cipher_text = bytes.fromhex(cipher_text_str)
     system_title = cipher_text[2 : 2 + 8]
@@ -175,6 +187,7 @@ def decrypt_gcm(authentication_key, cipher_text_str, encryption_key):
     return apdu
 
 
+@log
 def parse_dsmr_frame(hex_frame):
     # Decode the hexadecimal string into its string representation
     logger.debug(f"hex_frame: {hex_frame}")
@@ -201,10 +214,12 @@ def parse_dsmr_frame(hex_frame):
     return data
 
 
+@log
 def convert_to_kwh(value) -> float:
     return value / 1000
 
 
+@log
 def transform_to_metrics(data_list, public_key) -> dict:
     now = datetime.now(timezone.utc)
     metric_data = {

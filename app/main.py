@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
 from starlette.staticfiles import StaticFiles
+from app.helpers.logs import logger
 
 from app.routers import (
     configuration,
@@ -14,7 +15,9 @@ from app.routers import (
     rddl_network,
     tx_resolver,
     smd_entry,
+    energy_agent_logs,
 )
+from app.routers.energy_agent_manager import get_manager
 from app.routers.html import templates, trust_wallet_templates
 from app.RddlInteraction.rddl_client import RDDLAgent
 
@@ -29,9 +32,22 @@ async def startup_event():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting up...")
-    asyncio.create_task(startup_event())
+    rddl_task = asyncio.create_task(startup_event())
+
+    energy_manager = get_manager()
+    await energy_manager.check_and_restart()
+
     yield  # This is where your application starts handling requests
     print("Shutting down...")
+
+    rddl_task.cancel()
+    try:
+        await rddl_task
+    except asyncio.CancelledError:
+        logger.info("RDDL task cancelled")
+        pass
+
+    await energy_manager.await_and_stop(update_status=False)
 
 
 app = FastAPI(
@@ -49,7 +65,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # This routes the API
 app.mount("/static", StaticFiles(directory="app/templates/static"), name="static")
 
@@ -65,6 +80,7 @@ app.include_router(tx_resolver.router)
 app.include_router(templates.router)
 app.include_router(trust_wallet_templates.router)
 app.include_router(smd_entry.router)
+app.include_router(energy_agent_logs.router)
 
 
 if __name__ == "__main__":
