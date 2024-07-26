@@ -14,6 +14,17 @@ def test_decode_packet_lg():
     assert dec == [{"key": "WirkenergieP", "value": 8684853}, {"key": "MomentanleistungP", "value": 1565}]
 
 
+def test_decode_packet_lg_2():
+    print("test_decode_packet_v2")
+    data_hex_str = "7ea08bceff0313eee1e6e700e0400001000077db084c475a67737c7ecb820103300036d79ff09867f39169810ae8be6d2b0ccb0b516e91fc1fde82d68fb8e0b11501bef0d3d33eac508a1c7d8f5fc1cab563c1cbcab40b2005f307f762b6d47fb6398c5df5d4d5eec117c6fbaa764a707fb9f71cbff4c0488dc40420541d49cc9108e1b4b49e66302285d01d7e"
+    encryption_key = bytes.fromhex("DD7E6510916F2F73F026C70C6A3F7EF1")
+    authentication_key = bytes.fromhex("9DF1169A749F49500174AA840243E7E ")
+    dec = decrypt_aes_gcm_landis_and_gyr(data_hex_str, encryption_key, authentication_key)
+    # show_data(dec) if (dec) else "CRC error"
+    print(dec)
+    assert dec == [{"key": "WirkenergieP", "value": 8684853}, {"key": "MomentanleistungP", "value": 1565}]
+
+
 def test_decode_packet_sc_1():
     encryption_key = bytes.fromhex("A8C74F67ECA8EF9C55C4743FF6F4F031")
     authentication_key = bytes.fromhex("F6089912E1CC910884DFC86E9F028201")

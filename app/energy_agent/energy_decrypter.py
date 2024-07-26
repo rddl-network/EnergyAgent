@@ -1,5 +1,6 @@
 from decimal import Decimal
 from datetime import datetime, timezone
+from typing import Type, Any
 
 from Crypto.Cipher import AES
 
@@ -7,11 +8,15 @@ from app.dependencies import config
 from binascii import unhexlify
 from gurux_dlms.GXDLMSTranslator import GXDLMSTranslator
 import xml.etree.ElementTree as ET
+
 from app.helpers.logs import log, logger
 
 # CRC-STUFF BEGIN
 CRC_INIT = 0xFFFF
 POLYNOMIAL = 0x1021
+
+LANDIS_GYR = "LG"
+SAGEMCOM = "SC"
 
 
 @log
@@ -100,12 +105,12 @@ def parse_root_items(root) -> list:
 
 @log
 def decrypt_device(data_hex):
-    if config.device_type == "LG":
+    if config.device_type == LANDIS_GYR:
         dec = decrypt_aes_gcm_landis_and_gyr(
             data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
         )
         return transform_to_metrics(dec, config.pubkey)
-    elif config.device_type == "SC":
+    elif config.device_type == SAGEMCOM:
         dec = decrypt_sagemcom(
             data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
         )
@@ -166,12 +171,55 @@ def decrypt_sagemcom(data_hex, encryption_key=None, authentication_key=None):
     apdu = decrypt_gcm(authentication_key, data_hex, encryption_key)
     obis_dict = parse_dsmr_frame(apdu)
 
-    data_list = [
-        {"key": "WirkenergieP", "value": int(obis_dict["1-0:1.8.0"])},
-        {"key": "WirkenergieN", "value": int(obis_dict["1-0:2.8.0"])},
-    ]
+    data_list = parse_obis(obis_dict)
 
     return data_list
+
+
+def parse_obis(obis_dict: dict):
+    return [
+        # Energy readings
+        {"key": "WirkenergieP", "value": parse_value(obis_dict.get("1-0:1.8.0"))},
+        {"key": "WirkenergieN", "value": parse_value(obis_dict.get("1-0:2.8.0"))},
+        {"key": "WirkenergieP_T1", "value": parse_value(obis_dict.get("1-0:1.8.1"))},
+        {"key": "WirkenergieP_T2", "value": parse_value(obis_dict.get("1-0:1.8.2"))},
+        {"key": "WirkenergieN_T1", "value": parse_value(obis_dict.get("1-0:2.8.1"))},
+        {"key": "WirkenergieN_T2", "value": parse_value(obis_dict.get("1-0:2.8.2"))},
+        {"key": "BlindEnergieP", "value": parse_value(obis_dict.get("1-0:3.8.0"))},
+        {"key": "BlindEnergieN", "value": parse_value(obis_dict.get("1-0:4.8.0"))},
+        # Power readings
+        {"key": "WirkleistungP", "value": parse_value(obis_dict.get("1-0:1.7.0"))},
+        {"key": "WirkleistungN", "value": parse_value(obis_dict.get("1-0:2.7.0"))},
+        {"key": "BlindleistungP", "value": parse_value(obis_dict.get("1-0:3.7.0"))},
+        {"key": "BlindleistungN", "value": parse_value(obis_dict.get("1-0:4.7.0"))},
+        # Voltage and current
+        {"key": "SpannungL1", "value": parse_value(obis_dict.get("1-0:32.7.0"))},
+        {"key": "SpannungL2", "value": parse_value(obis_dict.get("1-0:52.7.0"))},
+        {"key": "SpannungL3", "value": parse_value(obis_dict.get("1-0:72.7.0"))},
+        {"key": "StromL1", "value": parse_value(obis_dict.get("1-0:31.7.0"))},
+        {"key": "StromL2", "value": parse_value(obis_dict.get("1-0:51.7.0"))},
+        {"key": "StromL3", "value": parse_value(obis_dict.get("1-0:71.7.0"))},
+        # Frequency
+        {"key": "Frequenz", "value": parse_value(obis_dict.get("1-0:14.7.0"))},
+        # Power factor
+        {"key": "Leistungsfaktor", "value": parse_value(obis_dict.get("1-0:13.7.0"), float)},
+        # Meter information
+        {"key": "Zaehlernummer", "value": obis_dict.get("0-0:96.1.0")},
+        {"key": "Zaehlerstand", "value": parse_value(obis_dict.get("0-0:96.14.0"))},
+        # Time and date
+        {"key": "Zeitstempel", "value": obis_dict.get("0-0:1.0.0")},
+    ]
+
+
+def parse_value(value: Any, value_type: Type = int):
+    if value is None:
+        return ""
+    if value == "":
+        return ""
+    try:
+        return value_type(value)
+    except ValueError:
+        return f"ERROR: Could not convert '{value}' to {value_type.__name__}"
 
 
 @log
