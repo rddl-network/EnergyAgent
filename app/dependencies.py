@@ -37,6 +37,13 @@ class Config:
         self.db_connection = create_connection(self.database)
         init_tables(self.db_connection)
 
+        # Smart meter setup
+        self.smart_meter_type = os.environ.get("SMART_METER_TYPE") or "Landis&Gyr"
+        self.smart_meter_serial_port = os.environ.get("SMART_METER_SERIAL_PORT") or "/dev/ttyUSB0"
+        self.smart_meter_baud_rate = os.environ.get("SMART_METER_BAUD_RATE") or 2400
+        self.smart_meter_address = os.environ.get("SMART_METER_ADDRESS") or 1  # needed for Landis&Gyr
+        self.smart_meter_start_index = os.environ.get("SMART_METER_START_INDEX") or "5e4e"  # needed for Sagemcom
+
 
 config = Config()
 setup_logging(

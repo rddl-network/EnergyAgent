@@ -15,8 +15,8 @@ from app.helpers.logs import log, logger
 CRC_INIT = 0xFFFF
 POLYNOMIAL = 0x1021
 
-LANDIS_GYR = "LG"
-SAGEMCOM = "SC"
+LANDIS_GYR = "Landis&Gyr"
+SAGEMCOM = "Sagemcom"
 
 
 @log

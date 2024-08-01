@@ -1,3 +1,4 @@
+from app.dependencies import config
 from app.energy_agent.mbus_reader import LandisGyrE450Reader
 from app.energy_agent.modbus_reader import ModbusReader
 from app.energy_agent.energy_decrypter import decrypt_device, LANDIS_GYR, SAGEMCOM
@@ -8,7 +9,7 @@ import json
 
 class SmartMeterReader:
     @log
-    def __init__(self, meter_type: str, config: Dict[str, Any]):
+    def __init__(self, meter_type: str):
         self.meter_type = meter_type.lower()
         self.config = config
         self.reader = self._get_reader()
@@ -17,9 +18,9 @@ class SmartMeterReader:
     def _get_reader(self):
         if self.meter_type == LANDIS_GYR:
             return LandisGyrE450Reader(
-                serial_port=self.config.get("serial_port", "/dev/ttyUSB0"),
-                baud_rate=self.config.get("baud_rate", 2400),
-                address=self.config.get("address", 1),
+                serial_port=config.smart_meter_serial_port,
+                baud_rate=config.smart_meter_baud_rate,
+                address=config.smart_meter_address,
             )
         elif self.meter_type == SAGEMCOM:
             return ModbusReader(start_index=self.config.get("start_index", "5e4e"))
@@ -47,7 +48,7 @@ class SmartMeterReader:
     @log
     def _read_sagemcom(self) -> Dict[str, Any]:
         self.reader.client = self.reader.get_client(
-            serial_port=self.config.get("serial_port", "/dev/ttyUSB0"), baudrate=self.config.get("baud_rate", 115200)
+            serial_port=config.smart_meter_serial_port, baudrate=config.smart_meter_baud_rate
         )
         hex_data = self.reader.serial_read_smartmeter()
         if hex_data:
@@ -62,7 +63,7 @@ class SmartMeterReader:
         try:
             data = json.loads(decrypted_data)
             return {
-                "meter_type": "Landis&Gyr",
+                "meter_type": LANDIS_GYR,
                 "timestamp": data.get("time_stamp"),
                 "absolute_energy_in": float(data.get("absolute_energy_in", 0)),
                 "absolute_energy_out": float(data.get("absolute_energy_out", 0)),
@@ -77,7 +78,7 @@ class SmartMeterReader:
         try:
             data = json.loads(decrypted_data)
             return {
-                "meter_type": "Sagemcom",
+                "meter_type": SAGEMCOM,
                 "timestamp": data.get("timestamp"),
                 "absolute_energy_in": float(data.get("energy_in", 0)),
                 "absolute_energy_out": float(data.get("energy_out", 0)),
