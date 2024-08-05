@@ -7,7 +7,22 @@ class SmartMeterConfig(BaseModel):
     smart_meter_type: str = ""
     encryption_key: str = ""
     authentication_key: str = ""
-    smart_meter_topic: str = ""
+    smart_meter_serial_port: str = "/dev/ttyUSB0"
+    smart_meter_baudrate: int = 115200
+
+
+class LandisGyrConfig(SmartMeterConfig):
+    address: int = 1
+    smart_meter_baudrate: int = 2400
+
+
+class SagemcomConfig(SmartMeterConfig):
+    start_index: str = "5e4e"
+    smart_meter_baudrate: int = 115200
+    byte_size: int = 8
+    parity: str = "N"
+    stopbits: int = 1
+    timeout: int = 90
 
 
 class TopicConfig(BaseModel):

@@ -9,6 +9,7 @@ from app.RddlInteraction.cid_tool import store_cid
 from app.RddlInteraction.planetmint_interaction import create_tx_notarize_data
 from app.db.tx_store import insert_tx
 from app.dependencies import config, trust_wallet_instance
+from app.energy_agent.data_buffer import DataBuffer
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.config_helper import load_config, extract_client_id
 from app.helpers.models import MQTTConfig
@@ -17,14 +18,13 @@ from app.helpers.logs import log, logger
 
 
 class EnergyAgent:
-    def __init__(self):
+    def __init__(self, data_buffer: DataBuffer):
         logger.info("MQTT Energy Agent setup")
         self.client = None
         self.mqtt_config = MQTTConfig()
         self.stopped = False
-        self.data_buffer = []
+        self.data_buffer = data_buffer
         self.retry_attempts = 6
-        self.lock = threading.Lock()
 
     @log
     def setup(self):
@@ -73,23 +73,25 @@ class EnergyAgent:
         client_id: str = extract_client_id(topic)
         data_dict = {client_id: data}
         logger.debug(f"Data to be notarized: {data_dict}")
-        with self.lock:
-            self.data_buffer.append(data_dict)
+        await self.add_data_to_buffer(json.dumps(data_dict))
+
+    @log
+    async def add_data_to_buffer(self, data: str):
+        self.data_buffer.add_data(data)
 
     @log
     async def notarize_data(self):
         attempts = 0
         while attempts < self.retry_attempts:
             try:
-                with self.lock:
-                    data = json.dumps(self.data_buffer)
-                    notarize_cid = store_cid(data)
-                    await process_data_buffer(self.data_buffer, notarize_cid)
-                    logger.debug(f"Notarize CID transaction: {notarize_cid}, {data}")
-                    tx_hash = create_tx_notarize_data(notarize_cid, config.rddl.planetmint_api, config.rddl.chain_id)
-                    insert_tx(tx_hash, notarize_cid)
-                    logger.info(f"Planetmint transaction response: {tx_hash}")
-                    self.data_buffer.clear()
+                data = json.dumps(self.data_buffer)
+                notarize_cid = store_cid(data)
+                await process_data_buffer(self.data_buffer, notarize_cid)
+                logger.debug(f"Notarize CID transaction: {notarize_cid}, {data}")
+                tx_hash = create_tx_notarize_data(notarize_cid, config.rddl.planetmint_api, config.rddl.chain_id)
+                insert_tx(tx_hash, notarize_cid)
+                logger.info(f"Planetmint transaction response: {tx_hash}")
+                self.data_buffer.clear()
                 break
             except Exception as e:
                 attempts += 1
@@ -102,8 +104,9 @@ class EnergyAgent:
     @log
     async def notarize_data_with_interval(self):
         while not self.stopped:
-            logger.debug(f"Data buffer: {self.data_buffer}")
-            if self.data_buffer:
+            data = self.data_buffer.get_data()
+            logger.debug(f"Data buffer: {data}")
+            if data:
                 await self.notarize_data()
             else:
                 logger.debug("No data to notarize")

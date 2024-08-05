@@ -1,4 +1,5 @@
 from app.dependencies import config
+from app.energy_agent.data_buffer import DataBuffer
 from app.energy_agent.mbus_reader import LandisGyrE450Reader
 from app.energy_agent.modbus_reader import ModbusReader
 from app.energy_agent.energy_decrypter import decrypt_device, LANDIS_GYR, SAGEMCOM
@@ -9,10 +10,11 @@ import json
 
 class SmartMeterReader:
     @log
-    def __init__(self, meter_type: str):
+    def __init__(self, meter_type: str, data_buffer: DataBuffer):
         self.meter_type = meter_type.lower()
         self.config = config
         self.reader = self._get_reader()
+        self.data_buffer = data_buffer
 
     @log
     def _get_reader(self):
@@ -63,11 +65,11 @@ class SmartMeterReader:
         try:
             data = json.loads(decrypted_data)
             return {
-                "meter_type": LANDIS_GYR,
+                # "meter_type": LANDIS_GYR,
                 "timestamp": data.get("time_stamp"),
                 "absolute_energy_in": float(data.get("absolute_energy_in", 0)),
                 "absolute_energy_out": float(data.get("absolute_energy_out", 0)),
-                "raw_data": data,
+                # "raw_data": data,
             }
         except json.JSONDecodeError:
             logger.error("Failed to parse Landis&Gyr data")
@@ -78,11 +80,11 @@ class SmartMeterReader:
         try:
             data = json.loads(decrypted_data)
             return {
-                "meter_type": SAGEMCOM,
+                # "meter_type": SAGEMCOM,
                 "timestamp": data.get("timestamp"),
                 "absolute_energy_in": float(data.get("energy_in", 0)),
                 "absolute_energy_out": float(data.get("energy_out", 0)),
-                "raw_data": data,
+                # "raw_data": data,
             }
         except json.JSONDecodeError:
             logger.error("Failed to parse Sagemcom data")

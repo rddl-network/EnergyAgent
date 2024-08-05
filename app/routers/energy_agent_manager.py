@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 import asyncio
 
 from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
-from app.dependencies import config
+from app.dependencies import config, data_buffer
 from app.energy_agent.energy_agent import EnergyAgent
 from app.helpers.config_helper import load_config, save_config
 from app.helpers.logs import log, logger
@@ -35,7 +35,7 @@ class EnergyAgentManager:
     @log
     async def start(self):
         if not self.is_running():
-            self.energy_agent = EnergyAgent()
+            self.energy_agent = EnergyAgent(data_buffer)
             self.energy_agent.setup()
             self.task = asyncio.create_task(self.energy_agent.run())
             self.status = "running"
