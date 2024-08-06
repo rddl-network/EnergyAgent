@@ -1,78 +1,273 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "layout.html" %}
 
-<head>
-    <title>Smart Meter Configuration</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+{% block content %}
+<div class="wrapper">
+    <div class="main-container">
+        <div class="section">
+            <h2 class="section-title">Smart Meter Configuration</h2>
+            <div id="configContainer">
+                <div id="typeSelector" style="display: none;">
+                    <label for="smartMeterType">Select Smart Meter Type:</label>
+                    <select id="smartMeterType" onchange="loadConfigFields()">
+                        <option value="">Select a type</option>
+                        <option value="SAGEMCOM">SagemCom</option>
+                        <option value="LANDIS_GYR">Landis&Gyr</option>
+                    </select>
+                </div>
+                <form id="configForm" style="display: none;">
+                    <!-- Fields will be dynamically populated here -->
+                </form>
+                <div id="currentConfig" style="display: none;">
+                    <!-- Current configuration will be displayed here -->
+                </div>
+                <div class="buttons">
+                    <button id="saveButton" class="btn" onclick="saveConfig()" style="display: none;">Save Configuration</button>
+                    <button id="resetButton" class="btn-secondary" onclick="resetConfig()">Reset Configuration</button>
+                </div>
+            </div>
+        </div>
 
-    <script>
-        async function fetchSmartMeterConfig() {
-            const response = await fetch('/config/smart-meter');
-            const data = await response.json();
-            document.getElementById('smartMeterType').value = data.smart_meter_type || '';
-            document.getElementById('encryptionKey').value = data.encryption_key || '';
-            document.getElementById('authenticationKey').value = data.authentication_key || '';
-        }
-
-        async function updateSmartMeterConfig() {
-            const smartMeterType = document.getElementById('smartMeterType').value;
-            const encryptionKey = document.getElementById('encryptionKey').value;
-            const authenticationKey = document.getElementById('authenticationKey').value;
-
-            const response = await fetch('/config/smart-meter', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    smart_meter_type: smartMeterType,
-                    encryption_key: encryptionKey,
-                    authentication_key: authenticationKey
-                })
-            });
-            const data = await response.json();
-            alert(data.message);
-        }
-
-        async function resetSmartMeterConfig() {
-            const response = await fetch('/config/smart-meter', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    smart_meter_type: '',
-                    encryption_key: '',
-                    authentication_key: ''
-                })
-            });
-            const data = await response.json();
-            alert(data.message);
-            await fetchSmartMeterConfig();
-        }
-
-        window.onload = fetchSmartMeterConfig;
-    </script>
-</head>
-
-<body>
-    <div class="header">
-        <div class="center">
-            <h1>Configure Smart Meter</h1>
+        <div class="section mt-20">
+            <h2 class="section-title">MQTT Configuration</h2>
+            <form id="mqttForm">
+                <div class="form-input">
+                    <label for="mqttHost">MQTT Host:</label>
+                    <input type="text" id="mqttHost" name="host" required>
+                </div>
+                <div class="form-input">
+                    <label for="mqttPort">MQTT Port:</label>
+                    <input type="number" id="mqttPort" name="port" required>
+                </div>
+                <div class="form-input">
+                    <label for="mqttUsername">MQTT Username:</label>
+                    <input type="text" id="mqttUsername" name="username">
+                </div>
+                <div class="form-input">
+                    <label for="mqttPassword">MQTT Password:</label>
+                    <input type="password" id="mqttPassword" name="password">
+                </div>
+                <div class="buttons">
+                    <button type="button" class="btn" onclick="saveMqttConfig()">Save MQTT Configuration</button>
+                    <button type="button" class="btn-secondary" onclick="resetMqttConfig()">Reset MQTT Configuration</button>
+                </div>
+            </form>
         </div>
     </div>
-    <div class="container-sm">
-        <form>
-            <label for="smartMeterType">Smart Meter Type:</label>
-            <input type="text" id="smartMeterType" placeholder="Enter Smart Meter Type">
-            <label for="encryptionKey">Encryption Key:</label>
-            <input type="text" id="encryptionKey" placeholder="Enter Encryption Key">
-            <label for="authenticationKey">Authentication Key:</label>
-            <input type="text" id="authenticationKey" placeholder="Enter Authentication Key">
-            <button class="btn" onclick="updateSmartMeterConfig()">Update Configuration</button>
-            <button class="btn-secondary" onclick="resetSmartMeterConfig()">Reset Configuration</button>
-        </form>
-    </div>
-</body>
+</div>
 
-</html>
+<script>
+    let currentConfig = null;
+    let currentMqttConfig = null;
+
+    function isEmpty(obj) {
+        return Object.keys(obj).length === 0;
+    }
+
+    async function fetchCurrentConfig() {
+        try {
+            const response = await fetch('/config/smartmeter');
+            if (response.ok) {
+                currentConfig = await response.json();
+                if (isEmpty(currentConfig)) {
+                    showTypeSelector();
+                } else {
+                    displayConfig();
+                }
+            } else {
+                showTypeSelector();
+            }
+        } catch (error) {
+            console.error('Error fetching current config:', error);
+            showTypeSelector();
+        }
+    }
+
+    async function fetchMqttConfig() {
+        try {
+            const response = await fetch('/config/smartmeter/mqtt');
+            if (response.ok) {
+                currentMqttConfig = await response.json();
+                displayMqttConfig();
+            }
+        } catch (error) {
+            console.error('Error fetching MQTT config:', error);
+        }
+    }
+
+    function displayConfig() {
+        const container = document.getElementById('currentConfig');
+        container.innerHTML = '<h3>Current Configuration</h3>';
+        for (const [key, value] of Object.entries(currentConfig)) {
+            container.innerHTML += `<p><strong>${key}:</strong> ${value}</p>`;
+        }
+        document.getElementById('currentConfig').style.display = 'block';
+        document.getElementById('typeSelector').style.display = 'none';
+        document.getElementById('configForm').style.display = 'none';
+        document.getElementById('saveButton').style.display = 'none';
+        document.getElementById('resetButton').style.display = 'inline-block';
+    }
+
+    function displayMqttConfig() {
+        if (currentMqttConfig) {
+            document.getElementById('mqttHost').value = currentMqttConfig.host || '';
+            document.getElementById('mqttPort').value = currentMqttConfig.port || '';
+            document.getElementById('mqttUsername').value = currentMqttConfig.username || '';
+            document.getElementById('mqttPassword').value = currentMqttConfig.password || '';
+        }
+    }
+
+    function showTypeSelector() {
+        document.getElementById('typeSelector').style.display = 'block';
+        document.getElementById('configForm').style.display = 'none';
+        document.getElementById('currentConfig').style.display = 'none';
+        document.getElementById('saveButton').style.display = 'none';
+        document.getElementById('resetButton').style.display = 'inline-block';
+    }
+
+    async function loadConfigFields() {
+        const type = document.getElementById('smartMeterType').value;
+        if (!type) return;
+
+        try {
+            const response = await fetch(`/config/smartmeter/type/${type}`);
+            if (response.ok) {
+                const fields = await response.json();
+                generateForm(fields);
+            } else {
+                console.error('Error fetching config fields');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function generateForm(fields) {
+        const form = document.getElementById('configForm');
+        form.innerHTML = '';
+        for (const [key, value] of Object.entries(fields)) {
+            if (key !== '__annotations__' && key !== '__dict__') {
+                const label = document.createElement('label');
+                label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) + ':';
+                const input = document.createElement('input');
+                input.type = typeof value === 'number' ? 'number' : 'text';
+                input.id = key;
+                input.name = key;
+                input.value = value;
+                form.appendChild(label);
+                form.appendChild(input);
+            }
+        }
+        form.style.display = 'block';
+        document.getElementById('currentConfig').style.display = 'none';
+        document.getElementById('saveButton').style.display = 'inline-block';
+    }
+
+    async function saveConfig() {
+        const type = document.getElementById('smartMeterType').value;
+        const form = document.getElementById('configForm');
+        const formData = new FormData(form);
+        const config = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch(`/config/smartmeter/${type.toUpperCase()}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(config),
+            });
+
+            if (response.ok) {
+                alert('Configuration saved successfully!');
+                fetchCurrentConfig();
+            } else {
+                alert('Error saving configuration');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error saving configuration');
+        }
+    }
+
+    async function saveMqttConfig() {
+        const form = document.getElementById('mqttForm');
+        const formData = new FormData(form);
+        const config = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/config/smartmeter/mqtt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(config),
+            });
+
+            if (response.ok) {
+                alert('MQTT Configuration saved successfully!');
+                fetchMqttConfig();
+            } else {
+                alert('Error saving MQTT configuration');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error saving MQTT configuration');
+        }
+    }
+
+    async function resetMqttConfig() {
+        if (confirm('Are you sure you want to reset the MQTT configuration?')) {
+            try {
+                const response = await fetch('/config/smartmeter/mqtt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({}),  // Sending an empty object
+                });
+
+                if (response.ok) {
+                    alert('MQTT Configuration reset successfully!');
+                    // Clear the form fields
+                    document.getElementById('mqttHost').value = '';
+                    document.getElementById('mqttPort').value = '';
+                    document.getElementById('mqttUsername').value = '';
+                    document.getElementById('mqttPassword').value = '';
+                    // Fetch the updated (empty) configuration
+                    fetchMqttConfig();
+                } else {
+                    alert('Error resetting MQTT configuration');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error resetting MQTT configuration');
+            }
+        }
+    }
+
+    async function resetConfig() {
+        if (confirm('Are you sure you want to reset the configuration?')) {
+            try {
+                const response = await fetch('/config/smartmeter', {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    alert('Configuration reset successfully!');
+                    currentConfig = null;
+                    showTypeSelector();
+                } else {
+                    alert('Error resetting configuration');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error resetting configuration');
+            }
+        }
+    }
+
+    // Initialize the page
+    fetchCurrentConfig();
+    fetchMqttConfig();
+</script>
+{% endblock %}

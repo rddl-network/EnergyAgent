@@ -6,11 +6,12 @@ import re
 from app.helpers.logs import logger, log
 
 
-class LandisGyrE450Reader:
-    def __init__(self, serial_port="/dev/ttyUSB0", baud_rate=2400, address=1):
+class MbusReader:
+    def __init__(self, serial_port="/dev/ttyUSB0", baud_rate=2400, address=1, valid_frame_pattern=""):
         self.serial_port = serial_port
         self.baud_rate = baud_rate
         self.address = address
+        self.valid_frame_pattern = ""
         self.ser = None
 
     def __enter__(self):
@@ -37,42 +38,24 @@ class LandisGyrE450Reader:
             self.ser.close()
             logger.debug("Serial port closed")
 
-    @staticmethod
     @log
-    def extract_valid_frame(hex_data):
-        pattern = r"7e[0-9a-f]{52}7e[0-9a-f]{224}7e"
-        match = re.search(pattern, hex_data)
+    def extract_valid_frame(self, hex_data):
+        if self.valid_frame_pattern is "":
+            return hex_data
+        match = re.search(self.valid_frame_pattern, hex_data)
         return match.group(0) if match else None
-
-    @log
-    def send_ping(self):
-        logger.debug(f"Sending ping to address {self.address}")
-        meterbus.send_ping_frame(self.ser, self.address)
-        time.sleep(0.5)
-        response = self.ser.read(1)
-        if response:
-            logger.debug(f"Received response: {response.hex()}")
-            return True
-        else:
-            logger.debug("No response received")
-            return False
 
     def read_frame(self, max_attempts=10):
         attempt = 0
-        buffer = "7e"
 
         while attempt < max_attempts:
             attempt += 1
             logger.debug(f"\nAttempt {attempt} of {max_attempts}")
 
-            if self.send_ping():
-                logger.debug("Ping successful, sending request frame")
-                meterbus.send_request_frame(self.ser, self.address)
-                time.sleep(1)
-
-                start_time = time.time()
-                while time.time() - start_time < 10:  # 10 seconds timeout
-                    chunk = self.ser.read(1000)
-                    if chunk:
-                        buffer += chunk.hex()
-                        return self.extract_valid_frame(buffer)
+            meterbus.send_request_frame(self.ser, self.address)
+            time.sleep(1)
+            start_time = time.time()
+            while time.time() - start_time < 15:
+                chunk = self.ser.read(2000)
+                if chunk:
+                    return self.extract_valid_frame(chunk.hex().toLowerCase())

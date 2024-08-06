@@ -7,6 +7,11 @@ def save_config(path_to_config: str, config_to_save: dict):
         json.dump(config_to_save, f)
 
 
+def remove_config(path_to_config: str):
+    if os.path.exists(path_to_config):
+        os.remove(path_to_config)
+
+
 def load_config(path_to_config: str) -> dict:
     try:
         if os.path.exists(path_to_config):

@@ -1,6 +1,5 @@
 import json
 import asyncio
-import threading
 
 from gmqtt import Client as MQTTClient
 from gmqtt.mqtt.constants import MQTTv311
@@ -10,7 +9,6 @@ from app.RddlInteraction.planetmint_interaction import create_tx_notarize_data
 from app.db.tx_store import insert_tx
 from app.dependencies import config, trust_wallet_instance
 from app.energy_agent.data_buffer import DataBuffer
-from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.config_helper import load_config, extract_client_id
 from app.helpers.models import MQTTConfig
 from app.helpers.smd_entry_helper import process_data_buffer
@@ -119,16 +117,6 @@ class EnergyAgent:
             self.mqtt_config = MQTTConfig.model_validate(mqtt_config_dict)
         except Exception as e:
             logger.error(f"Error loading MQTT configuration: {e}")
-            raise
-
-    @log
-    def process_meter_data(self, data):
-        try:
-            metric = decrypt_device(data)
-            metric_dict = self.enrich_metric(metric)
-            return json.dumps(metric_dict)
-        except Exception as e:
-            logger.error(f"Error processing meter data: {e}")
             raise
 
     @staticmethod

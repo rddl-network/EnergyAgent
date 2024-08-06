@@ -1,5 +1,3 @@
-from typing import List, Dict
-
 from app.db.smd_entry_store import client_exists, insert_smd_store_entry, update_smd_store_entry
 from app.energy_agent.data_buffer import DataBuffer
 from app.helpers.logs import log, logger

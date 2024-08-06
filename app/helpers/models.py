@@ -2,6 +2,8 @@ from typing import List
 
 from pydantic import BaseModel
 
+LANDIS_GYR = "LANDIS_GYR"
+SAGEMCOM = "SAGEMCOM"
 
 class SmartMeterConfig(BaseModel):
     smart_meter_type: str = ""
@@ -12,24 +14,19 @@ class SmartMeterConfig(BaseModel):
 
 
 class LandisGyrConfig(SmartMeterConfig):
+    smart_meter_type:str = LANDIS_GYR
     address: int = 1
     smart_meter_baudrate: int = 2400
 
 
 class SagemcomConfig(SmartMeterConfig):
+    smart_meter_type:str = SAGEMCOM
     start_index: str = "5e4e"
     smart_meter_baudrate: int = 115200
     byte_size: int = 8
     parity: str = "N"
     stopbits: int = 1
     timeout: int = 90
-
-
-class TopicConfig(BaseModel):
-    topics: list[str] = []
-
-    def contains(self, topic: str) -> bool:
-        return topic in self.topics
 
 
 class MQTTConfig(BaseModel):

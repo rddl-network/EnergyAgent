@@ -1,8 +1,11 @@
+import json
+import struct
 from decimal import Decimal
 from datetime import datetime, timezone
 from typing import Type, Any
 
 from Crypto.Cipher import AES
+from gurux_dlms import TranslatorOutputType
 
 from app.dependencies import config
 from binascii import unhexlify
@@ -10,13 +13,11 @@ from gurux_dlms.GXDLMSTranslator import GXDLMSTranslator
 import xml.etree.ElementTree as ET
 
 from app.helpers.logs import log, logger
+from app.helpers.models import LANDIS_GYR, SAGEMCOM
 
 # CRC-STUFF BEGIN
 CRC_INIT = 0xFFFF
 POLYNOMIAL = 0x1021
-
-LANDIS_GYR = "Landis&Gyr"
-SAGEMCOM = "Sagemcom"
 
 
 @log
@@ -85,6 +86,10 @@ FRAME_COUNTER_SLICE = slice(44, 52)
 
 @log
 def parse_root_items(root) -> list:
+
+    xml_string = ET.tostring(root, encoding='unicode')
+    logger.debug(f"XML Content:\n{xml_string}")
+
     found_lines, momentan = [], []
     iterator = iter(root.iter())
     current_child, next_child = next(iterator), next(iterator, None)
@@ -155,15 +160,66 @@ def evn_decrypt(frame, system_title, frame_counter):
 
 @log
 def decrypt_aes_gcm_landis_and_gyr(data_hex, encryption_key=None, authentication_key=None):
-    if len(data_hex) != 282:
-        raise ValueError(
-            f"Wrong input encrypted data should have 282 characters. Please check your device, data_hex {data_hex}"
-        )
+    apdu = decrypt_gcm(authentication_key, data_hex, encryption_key)
+    return unwrap_apdu(apdu)
 
-    cipher_text_str = data_hex[38:276]
-    apdu = decrypt_gcm(authentication_key, cipher_text_str, encryption_key)
-    root = ET.fromstring(GXDLMSTranslator().pduToXml(apdu))
+
+def unwrap_apdu(apdu):
+    gxdlm = GXDLMSTranslator().pduToXml(apdu)
+    root = ET.fromstring(gxdlm)
     return parse_root_items(root)
+
+def unwrap_gxdlm(apdu):
+    parsed_data = apdu_to_json(apdu)
+    return parsed_data
+
+
+def parse_apdu(apdu_bytes):
+    parsed_data = []
+    index = 0
+
+    while index < len(apdu_bytes):
+        # Extract 6-byte hex string for OBIS code
+        hex_string = apdu_bytes[index:index + 6].hex().upper()
+        if hex_string in OCTET_STRING_VALUES:
+            key = OCTET_STRING_VALUES[hex_string]
+            index += 6
+
+            # Read the next byte for the length of the value
+            length = apdu_bytes[index]
+            index += 1
+
+            # Extract the value bytes based on the length
+            value_bytes = apdu_bytes[index:index + length]
+
+            # Convert the value bytes to an integer (interpreting as hex)
+            # This is similar to int(next_child.attrib["Value"], 16) in the XML logic
+            value = int.from_bytes(value_bytes, byteorder='big', signed=False)
+
+            index += length
+
+            # Add the parsed item to the list
+            parsed_data.append({"key": key, "value": value})
+
+        else:
+            index += 1
+
+    return parsed_data
+
+def apdu_to_json(apdu_hex):
+    """
+    Converts an APDU (in hex string format) to a JSON representation.
+    """
+    # Convert APDU hex string to bytes
+    apdu_bytes = bytes.fromhex(apdu_hex)
+
+    # Parse the APDU
+    parsed_apdu = parse_apdu(apdu_bytes)
+
+    # Convert the parsed data to JSON
+    apdu_json = json.dumps(parsed_apdu, indent=4)
+
+    return apdu_json
 
 
 @log

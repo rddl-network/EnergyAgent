@@ -1,28 +1,15 @@
-from app.energy_agent.energy_decrypter import decrypt_aes_gcm_landis_and_gyr, decrypt_sagemcom
+from app.energy_agent.energy_decrypter import decrypt_aes_gcm_landis_and_gyr, decrypt_sagemcom, decrypt_gcm, \
+    unwrap_apdu, parse_dsmr_frame, unwrap_gxdlm
 
 
-# db084c475a67737c7e
-# 7ea08bceff0313eee1e6e700e0400001000077db084c475a67737c7e8e820103300009855416f213a1bea812428a7159e61fa2cf09677c5460537847496035c01beb3e1ed4dc85709ddf31c240f77d1cc04632ddd5d2e2f05a162e543955c0f8696ad8b82d573370c7e7fc67a7ec75505a11ea2e632959135632df0d05969466071fbcf36409476a78f83ca87e
 def test_decode_packet_lg():
     print("test_decode_packet_v2")
-    data_hex_str = "7ea08bceff0313eee1e6e700e0400001000077db084c475a67737c7ee082010330000879a66ad533b89c24bfe1680b0745ab2138b4098c33c9ba956639d0cbfce9a657a4076ad04ae0b190441d489b62452aef0c240229e8c0ff3c03e18ddabdc6cdffa94330ca9c16be8059aa17a9084b6bec007d2f675d720a65fd0a70f1eaf16122cddf80971057b4d8eb7e"
+    data_hex_str = "db084c475a67737c7ee0820103300038db9c8b5c5c82dd4faa65b34e90334af64459ec9fcc75b6859385865d30d329c40568742909c2ed6418cc30b29dd91c21c573aecf63d0b57083dfb4dfffa8b4aa05b0c7e4982c21cca07b6636f128563aa6032595190a8149f14025fdb1242e9be6197bd56823a983b17e7ea08bceff0313ee"
     encryption_key = bytes.fromhex("7340BC1501143C498CD677811D771921")
     authentication_key = bytes.fromhex("DDFC444A5C78B74D46C158DBE711D37A")
     dec = decrypt_aes_gcm_landis_and_gyr(data_hex_str, encryption_key, authentication_key)
-    # show_data(dec) if (dec) else "CRC error"
     print(dec)
-    assert dec == [{"key": "WirkenergieP", "value": 8684853}, {"key": "MomentanleistungP", "value": 1565}]
-
-
-def test_decode_packet_lg_2():
-    print("test_decode_packet_v2")
-    data_hex_str = "7ea08bceff0313eee1e6e700e0400001000077db084c475a67737c7ecb820103300036d79ff09867f39169810ae8be6d2b0ccb0b516e91fc1fde82d68fb8e0b11501bef0d3d33eac508a1c7d8f5fc1cab563c1cbcab40b2005f307f762b6d47fb6398c5df5d4d5eec117c6fbaa764a707fb9f71cbff4c0488dc40420541d49cc9108e1b4b49e66302285d01d7e"
-    encryption_key = bytes.fromhex("DD7E6510916F2F73F026C70C6A3F7EF1")
-    authentication_key = bytes.fromhex("9DF1169A749F49500174AA840243E7E ")
-    dec = decrypt_aes_gcm_landis_and_gyr(data_hex_str, encryption_key, authentication_key)
-    # show_data(dec) if (dec) else "CRC error"
-    print(dec)
-    assert dec == [{"key": "WirkenergieP", "value": 8684853}, {"key": "MomentanleistungP", "value": 1565}]
+    assert dec == [{'key': 'WirkenergieP', 'value': 15685460}, {'key': 'MomentanleistungP', 'value': 0}, {'key': 'WirkenergieN', 'value': 5891165}]
 
 
 def test_decode_packet_sc_1():
