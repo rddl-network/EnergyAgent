@@ -4,12 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
 from starlette.staticfiles import StaticFiles
+
+from app.dependencies import config
+from app.helpers.config_helper import load_config
 from app.helpers.logs import logger
 
 from app.routers import (
     configuration,
     cid_resolver,
-    energy_agent_manager,
     trust_wallet_interaction,
     manage_smd,
     rddl_network,
@@ -17,9 +19,11 @@ from app.routers import (
     smd_entry,
     energy_agent_logs,
 )
-from app.routers.energy_agent_manager import get_manager
+from app.services import energy_agent_manager, smart_meter_manager
+from app.services.energy_agent_manager import get_energy_agent_manager
 from app.routers.html import templates, trust_wallet_templates
 from app.RddlInteraction.rddl_client import RDDLAgent
+from app.services.smart_meter_manager import get_smart_meter_manager
 
 
 async def startup_event():
@@ -34,8 +38,13 @@ async def lifespan(app: FastAPI):
     print("Starting up...")
     rddl_task = asyncio.create_task(startup_event())
 
-    energy_manager = get_manager()
+    energy_manager = get_energy_agent_manager()
     await energy_manager.check_and_restart()
+
+    smart_meter_config = load_config(config.path_to_smart_meter_config)
+    if smart_meter_config:
+        sm_manager = get_smart_meter_manager(smart_meter_config)
+        await sm_manager.check_and_restart()
 
     yield  # This is where your application starts handling requests
     print("Shutting down...")
@@ -81,6 +90,7 @@ app.include_router(templates.router)
 app.include_router(trust_wallet_templates.router)
 app.include_router(smd_entry.router)
 app.include_router(energy_agent_logs.router)
+app.include_router(smart_meter_manager.router)
 
 
 if __name__ == "__main__":

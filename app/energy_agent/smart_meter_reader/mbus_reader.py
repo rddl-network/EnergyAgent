@@ -7,11 +7,13 @@ from app.helpers.logs import logger, log
 
 
 class MbusReader:
-    def __init__(self, serial_port="/dev/ttyUSB0", baud_rate=2400, address=1, valid_frame_pattern=""):
+    def __init__(
+        self, serial_port="/dev/ttyUSB0", baud_rate=2400, address=1, valid_frame_pattern=r"db08.*?7e7ea08bceff0313ee"
+    ):
         self.serial_port = serial_port
         self.baud_rate = baud_rate
         self.address = address
-        self.valid_frame_pattern = ""
+        self.valid_frame_pattern = valid_frame_pattern
         self.ser = None
 
     def __enter__(self):
@@ -40,7 +42,7 @@ class MbusReader:
 
     @log
     def extract_valid_frame(self, hex_data):
-        if self.valid_frame_pattern is "":
+        if self.valid_frame_pattern == "":
             return hex_data
         match = re.search(self.valid_frame_pattern, hex_data)
         return match.group(0) if match else None

@@ -4,9 +4,6 @@ import binascii
 import re
 from app.helpers.logs import logger, log
 
-# Configuration
-SERIAL_PORT = "/dev/ttyUSB0"
-BAUD_RATE = 115200
 READ_SIZE = 511
 
 
@@ -18,8 +15,8 @@ class ModbusReader:
     @log
     def get_client(
         self,
-        serial_port,
-        baudrate=BAUD_RATE,
+        serial_port="/dev/ttyUSB0",
+        baudrate=115200,
         bytesize=8,
         parity="N",
         stopbits=1,

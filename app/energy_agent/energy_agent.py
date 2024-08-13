@@ -1,5 +1,6 @@
 import json
 import asyncio
+from typing import Dict
 
 from gmqtt import Client as MQTTClient
 from gmqtt.mqtt.constants import MQTTv311
@@ -71,10 +72,10 @@ class EnergyAgent:
         client_id: str = extract_client_id(topic)
         data_dict = {client_id: data}
         logger.debug(f"Data to be notarized: {data_dict}")
-        await self.add_data_to_buffer(json.dumps(data_dict))
+        await self.add_data_to_buffer(data_dict)
 
     @log
-    async def add_data_to_buffer(self, data: str):
+    async def add_data_to_buffer(self, data: Dict):
         self.data_buffer.add_data(data)
 
     @log
@@ -82,9 +83,10 @@ class EnergyAgent:
         attempts = 0
         while attempts < self.retry_attempts:
             try:
-                data = json.dumps(self.data_buffer)
+                data_buffer = self.data_buffer.get_data()
+                data = json.dumps(data_buffer)
                 notarize_cid = store_cid(data)
-                await process_data_buffer(self.data_buffer, notarize_cid)
+                await process_data_buffer(data_buffer, notarize_cid)
                 logger.debug(f"Notarize CID transaction: {notarize_cid}, {data}")
                 tx_hash = create_tx_notarize_data(notarize_cid, config.rddl.planetmint_api, config.rddl.chain_id)
                 insert_tx(tx_hash, notarize_cid)
@@ -102,9 +104,7 @@ class EnergyAgent:
     @log
     async def notarize_data_with_interval(self):
         while not self.stopped:
-            data = self.data_buffer.get_data()
-            logger.debug(f"Data buffer: {data}")
-            if data:
+            if not self.data_buffer.is_empty():
                 await self.notarize_data()
             else:
                 logger.debug("No data to notarize")

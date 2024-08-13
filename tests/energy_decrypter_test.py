@@ -1,5 +1,7 @@
-from app.energy_agent.energy_decrypter import decrypt_aes_gcm_landis_and_gyr, decrypt_sagemcom, decrypt_gcm, \
-    unwrap_apdu, parse_dsmr_frame, unwrap_gxdlm
+from app.energy_agent.energy_decrypter import (
+    decrypt_aes_gcm_landis_and_gyr,
+    decrypt_sagemcom,
+)
 
 
 def test_decode_packet_lg():
@@ -9,7 +11,11 @@ def test_decode_packet_lg():
     authentication_key = bytes.fromhex("DDFC444A5C78B74D46C158DBE711D37A")
     dec = decrypt_aes_gcm_landis_and_gyr(data_hex_str, encryption_key, authentication_key)
     print(dec)
-    assert dec == [{'key': 'WirkenergieP', 'value': 15685460}, {'key': 'MomentanleistungP', 'value': 0}, {'key': 'WirkenergieN', 'value': 5891165}]
+    assert dec == [
+        {"key": "WirkenergieP", "value": 15685460},
+        {"key": "MomentanleistungP", "value": 0},
+        {"key": "WirkenergieN", "value": 5891165},
+    ]
 
 
 def test_decode_packet_sc_1():

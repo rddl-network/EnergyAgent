@@ -5,22 +5,24 @@ from pydantic import BaseModel
 LANDIS_GYR = "LANDIS_GYR"
 SAGEMCOM = "SAGEMCOM"
 
+
 class SmartMeterConfig(BaseModel):
     smart_meter_type: str = ""
     encryption_key: str = ""
     authentication_key: str = ""
     smart_meter_serial_port: str = "/dev/ttyUSB0"
     smart_meter_baudrate: int = 115200
+    smart_meter_reading_interval: int = 900
 
 
 class LandisGyrConfig(SmartMeterConfig):
-    smart_meter_type:str = LANDIS_GYR
+    smart_meter_type: str = LANDIS_GYR
     address: int = 1
     smart_meter_baudrate: int = 2400
 
 
 class SagemcomConfig(SmartMeterConfig):
-    smart_meter_type:str = SAGEMCOM
+    smart_meter_type: str = SAGEMCOM
     start_index: str = "5e4e"
     smart_meter_baudrate: int = 115200
     byte_size: int = 8
@@ -34,6 +36,7 @@ class MQTTConfig(BaseModel):
     port: int = 0
     password: str = ""
     username: str = ""
+    topic_prefix: str = ""
 
 
 class AdditionalInfo(BaseModel):

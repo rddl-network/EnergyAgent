@@ -1,11 +1,9 @@
 import json
-import struct
 from decimal import Decimal
 from datetime import datetime, timezone
 from typing import Type, Any
 
 from Crypto.Cipher import AES
-from gurux_dlms import TranslatorOutputType
 
 from app.dependencies import config
 from binascii import unhexlify
@@ -87,7 +85,7 @@ FRAME_COUNTER_SLICE = slice(44, 52)
 @log
 def parse_root_items(root) -> list:
 
-    xml_string = ET.tostring(root, encoding='unicode')
+    xml_string = ET.tostring(root, encoding="unicode")
     logger.debug(f"XML Content:\n{xml_string}")
 
     found_lines, momentan = [], []
@@ -169,6 +167,7 @@ def unwrap_apdu(apdu):
     root = ET.fromstring(gxdlm)
     return parse_root_items(root)
 
+
 def unwrap_gxdlm(apdu):
     parsed_data = apdu_to_json(apdu)
     return parsed_data
@@ -180,7 +179,7 @@ def parse_apdu(apdu_bytes):
 
     while index < len(apdu_bytes):
         # Extract 6-byte hex string for OBIS code
-        hex_string = apdu_bytes[index:index + 6].hex().upper()
+        hex_string = apdu_bytes[index : index + 6].hex().upper()
         if hex_string in OCTET_STRING_VALUES:
             key = OCTET_STRING_VALUES[hex_string]
             index += 6
@@ -190,11 +189,11 @@ def parse_apdu(apdu_bytes):
             index += 1
 
             # Extract the value bytes based on the length
-            value_bytes = apdu_bytes[index:index + length]
+            value_bytes = apdu_bytes[index : index + length]
 
             # Convert the value bytes to an integer (interpreting as hex)
             # This is similar to int(next_child.attrib["Value"], 16) in the XML logic
-            value = int.from_bytes(value_bytes, byteorder='big', signed=False)
+            value = int.from_bytes(value_bytes, byteorder="big", signed=False)
 
             index += length
 
@@ -205,6 +204,7 @@ def parse_apdu(apdu_bytes):
             index += 1
 
     return parsed_data
+
 
 def apdu_to_json(apdu_hex):
     """

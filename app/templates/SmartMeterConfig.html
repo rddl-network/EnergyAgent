@@ -52,6 +52,18 @@
                 </div>
             </form>
         </div>
+
+        <div class="section mt-20">
+            <h2 class="section-title">Smart Meter Reader Control</h2>
+            <div id="readerControlContainer">
+                <p>Current Status: <span id="readerStatus">Unknown</span></p>
+                <div class="buttons">
+                    <button id="startReaderBtn" class="btn" onclick="startReader()">Start Reader</button>
+                    <button id="stopReaderBtn" class="btn-secondary" onclick="stopReader()">Stop Reader</button>
+                    <button id="restartReaderBtn" class="btn" onclick="restartReader()">Restart Reader</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -266,8 +278,95 @@
         }
     }
 
+    async function fetchReaderStatus() {
+        try {
+            const response = await fetch('/smart_meter/status');
+            if (response.ok) {
+                const data = await response.json();
+                updateReaderStatus(data.status);
+            } else {
+                console.error('Error fetching reader status');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function updateReaderStatus(status) {
+        document.getElementById('readerStatus').textContent = status;
+        const startBtn = document.getElementById('startReaderBtn');
+        const stopBtn = document.getElementById('stopReaderBtn');
+        const restartBtn = document.getElementById('restartReaderBtn');
+
+        if (status === 'running') {
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            restartBtn.disabled = false;
+        } else if (status === 'stopped') {
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            restartBtn.disabled = false;
+        } else {
+            startBtn.disabled = false;
+            stopBtn.disabled = false;
+            restartBtn.disabled = false;
+        }
+    }
+
+    async function startReader() {
+        try {
+            const response = await fetch('/smart_meter/start', { method: 'GET' });
+            if (response.ok) {
+                const data = await response.json();
+                updateReaderStatus(data.status);
+                alert('Smart Meter Reader started successfully!');
+            } else {
+                alert('Error starting Smart Meter Reader');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error starting Smart Meter Reader');
+        }
+    }
+
+    async function stopReader() {
+        try {
+            const response = await fetch('/smart_meter/stop', { method: 'GET' });
+            if (response.ok) {
+                const data = await response.json();
+                updateReaderStatus(data.status);
+                alert('Smart Meter Reader stopped successfully!');
+            } else {
+                alert('Error stopping Smart Meter Reader');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error stopping Smart Meter Reader');
+        }
+    }
+
+    async function restartReader() {
+        try {
+            const response = await fetch('/smart_meter/restart', { method: 'GET' });
+            if (response.ok) {
+                const data = await response.json();
+                updateReaderStatus(data.status);
+                alert('Smart Meter Reader restarted successfully!');
+            } else {
+                alert('Error restarting Smart Meter Reader');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error restarting Smart Meter Reader');
+        }
+    }
+
     // Initialize the page
     fetchCurrentConfig();
     fetchMqttConfig();
+    fetchReaderStatus();
+
+    // Optionally, you can add a periodic status update
+    setInterval(fetchReaderStatus, 30000);  // Update status every 30 seconds
 </script>
 {% endblock %}
