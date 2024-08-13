@@ -16,6 +16,7 @@ class SmartMeterReader:
         self.meter_type = meter_type.lower()
         self.config = config
         self.reader = self._get_reader()
+        self.previous_data = None
         self.data_buffer = data_buffer
 
     @log
@@ -33,12 +34,17 @@ class SmartMeterReader:
             raise ValueError(f"Unsupported meter type: {self.meter_type}")
 
     @log
-    def read_meter_data(self) -> Dict[str, Any]:
+    def read_meter_data(self) -> dict | None:
         data = None
         if self.meter_type == LANDIS_GYR:
             data = self._read_landis_gyr()
         elif self.meter_type == SAGEMCOM:
             data = self._read_sagemcom()
+        _check_if_valid_incremental_data = self._check_if_valid_incremental_data(data)
+
+        if not _check_if_valid_incremental_data:
+            return None
+        self.previous_data = data
         self.data_buffer.add_data({self.meter_type: json.dumps(data)})
         return data
 
@@ -60,9 +66,21 @@ class SmartMeterReader:
         )
         hex_data = self.reader.serial_read_smartmeter()
         if hex_data:
-            decrypted_data = decrypt_device(hex_data)
-            return decrypted_data
+            return decrypt_device(hex_data)
         else:
             logger.error("Failed to read data from Sagemcom meter")
             return {}
 
+    @log
+    def _check_if_valid_incremental_data(self, data: Dict[str, Any]) -> bool:
+        is_prev_data_none = self.previous_data is None
+        has_valid_increment_in = self.previous_data.get(
+            "absolute_energy_in"
+        ) < data.get("absolute_energy_in")
+        has_valid_increment_out = self.previous_data.get(
+            "absolute_energy_out"
+        ) <= data.get("absolute_energy_out")
+
+        if is_prev_data_none or (has_valid_increment_in and has_valid_increment_out):
+            return True
+        return False
