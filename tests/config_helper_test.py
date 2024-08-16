@@ -17,6 +17,8 @@ def test_load_config_returns_config_from_file(mocker):
     mock_file = mocker.mock_open(read_data='{"key": "value"}')
 
     mocker.patch("builtins.open", mock_file)
+    mocker.patch("os.path.exists", return_value=True)  # Add this line
+
     config = load_config("config.json")
 
     assert config == {"key": "value"}

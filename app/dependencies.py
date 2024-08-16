@@ -23,7 +23,7 @@ class Config:
         self.path_to_smart_meter_mqtt_config = build_config_path(self.config_base_path, FILE_SMART_METER_MQTT_CONFIG)
         self.trust_wallet_port = os.environ.get("TRUST_WALLET_PORT") or "/dev/ttyACM0"
         self.notarize_interval = int(os.environ.get("NOTARIZE_INTERVAL") or 60)
-        self.rddl_network_mode = os.environ.get("RDDL_NETWORK_MODE") or "testnet"
+        self.rddl_network_mode = os.environ.get("RDDL_NETWORK_MODE") or "mainnet"
         self.rddl = get_rddl_network_settings(self.rddl_network_mode)
 
         # logging config
