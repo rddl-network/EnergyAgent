@@ -136,7 +136,7 @@ async def queryPoPInfo(height: str) -> PoPContext:
                 ):
                     pop_context = PoPContext()
 
-                    keys = keys = trust_wallet_instance.get_planetmint_keys()
+                    keys = trust_wallet_instance.get_planetmint_keys()
                     pop_context.initiator = data["challenge"]["initiator"]
                     pop_context.challenger = data["challenge"]["challenger"]
                     pop_context.challengee = data["challenge"]["challengee"]

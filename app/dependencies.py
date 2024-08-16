@@ -1,6 +1,6 @@
 import os
 from app.db import init_tables, create_connection
-
+from app.energy_agent.data_buffer import DataBuffer
 
 from app.helpers.config_helper import build_config_path
 from app.RddlInteraction.TrustWallet.TrustWalletConnector import TrustWalletConnector
@@ -9,6 +9,7 @@ from app.helpers.logs import log, setup_logging
 
 FILE_SMART_METER_CONFIG = "smart_meter_config.json"
 FILE_MQTT_CONFIG = "mqtt_config.json"
+FILE_SMART_METER_MQTT_CONFIG = "smart_meter_mqtt_config.json"
 
 
 @log
@@ -17,8 +18,9 @@ class Config:
         # general config
         self.config_base_path = os.environ.get("CONFIG_PATH") or "/tmp"
         self.smd_topic = os.environ.get("SMD_TOPIC") or "rddl/SMD/#"
-        self.path_to_smart_meter_config = build_config_path(self.config_base_path, FILE_SMART_METER_CONFIG)
         self.path_to_mqtt_config = build_config_path(self.config_base_path, FILE_MQTT_CONFIG)
+        self.path_to_smart_meter_config = build_config_path(self.config_base_path, FILE_SMART_METER_CONFIG)
+        self.path_to_smart_meter_mqtt_config = build_config_path(self.config_base_path, FILE_SMART_METER_MQTT_CONFIG)
         self.trust_wallet_port = os.environ.get("TRUST_WALLET_PORT") or "/dev/ttyACM0"
         self.notarize_interval = int(os.environ.get("NOTARIZE_INTERVAL") or 60)
         self.rddl_network_mode = os.environ.get("RDDL_NETWORK_MODE") or "mainnet"
@@ -49,3 +51,4 @@ setup_logging(
 )
 
 trust_wallet_instance = TrustWalletConnector(config.trust_wallet_port)
+data_buffer = DataBuffer()

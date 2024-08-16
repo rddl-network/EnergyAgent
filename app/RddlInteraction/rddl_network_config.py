@@ -15,7 +15,6 @@ def get_rddl_network_settings(mode: str) -> RDDLNetworkConfig:
         network_config.mqtt.port = 1884
         network_config.mqtt.password = "Xs0liJviALEJLWgHJ3vI4MbYHqahG0sP"
         network_config.mqtt.username = "rddl-tasmota"
-
     elif lowercase_mode == "testnet":
         network_config.name = lowercase_mode
         network_config.chain_id = "planetmint-testnet-1"

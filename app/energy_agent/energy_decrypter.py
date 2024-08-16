@@ -1,5 +1,7 @@
+import json
 from decimal import Decimal
 from datetime import datetime, timezone
+from typing import Type, Any
 
 from Crypto.Cipher import AES
 
@@ -7,7 +9,9 @@ from app.dependencies import config
 from binascii import unhexlify
 from gurux_dlms.GXDLMSTranslator import GXDLMSTranslator
 import xml.etree.ElementTree as ET
+
 from app.helpers.logs import log, logger
+from app.helpers.models import LANDIS_GYR, SAGEMCOM
 
 # CRC-STUFF BEGIN
 CRC_INIT = 0xFFFF
@@ -80,6 +84,10 @@ FRAME_COUNTER_SLICE = slice(44, 52)
 
 @log
 def parse_root_items(root) -> list:
+
+    xml_string = ET.tostring(root, encoding="unicode")
+    logger.debug(f"XML Content:\n{xml_string}")
+
     found_lines, momentan = [], []
     iterator = iter(root.iter())
     current_child, next_child = next(iterator), next(iterator, None)
@@ -100,12 +108,12 @@ def parse_root_items(root) -> list:
 
 @log
 def decrypt_device(data_hex):
-    if config.device_type == "LG":
+    if config.device_type == LANDIS_GYR:
         dec = decrypt_aes_gcm_landis_and_gyr(
             data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
         )
         return transform_to_metrics(dec, config.pubkey)
-    elif config.device_type == "SC":
+    elif config.device_type == SAGEMCOM:
         dec = decrypt_sagemcom(
             data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
         )
@@ -150,15 +158,68 @@ def evn_decrypt(frame, system_title, frame_counter):
 
 @log
 def decrypt_aes_gcm_landis_and_gyr(data_hex, encryption_key=None, authentication_key=None):
-    if len(data_hex) != 282:
-        raise ValueError(
-            f"Wrong input encrypted data should have 282 characters. Please check your device, data_hex {data_hex}"
-        )
+    apdu = decrypt_gcm(authentication_key, data_hex, encryption_key)
+    return unwrap_apdu(apdu)
 
-    cipher_text_str = data_hex[38:276]
-    apdu = decrypt_gcm(authentication_key, cipher_text_str, encryption_key)
-    root = ET.fromstring(GXDLMSTranslator().pduToXml(apdu))
+
+def unwrap_apdu(apdu):
+    gxdlm = GXDLMSTranslator().pduToXml(apdu)
+    root = ET.fromstring(gxdlm)
     return parse_root_items(root)
+
+
+def unwrap_gxdlm(apdu):
+    parsed_data = apdu_to_json(apdu)
+    return parsed_data
+
+
+def parse_apdu(apdu_bytes):
+    parsed_data = []
+    index = 0
+
+    while index < len(apdu_bytes):
+        # Extract 6-byte hex string for OBIS code
+        hex_string = apdu_bytes[index : index + 6].hex().upper()
+        if hex_string in OCTET_STRING_VALUES:
+            key = OCTET_STRING_VALUES[hex_string]
+            index += 6
+
+            # Read the next byte for the length of the value
+            length = apdu_bytes[index]
+            index += 1
+
+            # Extract the value bytes based on the length
+            value_bytes = apdu_bytes[index : index + length]
+
+            # Convert the value bytes to an integer (interpreting as hex)
+            # This is similar to int(next_child.attrib["Value"], 16) in the XML logic
+            value = int.from_bytes(value_bytes, byteorder="big", signed=False)
+
+            index += length
+
+            # Add the parsed item to the list
+            parsed_data.append({"key": key, "value": value})
+
+        else:
+            index += 1
+
+    return parsed_data
+
+
+def apdu_to_json(apdu_hex):
+    """
+    Converts an APDU (in hex string format) to a JSON representation.
+    """
+    # Convert APDU hex string to bytes
+    apdu_bytes = bytes.fromhex(apdu_hex)
+
+    # Parse the APDU
+    parsed_apdu = parse_apdu(apdu_bytes)
+
+    # Convert the parsed data to JSON
+    apdu_json = json.dumps(parsed_apdu, indent=4)
+
+    return apdu_json
 
 
 @log
@@ -166,12 +227,55 @@ def decrypt_sagemcom(data_hex, encryption_key=None, authentication_key=None):
     apdu = decrypt_gcm(authentication_key, data_hex, encryption_key)
     obis_dict = parse_dsmr_frame(apdu)
 
-    data_list = [
-        {"key": "WirkenergieP", "value": int(obis_dict["1-0:1.8.0"])},
-        {"key": "WirkenergieN", "value": int(obis_dict["1-0:2.8.0"])},
-    ]
+    data_list = parse_obis(obis_dict)
 
     return data_list
+
+
+def parse_obis(obis_dict: dict):
+    return [
+        # Energy readings
+        {"key": "WirkenergieP", "value": parse_value(obis_dict.get("1-0:1.8.0"))},
+        {"key": "WirkenergieN", "value": parse_value(obis_dict.get("1-0:2.8.0"))},
+        {"key": "WirkenergieP_T1", "value": parse_value(obis_dict.get("1-0:1.8.1"))},
+        {"key": "WirkenergieP_T2", "value": parse_value(obis_dict.get("1-0:1.8.2"))},
+        {"key": "WirkenergieN_T1", "value": parse_value(obis_dict.get("1-0:2.8.1"))},
+        {"key": "WirkenergieN_T2", "value": parse_value(obis_dict.get("1-0:2.8.2"))},
+        {"key": "BlindEnergieP", "value": parse_value(obis_dict.get("1-0:3.8.0"))},
+        {"key": "BlindEnergieN", "value": parse_value(obis_dict.get("1-0:4.8.0"))},
+        # Power readings
+        {"key": "WirkleistungP", "value": parse_value(obis_dict.get("1-0:1.7.0"))},
+        {"key": "WirkleistungN", "value": parse_value(obis_dict.get("1-0:2.7.0"))},
+        {"key": "BlindleistungP", "value": parse_value(obis_dict.get("1-0:3.7.0"))},
+        {"key": "BlindleistungN", "value": parse_value(obis_dict.get("1-0:4.7.0"))},
+        # Voltage and current
+        {"key": "SpannungL1", "value": parse_value(obis_dict.get("1-0:32.7.0"))},
+        {"key": "SpannungL2", "value": parse_value(obis_dict.get("1-0:52.7.0"))},
+        {"key": "SpannungL3", "value": parse_value(obis_dict.get("1-0:72.7.0"))},
+        {"key": "StromL1", "value": parse_value(obis_dict.get("1-0:31.7.0"))},
+        {"key": "StromL2", "value": parse_value(obis_dict.get("1-0:51.7.0"))},
+        {"key": "StromL3", "value": parse_value(obis_dict.get("1-0:71.7.0"))},
+        # Frequency
+        {"key": "Frequenz", "value": parse_value(obis_dict.get("1-0:14.7.0"))},
+        # Power factor
+        {"key": "Leistungsfaktor", "value": parse_value(obis_dict.get("1-0:13.7.0"), float)},
+        # Meter information
+        {"key": "Zaehlernummer", "value": obis_dict.get("0-0:96.1.0")},
+        {"key": "Zaehlerstand", "value": parse_value(obis_dict.get("0-0:96.14.0"))},
+        # Time and date
+        {"key": "Zeitstempel", "value": obis_dict.get("0-0:1.0.0")},
+    ]
+
+
+def parse_value(value: Any, value_type: Type = int):
+    if value is None:
+        return ""
+    if value == "":
+        return ""
+    try:
+        return value_type(value)
+    except ValueError:
+        return f"ERROR: Could not convert '{value}' to {value_type.__name__}"
 
 
 @log

@@ -1,4 +1,5 @@
 import sqlite3
+from threading import Lock
 
 from app.helpers.logs import log, logger
 
@@ -72,19 +73,26 @@ def init_tables(connection) -> bool:
         connection.commit()
 
 
+lock = Lock()
+
+
 @log
 def execute_sql_command(sql_command, params, fetch_data=False):
     from app.dependencies import config
 
+    global lock
     try:
-        cursor = config.db_connection.cursor()
-        cursor.execute(sql_command, params)
-        if fetch_data:
-            return cursor.fetchall()
-        else:
-            config.db_connection.commit()
+        with lock:
+            cursor = config.db_connection.cursor()
+            cursor.execute(sql_command, params)
+            if fetch_data:
+                result = cursor.fetchall()
+            else:
+                config.db_connection.commit()
     except sqlite3.Error as e:
         logger.error(f"Failed to carry out SQL command: {e}")
         raise
     finally:
         cursor.close()
+    if fetch_data:
+        return result

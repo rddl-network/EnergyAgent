@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 import asyncio
 
 from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
-from app.dependencies import config
+from app.dependencies import config, data_buffer
 from app.energy_agent.energy_agent import EnergyAgent
 from app.helpers.config_helper import load_config, save_config
 from app.helpers.logs import log, logger
@@ -35,7 +35,7 @@ class EnergyAgentManager:
     @log
     async def start(self):
         if not self.is_running():
-            self.energy_agent = EnergyAgent()
+            self.energy_agent = EnergyAgent(data_buffer)
             self.energy_agent.setup()
             self.task = asyncio.create_task(self.energy_agent.run())
             self.status = "running"
@@ -76,7 +76,7 @@ class EnergyAgentManager:
 
 
 @log
-def get_manager():
+def get_energy_agent_manager():
     global _manager_instance
     if _manager_instance is None:
         _manager_instance = EnergyAgentManager()
@@ -91,7 +91,7 @@ router = APIRouter(
 
 
 @router.get("/start")
-async def start_data_agent(manager: EnergyAgentManager = Depends(get_manager)):
+async def start_data_agent(manager: EnergyAgentManager = Depends(get_energy_agent_manager)):
     if is_not_connected(config.trust_wallet_port):
         raise HTTPException(status_code=400, detail="wallet not connected")
     await manager.start()
@@ -99,18 +99,18 @@ async def start_data_agent(manager: EnergyAgentManager = Depends(get_manager)):
 
 
 @router.get("/stop")
-async def stop_data_agent(manager: EnergyAgentManager = Depends(get_manager)):
+async def stop_data_agent(manager: EnergyAgentManager = Depends(get_energy_agent_manager)):
     await manager.await_and_stop()
     return {"status": manager.get_status()}
 
 
 @router.get("/status")
-async def data_agent_status(manager: EnergyAgentManager = Depends(get_manager)):
+async def data_agent_status(manager: EnergyAgentManager = Depends(get_energy_agent_manager)):
     return {"status": manager.get_status()}
 
 
 @router.get("/restart")
-async def restart_data_agent(manager: EnergyAgentManager = Depends(get_manager)):
+async def restart_data_agent(manager: EnergyAgentManager = Depends(get_energy_agent_manager)):
     if is_not_connected(config.trust_wallet_port):
         raise HTTPException(status_code=400, detail="wallet not connected")
     await manager.restart()
