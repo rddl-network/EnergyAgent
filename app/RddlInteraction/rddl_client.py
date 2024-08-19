@@ -160,7 +160,7 @@ class RDDLAgent:
         if not cids or len(cids) == 0:
             logger.error("RDDL MQTT init PoP could not retrieve cids.")
             insert_mqtt_activity("PoPChallenge", "no CIDS", "challengee cCID query failed")
-            asyncio.create_task(self.challenger_3_sendPoPResult(False))
+            await asyncio.create_task(self.challenger_3_sendPoPResult(False))
             return
 
         random_cid = random.choice(cids)
@@ -188,7 +188,7 @@ class RDDLAgent:
             if not jsonObj["PoPChallenge"]:
                 logger.error('RDDL MQTT PoP Result: wrong JSON object. expected "PoPChallenge" got ' + data)
                 insert_mqtt_activity("PoPChallengeResult", "bad JSON object", "result: " + data)
-                asyncio.create_task(self.challenger_3_sendPoPResult(False))
+                await asyncio.create_task(self.challenger_3_sendPoPResult(False))
             elif self.pop_context.cid != jsonObj["PoPChallenge"]["cid"]:
                 logger.error(
                     "RDDL MQTT PoP Result: wrong cid. expected "
@@ -197,28 +197,31 @@ class RDDLAgent:
                     + jsonObj["PoPChallenge"]["cid"]
                 )
                 insert_mqtt_activity("PoPChallengeResult", "wrong CID", "result: " + data)
-                asyncio.create_task(self.challenger_3_sendPoPResult(False))
+                await asyncio.create_task(self.challenger_3_sendPoPResult(False))
             elif "hex" != jsonObj["PoPChallenge"]["encoding"]:
                 logger.error("RDDL MQTT PoP Result: unsupported encoding.")
                 insert_mqtt_activity("PoPChallengeResult", "unsuppported encoding", "result: " + data)
-                asyncio.create_task(self.challenger_3_sendPoPResult(False))
+                await asyncio.create_task(self.challenger_3_sendPoPResult(False))
             else:
                 cid_data_encoded = jsonObj["PoPChallenge"]["data"]
                 cid_data = utils.fromHexString(cid_data_encoded)
                 computed_cid = compute_cid(cid_data)
                 if computed_cid == self.pop_context.cid:
                     insert_mqtt_activity("PoPChallengeResult", "success", "result: " + data)
-                    asyncio.create_task(self.challenger_3_sendPoPResult(True))
+                    await asyncio.create_task(self.challenger_3_sendPoPResult(True))
                 else:
                     insert_mqtt_activity("PoPChallengeResult", "CID verification failed", "result: " + data)
-                    asyncio.create_task(self.challenger_3_sendPoPResult(False))
+                    await asyncio.create_task(self.challenger_3_sendPoPResult(False))
         except json.JSONDecodeError:
             logger.error("RDDL MQTT PoP Result: Error: Invalid JSON string.")
             insert_mqtt_activity("PoPChallengeResult", "invalid JSON obj", "result: " + data)
-            asyncio.create_task(self.challenger_3_sendPoPResult(False))
+            await asyncio.create_task(self.challenger_3_sendPoPResult(False))
 
     @log
     async def challenger_3_sendPoPResult(self, success: bool):
+        if not self.pop_context.isActive:
+            return
+        
         keys = trust_wallet_instance.get_planetmint_keys()
         accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
         if status != "":
