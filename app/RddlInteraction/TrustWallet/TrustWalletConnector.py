@@ -4,6 +4,7 @@ import platform
 import threading
 from osc4py3.oscbuildparse import OSCMessage
 
+from app.RddlInteraction.TrustWallet.ITrustWalletConnector import ITrustWalletConnector
 from app.RddlInteraction.TrustWallet.osc_message_sender import OSCMessageSender
 from app.helpers.models import PlanetMintKeys
 from app.helpers.logs import logger, log
@@ -11,7 +12,7 @@ from app.helpers.logs import logger, log
 PREFIX_IHW = "/IHW"
 
 
-class TrustWalletConnector(object):
+class TrustWalletConnector(ITrustWalletConnector):
     _instance = None
     occ_message_sender = None
     _lock = threading.Lock()
