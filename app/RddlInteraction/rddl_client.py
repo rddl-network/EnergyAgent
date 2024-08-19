@@ -221,7 +221,7 @@ class RDDLAgent:
     async def challenger_3_sendPoPResult(self, success: bool):
         if not self.pop_context.isActive:
             return
-        
+
         keys = trust_wallet_instance.get_planetmint_keys()
         accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
         if status != "":
