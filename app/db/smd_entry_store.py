@@ -80,11 +80,11 @@ def get_smd_client_id_from_cid(cid: str) -> Optional[str]:
 
 
 @log
-def get_cids_for_client_id(client_id: str) -> List[str]:
+def get_cids_for_client_id(client_id: str, order="DESC") -> List[str]:
     """
     Retrieve all CIDs associated with a specific client_id.
     """
-    query = f"SELECT DISTINCT * FROM smd_store_cid_link WHERE client_id='{client_id}'"
+    query = f"SELECT DISTINCT * FROM smd_store_cid_link WHERE client_id={client_id} ORDER BY created_at {order}"
     results = execute_sql_command(query, params=(), fetch_data=True)
 
     # Assuming execute_sql_command returns a list of tuples
