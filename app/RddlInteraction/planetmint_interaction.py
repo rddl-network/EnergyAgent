@@ -26,7 +26,7 @@ def create_tx_notarize_data(cid: str, planetmint_api: str, chain_id: str) -> str
 
 def computeMachineIDSignature(publicKey: str) -> str:
     hashBytes = signing.getHash(binascii.unhexlify(publicKey))
-    signature = trust_wallet_instance.sign_with_se050(hashBytes.hex(), pre_attest_slot)
+    signature = trust_wallet_instance.sign_with_nist(hashBytes.hex(), pre_attest_slot)
     return signature
 
 

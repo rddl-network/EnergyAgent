@@ -6,15 +6,7 @@ from app.helpers.models import PlanetMintKeys
 
 class ITrustWalletConnector(ABC):
     @abstractmethod
-    def valise_get(self) -> str:
-        pass
-
-    @abstractmethod
     def create_mnemonic(self) -> str:
-        pass
-
-    @abstractmethod
-    def inject_planetmintkey_to_se050(self, slot: int) -> bool:
         pass
 
     @abstractmethod
@@ -26,7 +18,7 @@ class ITrustWalletConnector(ABC):
         pass
 
     @abstractmethod
-    def get_seed_se050(self):
+    def get_seed_secp256k1(self):
         pass
 
     @abstractmethod
@@ -38,33 +30,17 @@ class ITrustWalletConnector(ABC):
         pass
 
     @abstractmethod
-    def create_optega_keypair(self, ctx: int) -> str:
+    def create_keypair_nist(self, ctx: int) -> str:
         pass
 
     @abstractmethod
-    def sign_with_optega(self, ctx: int, data_to_sign: str, pubkey: str) -> str:
+    def get_machine_id(self, ctx: int) -> str:
         pass
 
     @abstractmethod
-    def unwrapPublicKey(self, public_key: str) -> Tuple[bool, str]:
+    def sign_with_nist(self, data_to_sign: str, ctx: int) -> str:
         pass
 
     @abstractmethod
-    def calculate_hash(self, data_to_sign: str) -> str:
-        pass
-
-    @abstractmethod
-    def create_se050_keypair_nist(self, ctx: int) -> str:
-        pass
-
-    @abstractmethod
-    def get_public_key_from_se050(self, ctx: int) -> str:
-        pass
-
-    @abstractmethod
-    def sign_with_se050(self, data_to_sign: str, ctx: int) -> str:
-        pass
-
-    @abstractmethod
-    def verify_se050_signature(self, data_to_sign: str, signature: str, ctx: int) -> bool:
+    def verify_nist_signature(self, data_to_sign: str, signature: str, ctx: int) -> bool:
         pass

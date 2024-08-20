@@ -12,13 +12,6 @@ router = APIRouter(
 )
 
 
-@router.get("/valise-get")
-def valise_get():
-    if is_not_connected(config.trust_wallet_port):
-        raise HTTPException(status_code=400, detail="wallet not connected")
-    return trust_wallet_instance.valise_get()
-
-
 @router.get("/mnemonic")
 def mnemonic_to_private_key():
     if is_not_connected(config.trust_wallet_port):
@@ -47,5 +40,5 @@ def get_planetmint_keys() -> PlanetMintKeys:
 def get_machine_id() -> str:
     if is_not_connected(config.trust_wallet_port):
         raise HTTPException(status_code=400, detail="wallet not connected")
-    machine_id = trust_wallet_instance.get_public_key_from_se050(pre_attest_slot)
+    machine_id = trust_wallet_instance.get_machine_id(pre_attest_slot)
     return machine_id
