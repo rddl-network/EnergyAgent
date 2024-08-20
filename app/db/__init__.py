@@ -1,6 +1,7 @@
 import sqlite3
 from threading import Lock
 
+from app.db.migrations.add_created_at_to_smd_link import migrate_smd_store_cid_link_table
 from app.helpers.logs import log, logger
 
 
@@ -34,6 +35,7 @@ def init_tables(connection) -> bool:
         CREATE TABLE IF NOT EXISTS smd_store_cid_link (
             client_id TEXT,
             cid TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (client_id, cid),
             FOREIGN KEY (client_id) REFERENCES smd_store(client_id),
             FOREIGN KEY (cid) REFERENCES key_value_store(cid)
@@ -69,6 +71,18 @@ def init_tables(connection) -> bool:
         cursor.execute(create_smd_store_table_sql)
         cursor.execute(create_smd_store_cid_link_table_sql)
 
+        # Check if smd_store_cid_link table exists and has the correct structure
+        cursor.execute("PRAGMA table_info(smd_store_cid_link);")
+        columns = {row[1] for row in cursor.fetchall()}
+
+        if "created_at" not in columns:
+            # Perform migration to add created_at column while preserving data
+            migration_success = migrate_smd_store_cid_link_table(cursor)
+            if not migration_success:
+                logger.error("Failed to migrate smd_store_cid_link table.")
+                return False
+        else:
+            logger.info("smd_store_cid_link table already has the correct structure.")
         # Commit the changes
         connection.commit()
 
