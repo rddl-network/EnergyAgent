@@ -1,5 +1,6 @@
 import ctypes
 import os
+from time import sleep
 
 from osc4py3.oscbuildparse import encode_packet
 from app.helpers.models import OSCResponse
@@ -50,6 +51,7 @@ class OSCMessageSender:
         )
 
     def send_message(self, message) -> OSCResponse:
+        sleep(1)  # before sending the message, wait for the port to be ready
         encoded_data = encode_packet(message)
         input_ptr, output_buffer = self.prepare_buffer(encoded_data)
         output_length = self.call_occ_do(input_ptr, len(encoded_data), output_buffer)
