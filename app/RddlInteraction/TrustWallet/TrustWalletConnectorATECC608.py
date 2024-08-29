@@ -1,7 +1,10 @@
 import ctypes
+import os
+import sys
 from abc import ABC
 from ctypes import c_int, c_uint8, c_size_t, POINTER
 import threading
+from sys import platform
 
 from bip_utils import Bip39SeedGenerator
 from mnemonic import Mnemonic
@@ -24,7 +27,16 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
         return cls._instance
 
     def __init__(self):
-        self.atecc608_lib = ctypes.CDLL("../build/libatecc608_handler.so")
+        if platform.system() == "Linux":
+            if platform.processor() == "x86_64":
+                lib_path = "app/lib/linux/x86_64/libatecc608_handler.so"
+            elif os.uname().machine == "x86_64":  # linux-docker image has an empty platform.system() value
+                lib_path = "app/lib/linux/x86_64/libatecc608_handler.so"
+            else:
+                lib_path = "app/lib/linux/armv7/libatecc608_handler.so"
+        else:
+            sys.exit("unsupported OS, cannot load TA Wallet connector")
+        self.atecc608_lib = ctypes.CDLL(lib_path)
         self._init_atecc608_functions()
         self.plmnt_keys = None
 

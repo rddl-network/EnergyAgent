@@ -1,8 +1,22 @@
 import ctypes
+import os
+import sys
 from ctypes import c_uint8, c_char_p, c_int, c_size_t, c_bool, POINTER, create_string_buffer
+from sys import platform
 
 # Load the shared library
-lib = ctypes.CDLL("./librddl_crypto.so")  # Adjust the path as needed
+# system pick and optimistic architecture selection
+if platform.system() == "Linux":
+    if platform.processor() == "x86_64":
+        lib_path = "app/lib/linux/x86_64/libRDDL.a"
+    elif os.uname().machine == "x86_64":  # linux-docker image has an empty platform.system() value
+        lib_path = "app/lib/linux/x86_64/libRDDL.a"
+    else:
+        lib_path = "app/lib/linux/armv7/libRDDL.a"
+else:
+    sys.exit("unsupported OS, cannot load TA Wallet connector")
+
+lib = ctypes.CDLL(lib_path)  # Adjust the path as needed
 
 # Define constants
 SEED_SIZE = 64
