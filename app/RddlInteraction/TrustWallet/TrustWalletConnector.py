@@ -5,7 +5,7 @@ import threading
 from osc4py3.oscbuildparse import OSCMessage
 
 from app.RddlInteraction.TrustWallet.ITrustWalletConnector import ITrustWalletConnector
-from app.RddlInteraction.TrustWallet.osc_message_sender import OSCMessageSender
+from app.helpers.osc_message_sender import OSCMessageSender
 from app.helpers.models import PlanetMintKeys
 from app.helpers.logs import logger, log
 
@@ -86,13 +86,6 @@ class TrustWalletConnector(ITrustWalletConnector):
                 self.plmnt_keys.extended_planetmint_pubkey = occ_message.data[3]
                 self.plmnt_keys.raw_planetmint_pubkey = occ_message.data[4]
             return self.plmnt_keys
-
-    @log
-    def get_seed_secp256k1(self):
-        with self._lock:
-            msg = OSCMessage(f"{PREFIX_IHW}/se050GetSeed", ",", [])
-            occ_message = self.occ_message_sender.send_message(msg)
-            return occ_message
 
     @log
     def sign_hash_with_planetmint(self, data_to_sign: str) -> str:

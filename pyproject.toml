@@ -35,6 +35,9 @@ pyopenssl = "^24.1.0"
 asn1 = "^2.7.0"
 pymodbus = "^3.6.9"
 pymeterbus = "^0.8.4"
+mnemonic = "^0.21"
+bip-utils = "^2.9.3"
+base58 = "^2.1.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.1.1"

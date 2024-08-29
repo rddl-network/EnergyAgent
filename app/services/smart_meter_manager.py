@@ -8,7 +8,7 @@ from gmqtt.mqtt.constants import MQTTv311
 from app.energy_agent.smart_meter_reader.smart_meter_reader import SmartMeterReader
 from app.helpers.config_helper import load_config, save_config
 from app.helpers.logs import log, logger
-from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
+from app.helpers.osc_message_sender import is_not_connected
 from app.dependencies import config, trust_wallet_instance, data_buffer
 from app.helpers.models import MQTTConfig
 

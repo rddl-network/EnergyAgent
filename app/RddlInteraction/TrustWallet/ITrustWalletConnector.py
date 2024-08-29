@@ -18,10 +18,6 @@ class ITrustWalletConnector(ABC):
         pass
 
     @abstractmethod
-    def get_seed_secp256k1(self):
-        pass
-
-    @abstractmethod
     def sign_hash_with_planetmint(self, data_to_sign: str) -> str:
         pass
 

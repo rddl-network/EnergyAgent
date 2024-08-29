@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 import asyncio
 
-from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
+from app.helpers.osc_message_sender import is_not_connected
 from app.dependencies import config, data_buffer
 from app.energy_agent.energy_agent import EnergyAgent
 from app.helpers.config_helper import load_config, save_config

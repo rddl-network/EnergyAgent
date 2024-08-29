@@ -10,7 +10,7 @@ from app.db.tx_store import insert_tx
 from app.db.activity_store import insert_tx_activity_by_response, get_all_activities
 from app.RddlInteraction.cid_tool import store_cid
 from app.dependencies import trust_wallet_instance, config
-from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
+from app.helpers.osc_message_sender import is_not_connected
 from app.RddlInteraction.rddl_network_config import get_rddl_network_settings
 from app.RddlInteraction.api_queries import (
     createAccountOnNetwork,

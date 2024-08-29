@@ -1,13 +1,19 @@
 import ctypes
-from ctypes import c_int, c_uint8, c_size_t, POINTER, byref, create_string_buffer
+from abc import ABC
+from ctypes import c_int, c_uint8, c_size_t, POINTER
 import threading
 
+from bip_utils import Bip39SeedGenerator
+from mnemonic import Mnemonic
+from ecdsa import SigningKey, SECP256k1
+
 from app.RddlInteraction.TrustWallet.ITrustWalletConnector import ITrustWalletConnector
+from app.RddlInteraction.rddl.librddlc import set_raw_seed, get_priv_key_planetmint, wipe_seed, get_priv_key_liquid
 from app.helpers.models import PlanetMintKeys
-from app.helpers.logs import logger, log
+from app.helpers.logs import log
 
 
-class TrustWalletConnectorATECC608(ITrustWalletConnector):
+class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
     _instance = None
     _lock = threading.Lock()
 
@@ -34,6 +40,10 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector):
         self.atecc608_lib.atecc_handler_sign.restype = c_int
         self.atecc608_lib.atecc_handler_verify.argtypes = [c_int, POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
         self.atecc608_lib.atecc_handler_verify.restype = c_int
+        self.atecc608_lib.attecc_handler_write_data.argtypes = [c_int, POINTER(c_uint8), c_size_t]
+        self.atecc608_lib.attecc_handler_write_data.restype = c_int
+        self.atecc608_lib.attecc_handler_read_data.argtypes = [c_int, POINTER(c_uint8), c_size_t]
+        self.atecc608_lib.attecc_handler_read_data.restype = c_int
 
         # Initialize the ATECC608
         status = self.atecc608_lib.atecc_handler_init(0xC0, 1)
@@ -81,31 +91,57 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector):
     # Implement other methods from ITrustWalletConnector...
 
     @log
-    def create_mnemonic(self) -> str:
-        # Implement mnemonic creation logic
-        pass
+    def create_mnemonic_and_seed(self):
+        with self._lock:
+            mnemo = Mnemonic("english")
+            mnemonic = mnemo.generate(strength=256)  # 24 words
+            seed = Bip39SeedGenerator(mnemonic).Generate()
+            status = self.atecc608_lib.attecc_handler_write_data(0xC1, seed, len(seed))
+            if status:
+                raise RuntimeError(f"Failed to store seed: {status}")
+            return mnemonic, seed
 
     @log
     def recover_from_mnemonic(self, mnemonic: str) -> str:
-        # Implement mnemonic recovery logic
-        pass
+        with self._lock:
+            seed = Bip39SeedGenerator(mnemonic).Generate()
+            status = self.atecc608_lib.attecc_handler_write_data(0xC1, seed, len(seed))
+            if status:
+                raise RuntimeError(f"Failed to store seed: {status}")
+            return seed.hex()
 
     @log
     def get_planetmint_keys(self) -> PlanetMintKeys:
-        # Implement logic to get PlanetMint keys
-        pass
-
-    @log
-    def get_seed_secp256k1(self):
-        # Implement logic to get secp256k1 seed
-        pass
+        with self._lock:
+            seed = (c_uint8 * 64)()
+            status = self.atecc608_lib.atecc_handler_read_data(0xC2, seed, 64)
+            if status:
+                raise RuntimeError(f"Failed to get public key: {status}")
 
     @log
     def sign_hash_with_planetmint(self, data_to_sign: str) -> str:
-        # Implement PlanetMint signing logic
-        pass
+        with self._lock:
+            seed = (c_uint8 * 64)()
+            status = self.atecc608_lib.atecc_handler_read_data(0xC2, seed, 64)
+            if status:
+                raise RuntimeError(f"Failed to get public key: {status}")
+            set_raw_seed(seed)
+            priv_key = get_priv_key_planetmint()
+            signing_key = SigningKey.from_string(priv_key, curve=SECP256k1)
+            signature = signing_key.sign_deterministic(data_to_sign.encode())
+            wipe_seed()
+            return bytes(signature).hex()
 
     @log
     def sign_hash_with_rddl(self, data_to_sign: str) -> str:
-        # Implement RDDL signing logic
-        pass
+        with self._lock:
+            seed = (c_uint8 * 64)()
+            status = self.atecc608_lib.atecc_handler_read_data(0xC2, seed, 64)
+            if status:
+                raise RuntimeError(f"Failed to get public key: {status}")
+            set_raw_seed(seed)
+            priv_key = get_priv_key_liquid()
+            signing_key = SigningKey.from_string(priv_key, curve=SECP256k1)
+            signature = signing_key.sign_deterministic(data_to_sign.encode())
+            wipe_seed()
+            return bytes(signature).hex()
