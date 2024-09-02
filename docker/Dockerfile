@@ -1,4 +1,4 @@
-    FROM python:3.12.4-slim-bookworm
+FROM python:3.12.5-slim-bookworm
 
 # Install only necessary packages for building Python extensions and git for fetching Python packages
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
