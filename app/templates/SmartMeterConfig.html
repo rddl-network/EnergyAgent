@@ -46,6 +46,10 @@
                     <label for="mqttPassword">MQTT Password:</label>
                     <input type="password" id="mqttPassword" name="password">
                 </div>
+                <div class="form-input">
+                    <label for="topic_prefix">Topic Prefix:</label>
+                    <input type="text" id="topic_prefix" name="topic_prefix">
+                </div>
                 <div class="buttons">
                     <button type="button" class="btn" onclick="saveMqttConfig()">Save MQTT Configuration</button>
                     <button type="button" class="btn-secondary" onclick="resetMqttConfig()">Reset MQTT Configuration</button>
@@ -125,6 +129,7 @@
             document.getElementById('mqttPort').value = currentMqttConfig.port || '';
             document.getElementById('mqttUsername').value = currentMqttConfig.username || '';
             document.getElementById('mqttPassword').value = currentMqttConfig.password || '';
+            document.getElementById('topic_prefix').value = currentMqttConfig.topic_prefix || '';
         }
     }
 
@@ -245,6 +250,7 @@
                     document.getElementById('mqttPort').value = '';
                     document.getElementById('mqttUsername').value = '';
                     document.getElementById('mqttPassword').value = '';
+                    document.getElementById('topic_prefix').value = '';
                     // Fetch the updated (empty) configuration
                     fetchMqttConfig();
                 } else {
