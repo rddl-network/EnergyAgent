@@ -8,11 +8,11 @@ import platform
 # system pick and optimistic architecture selection
 if platform.system() == "Linux":
     if platform.processor() == "x86_64":
-        lib_path = "app/lib/linux/x86_64/libRDDLC.a"
+        lib_path = "app/lib/linux/x86_64/libRDDLC.so"
     elif os.uname().machine == "x86_64":  # linux-docker image has an empty platform.system() value
-        lib_path = "app/lib/linux/x86_64/libRDDLC.a"
+        lib_path = "app/lib/linux/x86_64/libRDDLC.so"
     else:
-        lib_path = "app/lib/linux/armv7/libRDDLC.a"
+        lib_path = "app/lib/linux/armv7/libRDDLC.so"
 else:
     sys.exit("unsupported OS, cannot load TA Wallet connector")
 
