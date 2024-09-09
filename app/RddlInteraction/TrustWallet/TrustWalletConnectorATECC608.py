@@ -4,7 +4,7 @@ import sys
 from abc import ABC
 from ctypes import c_int, c_uint8, c_size_t, POINTER
 import threading
-from sys import platform
+import platform
 
 from bip_utils import Bip39SeedGenerator
 from mnemonic import Mnemonic

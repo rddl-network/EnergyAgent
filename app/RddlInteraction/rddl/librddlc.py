@@ -2,17 +2,17 @@ import ctypes
 import os
 import sys
 from ctypes import c_uint8, c_char_p, c_int, c_size_t, c_bool, POINTER, create_string_buffer
-from sys import platform
+import platform
 
 # Load the shared library
 # system pick and optimistic architecture selection
 if platform.system() == "Linux":
     if platform.processor() == "x86_64":
-        lib_path = "app/lib/linux/x86_64/libRDDL.a"
+        lib_path = "app/lib/linux/x86_64/libRDDLC.a"
     elif os.uname().machine == "x86_64":  # linux-docker image has an empty platform.system() value
-        lib_path = "app/lib/linux/x86_64/libRDDL.a"
+        lib_path = "app/lib/linux/x86_64/libRDDLC.a"
     else:
-        lib_path = "app/lib/linux/armv7/libRDDL.a"
+        lib_path = "app/lib/linux/armv7/libRDDLC.a"
 else:
     sys.exit("unsupported OS, cannot load TA Wallet connector")
 
