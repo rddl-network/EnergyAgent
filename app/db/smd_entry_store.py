@@ -80,12 +80,14 @@ def get_smd_client_id_from_cid(cid: str) -> Optional[str]:
 
 
 @log
-def get_cids_for_client_id(client_id: str) -> List[str]:
+def get_cids_for_client_id(client_id: str, order="DESC") -> List[str]:
     """
-    Retrieve all CIDs associated with a specific client_id.
+    Retrieve all CIDs associated with a specific client_id, ordered by created_at.
     """
-    query = f"SELECT DISTINCT * FROM smd_store_cid_link WHERE client_id='{client_id}'"
-    results = execute_sql_command(query, params=(), fetch_data=True)
+    if order not in ["ASC", "DESC"]:
+        raise ValueError("Order must be either 'ASC' or 'DESC'")
 
-    # Assuming execute_sql_command returns a list of tuples
+    query = f"SELECT DISTINCT * FROM smd_store_cid_link WHERE client_id = ? ORDER BY created_at {order}"
+    results = execute_sql_command(query, params=(client_id,), fetch_data=True)
+
     return results if results else []
