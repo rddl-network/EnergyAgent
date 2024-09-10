@@ -10,7 +10,9 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     net-tools \
     wireless-tools \
     systemd-sysv \
-    wpasupplicant
+    wpasupplicant \
+    libprotobuf-c-dev \
+    protobuf-compiler
 
 # Clean up the Docker image by removing cache and unnecessary files
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
