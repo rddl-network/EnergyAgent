@@ -10,10 +10,20 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     net-tools \
     wireless-tools \
     systemd-sysv \
-    wpasupplicant \       
+    wpasupplicant \
     libprotobuf-c-dev \
     protobuf-compiler \
-    i2c-tools
+    i2c-tools \
+    cmake
+
+# Clone and build cryptoauthlib
+RUN git clone https://github.com/MicrochipTech/cryptoauthlib.git && \
+    cd cryptoauthlib && \
+    mkdir build && \
+    cd build && \
+    cmake -DATCA_HAL_I2C=ON -DATCA_I2C_IFACE=ON .. && \
+    make && \
+    make install
 
 # Clean up the Docker image by removing cache and unnecessary files
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
