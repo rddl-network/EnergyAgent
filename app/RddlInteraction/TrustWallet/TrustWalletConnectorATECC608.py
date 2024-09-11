@@ -103,7 +103,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
     # Implement other methods from ITrustWalletConnector...
 
     @log
-    def create_mnemonic_and_seed(self):
+    def create_mnemonic(self):
         with self._lock:
             mnemo = Mnemonic("english")
             mnemonic = mnemo.generate(strength=256)  # 24 words
