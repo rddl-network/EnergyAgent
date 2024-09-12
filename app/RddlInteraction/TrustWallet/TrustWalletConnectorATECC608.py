@@ -46,6 +46,12 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
         # Initialize function signatures
         self.atecc608_lib.atecc_handler_init.argtypes = [c_int, c_int]
         self.atecc608_lib.atecc_handler_init.restype = c_int
+        self.atecc608_lib.atecc_handler_write_configuration.argtypes = [POINTER(c_uint8), c_size_t]
+        self.atecc608_lib.atecc_handler_write_configuration.restype = c_int
+        self.atecc608_lib.atecc_handler_lock_zone.argtypes = [c_uint8]
+        self.atecc608_lib.atecc_handler_lock_zone.restype = c_int
+        self.atecc608_lib.atecc_handler_inject_priv_key.argtypes = [c_int, POINTER(c_uint8)]
+        self.atecc608_lib.atecc_handler_inject_priv_key.restype = c_int
         self.atecc608_lib.atecc_handler_genkey.argtypes = [c_int, POINTER(c_uint8)]
         self.atecc608_lib.atecc_handler_genkey.restype = c_int
         self.atecc608_lib.atecc_handler_get_public_key.argtypes = [c_int, POINTER(c_uint8)]
@@ -63,6 +69,29 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
         status = self.atecc608_lib.atecc_handler_init(I2C_ADDR, 1)
         if status:
             raise RuntimeError(f"Failed to initialize ATECC608: {status}")
+
+    @log
+    def write_atecc_config(self):
+        with self._lock:
+            status = self.atecc608_lib.atecc_handler_init(I2C_ADDR, 1)
+            if status:
+                raise RuntimeError(f"Failed to initialize ATECC608: {status}")
+
+            ECCX08_DEFAULT_CONFIGURATION_VALS = (c_uint8 * 112)()  # Adjust the size accordingly
+            status = self.atecc608_lib.atecc_handler_write_configuration(ECCX08_DEFAULT_CONFIGURATION_VALS, 112)
+            if status:
+                raise RuntimeError(f"Failed to write configuration: {status}")
+
+            status = self.atecc608_lib.atecc_handler_lock_zone(0)
+            if status:
+                raise RuntimeError(f"Failed to lock zone: {status}")
+
+    @log
+    def inject_priv_key(self, priv_key: bytes):
+        with self._lock:
+            status = self.atecc608_lib.atecc_handler_inject_priv_key(1, priv_key)
+            if status:
+                raise RuntimeError(f"Failed to inject private key: {status}")
 
     @log
     def create_keypair_nist(self, ctx: int) -> str:
