@@ -52,10 +52,10 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
         self.atecc608_lib.atecc_handler_sign.restype = c_int
         self.atecc608_lib.atecc_handler_verify.argtypes = [c_int, POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
         self.atecc608_lib.atecc_handler_verify.restype = c_int
-        self.atecc608_lib.attecc_handler_write_data.argtypes = [c_int, POINTER(c_uint8), c_size_t]
-        self.atecc608_lib.attecc_handler_write_data.restype = c_int
-        self.atecc608_lib.attecc_handler_read_data.argtypes = [c_int, POINTER(c_uint8), c_size_t]
-        self.atecc608_lib.attecc_handler_read_data.restype = c_int
+        self.atecc608_lib.atecc_handler_write_data.argtypes = [c_int, POINTER(c_uint8), c_size_t]
+        self.atecc608_lib.atecc_handler_write_data.restype = c_int
+        self.atecc608_lib.atecc_handler_read_data.argtypes = [c_int, POINTER(c_uint8), c_size_t]
+        self.atecc608_lib.atecc_handler_read_data.restype = c_int
 
         # Initialize the ATECC608
         status = self.atecc608_lib.atecc_handler_init(0xC0, 1)
@@ -108,7 +108,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             mnemo = Mnemonic("english")
             mnemonic = mnemo.generate(strength=256)  # 24 words
             seed = Bip39SeedGenerator(mnemonic).Generate()
-            status = self.atecc608_lib.attecc_handler_write_data(0xC1, seed, len(seed))
+            status = self.atecc608_lib.atecc_handler_write_data(0xC1, seed, len(seed))
             if status:
                 raise RuntimeError(f"Failed to store seed: {status}")
             return mnemonic, seed
@@ -117,10 +117,12 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
     def recover_from_mnemonic(self, mnemonic: str) -> str:
         with self._lock:
             seed = Bip39SeedGenerator(mnemonic).Generate()
-            status = self.atecc608_lib.attecc_handler_write_data(0xC1, seed, len(seed))
+            status = self.atecc608_lib.atecc_handler_write_data(0xC1, seed, len(seed))
             if status:
                 raise RuntimeError(f"Failed to store seed: {status}")
             return seed.hex()
+
+    l
 
     @log
     def get_planetmint_keys(self) -> PlanetMintKeys:
@@ -147,7 +149,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
     @log
     def sign_hash_with_rddl(self, data_to_sign: str) -> str:
         with self._lock:
-            seed = (c_uint8 * 64)()
+            seed = (c_uint8 * 64)()  # type: ignore # mypy bug  # https
             status = self.atecc608_lib.atecc_handler_read_data(0xC2, seed, 64)
             if status:
                 raise RuntimeError(f"Failed to get public key: {status}")
