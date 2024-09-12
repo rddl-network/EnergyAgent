@@ -6,9 +6,9 @@ from app.RddlInteraction.TrustWallet.TrustWalletConnectorATECC608 import TrustWa
 
 trust_wallet = TrustWalletConnectorATECC608()
 
+
 def print_hex_buffer(input):
     print(" ".join(f"{x:02X}" for x in input))
-
 
 
 def provision_atecc():
@@ -64,6 +64,3 @@ def provision_atecc():
 
 if __name__ == "__main__":
     provision_atecc()
-
-
-    
