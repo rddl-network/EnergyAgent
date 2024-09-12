@@ -15,6 +15,8 @@ from app.RddlInteraction.rddl.librddlc import set_raw_seed, get_priv_key_planetm
 from app.helpers.models import PlanetMintKeys
 from app.helpers.logs import log
 
+I2C_ADDR = 0x21
+
 
 class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
     _instance = None
@@ -58,7 +60,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
         self.atecc608_lib.atecc_handler_read_data.restype = c_int
 
         # Initialize the ATECC608
-        status = self.atecc608_lib.atecc_handler_init(0xC0, 1)
+        status = self.atecc608_lib.atecc_handler_init(I2C_ADDR, 1)
         if status:
             raise RuntimeError(f"Failed to initialize ATECC608: {status}")
 
