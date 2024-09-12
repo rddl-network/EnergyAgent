@@ -6,16 +6,14 @@ from app.RddlInteraction.TrustWallet.TrustWalletConnectorATECC608 import TrustWa
 
 trust_wallet = TrustWalletConnectorATECC608()
 
-
 def print_hex_buffer(input):
     print(" ".join(f"{x:02X}" for x in input))
 
-
-def provision_atecc():
+def write_atecc_config():
     status = trust_wallet.atecc608_lib.atecc_handler_init(0xC0, 1)
     if status:
         print(f"atecc_handler_init Fail! {status}")
-        return 0
+        return
 
     ECCX08_DEFAULT_CONFIGURATION_VALS = (c_uint8 * 112)()  # Adjust the size accordingly
     status = trust_wallet.atecc608_lib.atecc_handler_write_configuration(ECCX08_DEFAULT_CONFIGURATION_VALS, 112)
@@ -27,6 +25,12 @@ def provision_atecc():
     if status:
         print(f"atecc_handler_lock_zone Fail! {status}")
         return
+
+def provision_atecc():
+    status = trust_wallet.atecc608_lib.atecc_handler_init(0xC0, 1)
+    if status:
+        print(f"atecc_handler_init Fail! {status}")
+        return 0
 
     slotID = 1
     pub_key = (c_uint8 * 64)()
@@ -63,4 +67,8 @@ def provision_atecc():
 
 
 if __name__ == "__main__":
-    provision_atecc()
+    write_atecc_config()
+    # provision_atecc()
+
+
+    
