@@ -15,7 +15,7 @@ from app.RddlInteraction.rddl.librddlc import set_raw_seed, get_priv_key_planetm
 from app.helpers.models import PlanetMintKeys
 from app.helpers.logs import log
 
-I2C_ADDR = 0x21
+I2C_ADDR = 0xC0
 
 
 class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
