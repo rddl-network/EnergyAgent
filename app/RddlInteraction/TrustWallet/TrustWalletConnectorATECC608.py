@@ -122,8 +122,6 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
                 raise RuntimeError(f"Failed to store seed: {status}")
             return seed.hex()
 
-    l
-
     @log
     def get_planetmint_keys(self) -> PlanetMintKeys:
         with self._lock:
