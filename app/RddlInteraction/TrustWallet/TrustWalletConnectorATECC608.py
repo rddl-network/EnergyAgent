@@ -193,4 +193,4 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
 
 
 def print_hex_buffer(input):
-    return ''.join([f"{x:02x}" for x in input])
+    return "".join([f"{x:02x}" for x in input])
