@@ -48,6 +48,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
         self.atecc608_lib.atecc_handler_init.restype = c_int
         self.atecc608_lib.atecc_handler_write_configuration.argtypes = [POINTER(c_uint8), c_size_t]
         self.atecc608_lib.atecc_handler_write_configuration.restype = c_int
+        self.atecc608_lib.atecc_handler_write_default_configuration.restype = c_int
         self.atecc608_lib.atecc_handler_lock_zone.argtypes = [c_uint8]
         self.atecc608_lib.atecc_handler_lock_zone.restype = c_int
         self.atecc608_lib.atecc_handler_inject_priv_key.argtypes = [c_int, POINTER(c_uint8)]
@@ -79,8 +80,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             if status:
                 raise RuntimeError(f"Failed to initialize ATECC608: {status}")
 
-                ECCX08_DEFAULT_CONFIGURATION_VALS = (c_uint8 * 112)()  # Adjust the size accordingly
-            status = self.atecc608_lib.atecc_handler_write_configuration(ECCX08_DEFAULT_CONFIGURATION_VALS, 112)
+            status = self.atecc608_lib.atecc_handler_write_default_configuration()
             if status:
                 raise RuntimeError(f"Failed to write configuration: {status}")
 
@@ -102,7 +102,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             status = self.atecc608_lib.atecc_handler_genkey(ctx, pub_key)
             if status:
                 raise RuntimeError(f"Failed to generate key: {status}")
-            return bytes(pub_key).hex()
+            return print_hex_buffer(pub_key)
 
     @log
     def get_machine_id(self, ctx: int) -> str:
@@ -111,7 +111,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             status = self.atecc608_lib.atecc_handler_get_public_key(ctx, pub_key)
             if status:
                 raise RuntimeError(f"Failed to get public key: {status}")
-            return bytes(pub_key).hex()
+            return print_hex_buffer(pub_key)
 
     @log
     def sign_with_nist(self, data_to_sign: str, ctx: int) -> str:
@@ -121,7 +121,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             status = self.atecc608_lib.atecc_handler_sign(ctx, msg, signature)
             if status:
                 raise RuntimeError(f"Failed to sign data: {status}")
-            return bytes(signature).hex()
+            return print_hex_buffer(signature)
 
     @log
     def verify_nist_signature(self, data_to_sign: str, signature: str, ctx: int) -> bool:
@@ -190,3 +190,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             signature = signing_key.sign_deterministic(data_to_sign.encode())
             wipe_seed()
             return bytes(signature).hex()
+
+
+def print_hex_buffer(input):
+    return ''.join([f"{x:02x}" for x in input])
