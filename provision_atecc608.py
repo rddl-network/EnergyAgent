@@ -4,6 +4,328 @@ import sys
 
 from app.RddlInteraction.TrustWallet.TrustWalletConnectorATECC608 import TrustWalletConnectorATECC608
 
+default_config_vals = [
+    # I2C_Address
+    0xC0,
+    # Reserved
+    0x00,
+    # OTPmode
+    0x55,
+    # ChipMode
+    0x00,
+    # SlotConfig[0]
+    0x83,
+    0x60,
+    # SlotConfig[1]
+    0x87,
+    0x60,
+    # SlotConfig[2]
+    0x8F,
+    0x60,
+    # SlotConfig[3]
+    0x83,
+    0x60,
+    # SlotConfig[4]
+    0x83,
+    0x60,
+    # SlotConfig[5]
+    0x8F,
+    0x8F,
+    # SlotConfig[6]
+    0x9F,
+    0x8F,
+    # SlotConfig[7]
+    0xAF,
+    0x8F,
+    # SlotConfig[8]
+    0x00,
+    0x00,
+    # SlotConfig[9]
+    0x00,
+    0x00,
+    # SlotConfig[10]
+    0x00,
+    0x00,
+    # SlotConfig[11]
+    0x00,
+    0x00,
+    # SlotConfig[12]
+    0x00,
+    0x00,
+    # SlotConfig[13]
+    0x00,
+    0x00,
+    # SlotConfig[14]
+    0x00,
+    0x00,
+    # SlotConfig[15]
+    0xAF,
+    0x8F,
+    # Counter[0]
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    # Counter[1]
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    # LastKeyUse[0-15]
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF,  # LastKeyUse[0-3]
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF,  # LastKeyUse[4-7]
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF,  # LastKeyUse[8-11]
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF,  # LastKeyUse[12-15]
+    # UserExtra
+    0x00,
+    # Selector
+    0x00,
+    # LockValue
+    0x55,
+    # LockConfig
+    0x55,
+    # SlotLocked
+    0xFF,
+    0xFF,
+    # RFU (Reserved for Future Use)
+    0x00,
+    0x00,
+    # X509format
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    # KeyConfig[0]
+    0x33,
+    0x00,
+    # KeyConfig[1]
+    0x33,
+    0x00,
+    # KeyConfig[2]
+    0x33,
+    0x00,
+    # KeyConfig[3]
+    0x1C,
+    0x00,
+    # KeyConfig[4]
+    0x33,
+    0x00,
+    # KeyConfig[5]
+    0x1C,
+    0x00,
+    # KeyConfig[6]
+    0x1C,
+    0x00,
+    # KeyConfig[7]
+    0x1C,
+    0x00,
+    # KeyConfig[8]
+    0x3C,
+    0x00,
+    # KeyConfig[9]
+    0x3C,
+    0x00,
+    # KeyConfig[10]
+    0x3C,
+    0x00,
+    # KeyConfig[11]
+    0x3C,
+    0x00,
+    # KeyConfig[12]
+    0x3C,
+    0x00,
+    # KeyConfig[13]
+    0x3C,
+    0x00,
+    # KeyConfig[14]
+    0x3C,
+    0x00,
+    # KeyConfig[15]
+    0x1C,
+    0x00,
+]
+
+probably_fixed_config_vals = [
+    # I2C_Address
+    0xC0,
+    # Reserved
+    0x00,
+    # OTPmode
+    0x55,
+    # ChipMode
+    0x00,
+    # SlotConfig[0]
+    0x83,
+    0x70,  # Adjusted IsSecret bit (bit 14) set to 1
+    # SlotConfig[1]
+    0x87,
+    0x70,  # Adjusted IsSecret bit set to 1
+    # SlotConfig[2]
+    0x8F,
+    0x70,  # Adjusted IsSecret bit set to 1
+    # SlotConfig[3]
+    0x83,
+    0x70,  # Adjusted IsSecret bit set to 1
+    # SlotConfig[4]
+    0x83,
+    0x70,  # Adjusted IsSecret bit set to 1
+    # SlotConfig[5]
+    0x8F,
+    0x8F,
+    # SlotConfig[6]
+    0x9F,
+    0x8F,
+    # SlotConfig[7]
+    0xAF,
+    0x8F,
+    # SlotConfig[8]
+    0x00,
+    0x00,
+    # SlotConfig[9]
+    0x00,
+    0x00,
+    # SlotConfig[10]
+    0x00,
+    0x00,
+    # SlotConfig[11]
+    0x00,
+    0x00,
+    # SlotConfig[12]
+    0x00,
+    0x00,
+    # SlotConfig[13]
+    0x00,
+    0x00,
+    # SlotConfig[14]
+    0x00,
+    0x00,
+    # SlotConfig[15]
+    0xAF,
+    0x8F,
+    # Counter[0]
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    # Counter[1]
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    # LastKeyUse[0-15]
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF,  # LastKeyUse[0-3]
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF,  # LastKeyUse[4-7]
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF,  # LastKeyUse[8-11]
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF,  # LastKeyUse[12-15]
+    # UserExtra
+    0x00,
+    # Selector
+    0x00,
+    # LockValue
+    0x55,
+    # LockConfig
+    0x55,
+    # SlotLocked
+    0xFF,
+    0xFF,
+    # RFU (Reserved for Future Use)
+    0x00,
+    0x00,
+    # X509format
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    # KeyConfig[0]
+    0x33,
+    0x80,  # Adjusted Private bit (bit 15) set to 1
+    # KeyConfig[1]
+    0x33,
+    0x80,  # Adjusted Private bit set to 1
+    # KeyConfig[2]
+    0x33,
+    0x80,  # Adjusted Private bit set to 1
+    # KeyConfig[3]
+    0x1C,
+    0x80,  # Adjusted Private bit set to 1
+    # KeyConfig[4]
+    0x33,
+    0x80,  # Adjusted Private bit set to 1
+    # KeyConfig[5]
+    0x1C,
+    0x00,
+    # KeyConfig[6]
+    0x1C,
+    0x00,
+    # KeyConfig[7]
+    0x1C,
+    0x00,
+    # KeyConfig[8]
+    0x3C,
+    0x00,
+    # KeyConfig[9]
+    0x3C,
+    0x00,
+    # KeyConfig[10]
+    0x3C,
+    0x00,
+    # KeyConfig[11]
+    0x3C,
+    0x00,
+    # KeyConfig[12]
+    0x3C,
+    0x00,
+    # KeyConfig[13]
+    0x3C,
+    0x00,
+    # KeyConfig[14]
+    0x3C,
+    0x00,
+    # KeyConfig[15]
+    0x1C,
+    0x00,
+]
+
 trust_wallet = TrustWalletConnectorATECC608()
 
 
@@ -17,7 +339,7 @@ def write_atecc_config():
         print(f"atecc_handler_init Fail! {status}")
         return
 
-    ECCX08_DEFAULT_CONFIGURATION_VALS = (c_uint8 * 112)()  # Adjust the size accordingly
+    ECCX08_DEFAULT_CONFIGURATION_VALS = (c_uint8 * 112)(default_config_vals)  # Adjust the size accordingly
     status = trust_wallet.atecc608_lib.atecc_handler_write_configuration(ECCX08_DEFAULT_CONFIGURATION_VALS, 112)
     if status:
         print(f"atecc_handler_write_configuration Fail! {status}")
