@@ -58,7 +58,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
         self.atecc608_lib.atecc_handler_init.restype = c_int
         self.atecc608_lib.atecc_handler_write_configuration.argtypes = [POINTER(c_uint8), c_size_t]
         self.atecc608_lib.atecc_handler_write_configuration.restype = c_int
-        self.atecc608_lib.atecc_handler_write_default_configuration.restype = c_int
+        self.atecc608_lib.atecc_handle_write_default_configuration.restype = c_int
         self.atecc608_lib.atecc_handler_lock_zone.argtypes = [c_uint8]
         self.atecc608_lib.atecc_handler_lock_zone.restype = c_int
         self.atecc608_lib.atecc_handler_inject_priv_key.argtypes = [c_int, POINTER(c_uint8)]
@@ -90,7 +90,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             if status:
                 raise RuntimeError(f"Failed to initialize ATECC608: {status}")
 
-            status = self.atecc608_lib.atecc_handler_write_default_configuration()
+            status = self.atecc608_lib.atecc_handle_write_default_configuration()
             if status:
                 raise RuntimeError(f"Failed to write configuration: {status}")
 
