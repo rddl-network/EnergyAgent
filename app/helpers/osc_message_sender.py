@@ -3,6 +3,8 @@ import os
 from time import sleep
 
 from osc4py3.oscbuildparse import encode_packet
+
+from app.dependencies import config
 from app.helpers.models import OSCResponse
 
 
@@ -94,4 +96,6 @@ def extract_information(response_bytes):
 
 
 def is_not_connected(wallet_port):
+    if config.trust_wallet_type == "ATECC608":
+        return False
     return not os.path.exists(wallet_port)
