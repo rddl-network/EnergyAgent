@@ -168,12 +168,14 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
         with self._lock:
             seed = (c_uint8 * 64)()
             status = self.atecc608_lib.atecc_handler_read_data(0xC2, seed, 64)
+            if status:
+                raise RuntimeError(f"Failed to get public key: {status}")
             planet_mint_keys = PlanetMintKeys()
+            set_raw_seed(seed)
             planet_mint_keys.planetmint_address = get_rddl_address()
             planet_mint_keys.extended_planetmint_pubkey = get_pub_key_planetmint()
             planet_mint_keys.extended_liquid_pubkey = get_pub_key_liquid()
-            if status:
-                raise RuntimeError(f"Failed to get public key: {status}")
+            wipe_seed()
             return planet_mint_keys
 
     @log
