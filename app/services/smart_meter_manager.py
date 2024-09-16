@@ -200,7 +200,7 @@ router = APIRouter(
 async def start_smart_meter(
     manager: SmartMeterManager = Depends(get_smart_meter_manager),
 ):
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Wallet not connected")
     await manager.start()
     return {"status": manager.status}
@@ -225,7 +225,7 @@ async def smart_meter_status(
 async def restart_smart_meter(
     manager: SmartMeterManager = Depends(get_smart_meter_manager),
 ):
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Wallet not connected")
     await manager.restart()
     return {"status": manager.status}

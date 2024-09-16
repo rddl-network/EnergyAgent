@@ -14,7 +14,7 @@ router = APIRouter(
 
 @router.get("/mnemonic")
 def mnemonic_to_private_key():
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     mnemonic = trust_wallet_instance.create_mnemonic()
     return {"mnemonic": mnemonic}
@@ -22,7 +22,7 @@ def mnemonic_to_private_key():
 
 @router.get("/recover-mnemonic/")
 def recover_mnemonic(mnemonic: str):
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     mnemonic = trust_wallet_instance.recover_from_mnemonic(mnemonic)
     return {"mnemonic": mnemonic}
@@ -30,7 +30,7 @@ def recover_mnemonic(mnemonic: str):
 
 @router.get("/get-planetmint-keys")
 def get_planetmint_keys() -> PlanetMintKeys:
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     planetmint_keys = trust_wallet_instance.get_planetmint_keys()
     return planetmint_keys
@@ -38,7 +38,7 @@ def get_planetmint_keys() -> PlanetMintKeys:
 
 @router.get("/get-machine-id")
 def get_machine_id() -> str:
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     machine_id = trust_wallet_instance.get_machine_id(pre_attest_slot)
     return machine_id

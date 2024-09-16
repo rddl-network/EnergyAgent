@@ -37,7 +37,7 @@ router = APIRouter(
 
 @router.get("/createaccount")
 async def createAccount():
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         machine_id = trust_wallet_instance.get_machine_id(pre_attest_slot)
@@ -56,7 +56,7 @@ async def createAccount():
 
 @router.get("/account")
 async def getAccount():
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
@@ -72,7 +72,7 @@ async def getAccount():
 
 @router.get("/machine")
 async def getMachineAttestation():
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
@@ -87,7 +87,7 @@ async def getMachineAttestation():
 
 @router.get("/attestmachine")
 async def getAttestMachine(name: str, additional_info: str):
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
@@ -146,7 +146,7 @@ def fetch_gps_data():
 
 @router.get("/notarize")
 async def notarize():
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
@@ -167,7 +167,7 @@ async def notarize():
 
 @router.get("/redeemclaims/{beneficiary}")
 async def redeemClaims(beneficiary: str):
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
