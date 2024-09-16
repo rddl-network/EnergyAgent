@@ -75,8 +75,6 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
         self.atecc608_lib.atecc_handler_write_data.restype = c_int
         self.atecc608_lib.atecc_handler_read_data.argtypes = [c_int, POINTER(c_uint8), c_size_t]
         self.atecc608_lib.atecc_handler_read_data.restype = c_int
-        self.atecc608_lib.check_lock_zone.argtypes = [c_uint8]
-        self.atecc608_lib.check_lock_zone.restype = c_int
 
         # Initialize the ATECC608
         status = self.atecc608_lib.atecc_handler_init(I2C_ADDR, 1)
