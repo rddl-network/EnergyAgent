@@ -11,11 +11,21 @@ from mnemonic import Mnemonic
 from ecdsa import SigningKey, SECP256k1
 
 from app.RddlInteraction.TrustWallet.ITrustWalletConnector import ITrustWalletConnector
-from app.RddlInteraction.rddl.librddlc import set_raw_seed, get_priv_key_planetmint, wipe_seed, get_priv_key_liquid
+from app.RddlInteraction.rddl.librddlc import (
+    set_raw_seed,
+    get_priv_key_planetmint,
+    wipe_seed,
+    get_priv_key_liquid,
+    get_rddl_address,
+    get_pub_key_planetmint,
+    get_pub_key_liquid,
+)
 from app.helpers.models import PlanetMintKeys
 from app.helpers.logs import log
 
 I2C_ADDR = 0xC0
+PLANETMINT_SLOT = 3
+PRE_ATTEST_SLOT = 3
 
 
 class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
@@ -91,7 +101,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
     @log
     def inject_priv_key(self, priv_key: bytes):
         with self._lock:
-            status = self.atecc608_lib.atecc_handler_inject_priv_key(1, priv_key)
+            status = self.atecc608_lib.atecc_handler_inject_priv_key(PRE_ATTEST_SLOT, priv_key)
             if status:
                 raise RuntimeError(f"Failed to inject private key: {status}")
 
@@ -141,7 +151,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             mnemo = Mnemonic("english")
             mnemonic = mnemo.generate(strength=256)  # 24 words
             seed = Bip39SeedGenerator(mnemonic).Generate()
-            status = self.atecc608_lib.atecc_handler_write_data(0xC1, seed, len(seed))
+            status = self.atecc608_lib.atecc_handler_write_data(PLANETMINT_SLOT, seed, len(seed))
             if status:
                 raise RuntimeError(f"Failed to store seed: {status}")
             return mnemonic, seed
@@ -150,7 +160,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
     def recover_from_mnemonic(self, mnemonic: str) -> str:
         with self._lock:
             seed = Bip39SeedGenerator(mnemonic).Generate()
-            status = self.atecc608_lib.atecc_handler_write_data(0xC1, seed, len(seed))
+            status = self.atecc608_lib.atecc_handler_write_data(PLANETMINT_SLOT, seed, len(seed))
             if status:
                 raise RuntimeError(f"Failed to store seed: {status}")
             return seed.hex()
@@ -160,14 +170,19 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
         with self._lock:
             seed = (c_uint8 * 64)()
             status = self.atecc608_lib.atecc_handler_read_data(0xC2, seed, 64)
+            planet_mint_keys = PlanetMintKeys()
+            planet_mint_keys.planetmint_address = get_rddl_address()
+            planet_mint_keys.extended_planetmint_pubkey = get_pub_key_planetmint()
+            planet_mint_keys.extended_liquid_pubkey = get_pub_key_liquid()
             if status:
                 raise RuntimeError(f"Failed to get public key: {status}")
+            return planet_mint_keys
 
     @log
     def sign_hash_with_planetmint(self, data_to_sign: str) -> str:
         with self._lock:
             seed = (c_uint8 * 64)()
-            status = self.atecc608_lib.atecc_handler_read_data(0xC2, seed, 64)
+            status = self.atecc608_lib.atecc_handler_read_data(PLANETMINT_SLOT, seed, 64)
             if status:
                 raise RuntimeError(f"Failed to get public key: {status}")
             set_raw_seed(seed)
@@ -181,7 +196,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
     def sign_hash_with_rddl(self, data_to_sign: str) -> str:
         with self._lock:
             seed = (c_uint8 * 64)()  # type: ignore # mypy bug  # https
-            status = self.atecc608_lib.atecc_handler_read_data(0xC2, seed, 64)
+            status = self.atecc608_lib.atecc_handler_read_data(PLANETMINT_SLOT, seed, 64)
             if status:
                 raise RuntimeError(f"Failed to get public key: {status}")
             set_raw_seed(seed)
