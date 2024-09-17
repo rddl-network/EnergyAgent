@@ -32,9 +32,9 @@ def provision_atecc():
     print("Signature:")
     print(signature)
 
-    status = trust_wallet.verify_nist_signature(pub_key, signature, slotID)
-    if status:
-        print(f"atecc_handler_verify Fail! {status}")
+    valid = trust_wallet.verify_nist_signature(pub_key, signature, slotID)
+    if not valid:
+        print(f"atecc_handler_verify Fail!")
         return 0
 
     print("TEST ENDED SUCCESSFULLY!")
