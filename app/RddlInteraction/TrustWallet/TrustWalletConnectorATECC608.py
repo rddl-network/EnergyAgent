@@ -25,7 +25,7 @@ from app.helpers.logs import log
 
 I2C_ADDR = 0xC0
 PLANETMINT_SLOT = 3
-PRE_ATTEST_SLOT = 3
+PRE_ATTEST_SLOT = 2
 
 
 class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):

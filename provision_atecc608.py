@@ -19,21 +19,21 @@ def write_atecc_config():
 
 
 def provision_atecc():
-    slotID = 1
+    slotID = 2
     pub_key = trust_wallet.create_keypair_nist(slotID)
     print("Pub key generated:")
-    print_hex_buffer(pub_key)
+    print(pub_key)
 
     status = trust_wallet.get_machine_id(slotID)
     if status:
         print(f"atecc_handler_get_public_key Fail! {status}")
         return 0
     print("Pub key:")
-    print_hex_buffer(pub_key)
+    print(pub_key)
 
     signature = trust_wallet.sign_with_nist(pub_key, slotID)
     print("Signature:")
-    print_hex_buffer(signature)
+    print(signature)
 
     status = trust_wallet.verify_nist_signature(pub_key, signature, slotID)
     if status:
