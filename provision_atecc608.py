@@ -24,12 +24,9 @@ def provision_atecc():
     print("Pub key generated:")
     print(pub_key)
 
-    status = trust_wallet.get_machine_id(slotID)
-    if status:
-        print(f"atecc_handler_get_public_key Fail! {status}")
-        return 0
+    pub_key_2 = trust_wallet.get_machine_id(slotID)
     print("Pub key:")
-    print(pub_key)
+    print(pub_key_2)
 
     signature = trust_wallet.sign_with_nist(pub_key, slotID)
     print("Signature:")

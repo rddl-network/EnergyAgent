@@ -124,7 +124,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
     @log
     def sign_with_nist(self, data_to_sign: str, ctx: int) -> str:
         with self._lock:
-            msg = (c_uint8 * 32)(*bytes.fromhex(data_to_sign))
+            msg = (c_uint8 * 64)(*bytes.fromhex(data_to_sign))
             signature = (c_uint8 * 64)()
             status = self.atecc608_lib.atecc_handler_sign(ctx, msg, signature)
             if status:
@@ -134,7 +134,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
     @log
     def verify_nist_signature(self, data_to_sign: str, signature: str, ctx: int) -> bool:
         with self._lock:
-            msg = (c_uint8 * 32)(*bytes.fromhex(data_to_sign))
+            msg = (c_uint8 * 64)(*bytes.fromhex(data_to_sign))
             sig = (c_uint8 * 64)(*bytes.fromhex(signature))
             pub_key = (c_uint8 * 64)()
             self.atecc608_lib.atecc_handler_get_public_key(ctx, pub_key)
