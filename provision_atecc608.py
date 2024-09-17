@@ -1,7 +1,3 @@
-import ctypes
-from ctypes import c_uint8, c_size_t, POINTER, byref, create_string_buffer
-import binascii
-
 from app.RddlInteraction.TrustWallet.TrustWalletConnectorATECC608 import TrustWalletConnectorATECC608
 
 trust_wallet = TrustWalletConnectorATECC608()
@@ -55,6 +51,7 @@ def test_keygen():
     print(planetmint_keys.planetmint_address)
     print(planetmint_keys.extended_planetmint_pubkey)
     print(planetmint_keys.extended_liquid_pubkey)
+
 
 if __name__ == "__main__":
     # write_atecc_config()  # Uncomment this line to write the default configuration

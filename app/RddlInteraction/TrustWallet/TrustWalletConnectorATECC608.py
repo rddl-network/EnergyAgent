@@ -24,7 +24,7 @@ from app.helpers.models import PlanetMintKeys
 from app.helpers.logs import log
 
 I2C_ADDR = 0xC0
-PLANETMINT_SLOT = 3
+PLANETMINT_SLOT = 9
 PRE_ATTEST_SLOT = 2
 
 
