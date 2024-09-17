@@ -4,7 +4,6 @@ from time import sleep
 
 from osc4py3.oscbuildparse import encode_packet
 
-from app.dependencies import config
 from app.helpers.models import OSCResponse
 
 
