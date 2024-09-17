@@ -38,8 +38,23 @@ def provision_atecc():
         return 0
 
     print("TEST ENDED SUCCESSFULLY!")
+
     return 0
 
+
+def test_keygen():
+    print("CREATE MNEMONIC")
+    mnemonic, seed = trust_wallet.create_mnemonic()
+    print(mnemonic)
+    print(seed)
+
+    recovered_seed = trust_wallet.recover_from_mnemonic(mnemonic)
+    print(recovered_seed)
+
+    planetmint_keys = trust_wallet.get_planetmint_keys()
+    print(planetmint_keys.planetmint_address)
+    print(planetmint_keys.extended_planetmint_pubkey)
+    print(planetmint_keys.extended_liquid_pubkey)
 
 if __name__ == "__main__":
     # write_atecc_config()  # Uncomment this line to write the default configuration

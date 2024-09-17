@@ -149,7 +149,8 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             mnemo = Mnemonic("english")
             mnemonic = mnemo.generate(strength=256)  # 24 words
             seed = Bip39SeedGenerator(mnemonic).Generate()
-            status = self.atecc608_lib.atecc_handler_write_data(PLANETMINT_SLOT, seed, len(seed))
+            seed_to_store = (c_uint8 * 64)(*seed)
+            status = self.atecc608_lib.atecc_handler_write_data(PLANETMINT_SLOT, seed_to_store, len(seed_to_store))
             if status:
                 raise RuntimeError(f"Failed to store seed: {status}")
             return mnemonic, seed
@@ -158,7 +159,8 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
     def recover_from_mnemonic(self, mnemonic: str) -> str:
         with self._lock:
             seed = Bip39SeedGenerator(mnemonic).Generate()
-            status = self.atecc608_lib.atecc_handler_write_data(PLANETMINT_SLOT, seed, len(seed))
+            seed_to_store = (c_uint8 * 64)(*seed)
+            status = self.atecc608_lib.atecc_handler_write_data(PLANETMINT_SLOT, seed, len(seed_to_store))
             if status:
                 raise RuntimeError(f"Failed to store seed: {status}")
             return seed.hex()
