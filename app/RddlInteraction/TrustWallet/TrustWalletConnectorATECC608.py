@@ -169,7 +169,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
     def get_planetmint_keys(self) -> PlanetMintKeys:
         with self._lock:
             seed = (c_uint8 * 64)()
-            status = self.atecc608_lib.atecc_handler_read_data(0xC2, seed, 64)
+            status = self.atecc608_lib.atecc_handler_read_data(PLANETMINT_SLOT, seed, len(seed))
             if status:
                 raise RuntimeError(f"Failed to get public key: {status}")
             planet_mint_keys = PlanetMintKeys()
