@@ -55,4 +55,5 @@ def test_keygen():
 
 if __name__ == "__main__":
     # write_atecc_config()  # Uncomment this line to write the default configuration
-    provision_atecc()
+    # provision_atecc()
+    test_keygen()
