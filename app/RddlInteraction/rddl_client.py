@@ -26,6 +26,7 @@ class RDDLAgent:
         self.client = None
         self.stopped = False
         self.pop_context = PoPContext()
+        self.lock = asyncio.Lock()
 
     @log
     def setup(self):
@@ -60,6 +61,20 @@ class RDDLAgent:
 
     @log
     def on_message(self, client, topic, payload, qos, properties):
+        asyncio.create_task(self.process_message(client, topic, payload, qos, properties))
+
+    async def setContext(self, context: PoPContext):
+        async with self.lock:
+            self.pop_context = context
+
+    async def getContext(self):
+        async with self.lock:
+            pop_context = self.pop_context
+            return pop_context
+
+    @log
+    async def process_message(self, client, topic, payload, qos, properties):
+        pop_context = await self.getContext()
         try:
             decoded_payload = payload.decode()
             logger.info(f"MQTT RDDL Received message: {topic}, {decoded_payload}")
@@ -68,10 +83,7 @@ class RDDLAgent:
                 asyncio.create_task(self.challengee_pop_challenge(decoded_payload))
             elif topic == "cmnd/" + keys.planetmint_address + "/PoPInit":
                 asyncio.create_task(self.pop_init(decoded_payload))
-            elif (
-                self.pop_context.challengee != ""
-                and topic == "stat/" + self.pop_context.challengee + "/POPCHALLENGERESULT"
-            ):
+            elif pop_context.challengee != "" and topic == "stat/" + pop_context.challengee + "/POPCHALLENGERESULT":
                 asyncio.create_task(self.challenger_2_consume_pop_challenge_response(decoded_payload))
             else:
                 logger.debug("MQTT RDDL topic currently not supported: " + topic)
@@ -81,18 +93,21 @@ class RDDLAgent:
             logger.error(f"MQTT RDDL Unexpected error processing message: {e}")
 
     @log
-    async def watchdog_cancel_pop_request(self):
-        if not self.pop_context.isActive:
-            self.pop_context = PoPContext()
+    async def watchdog_cancel_pop_request(self, pop_height: int):
+        await asyncio.sleep(80)
+        pop_context = await self.getContext()
+        if pop_height != pop_context.pop_height:
+            return
+        if not pop_context.isActive:
+            await self.setContext(PoPContext)
             return
 
-        logger.info("PoP Watchdog is terminating the current PoP: " + str(self.pop_context.pop_height))
-        isChallenger = self.pop_context.isChallenger
-        await asyncio.sleep(80)
+        logger.info("PoP Watchdog is terminating the current PoP: " + str(pop_context.pop_height))
+        isChallenger = pop_context.isChallenger
         if isChallenger:
             await self.challenger_3_sendPoPResult(False)
         else:
-            self.pop_context = PoPContext()
+            await self.setContext(PoPContext)
 
     @log
     async def pop_init(self, data):
@@ -110,28 +125,28 @@ class RDDLAgent:
             + " is challenger: "
             + str(pop_context.isChallenger)
         )
-
         if pop_context.isActive:
-            self.pop_context = pop_context
+            await self.setContext(pop_context)
             insert_mqtt_activity("PoPInit " + data, "initialized", pop_context.__dict__)
-            if self.pop_context.isChallenger:
+            if pop_context.isChallenger:
                 # init PoP
-                asyncio.create_task(self.challenger_1_initPoPChallenge(self.pop_context.challengee))
+                asyncio.create_task(self.challenger_1_initPoPChallenge(pop_context.challengee))
                 # cancel PoP if challengee did not respond to the challenge
-                asyncio.create_task(self.watchdog_cancel_pop_request())
+                asyncio.create_task(self.watchdog_cancel_pop_request(pop_context.pop_height))
                 return
             else:
                 # wait for PoP challenge
                 # cancel PoP if challenger did not send out challenge
-                asyncio.create_task(self.watchdog_cancel_pop_request())
+                asyncio.create_task(self.watchdog_cancel_pop_request(pop_context.pop_height))
                 return
 
     @log
     async def challengee_pop_challenge(self, data: str):
+        pop_context = await self.getContext()
         logger.info("PoP challenge : " + data)
-        if self.pop_context.challengee != trust_wallet_instance.get_planetmint_keys().planetmint_address:
+        if pop_context.challengee != trust_wallet_instance.get_planetmint_keys().planetmint_address:
             return
-        insert_mqtt_activity("PoPChallenge " + data, "receive PoPChallenge", self.pop_context.__dict__)
+        insert_mqtt_activity("PoPChallenge " + data, "receive PoPChallenge", pop_context.__dict__)
         cid = data
         cid_data = get_value(cid)
         logger.info(f"PoP challenge cid data : {cid_data}")
@@ -139,7 +154,7 @@ class RDDLAgent:
         logger.info(f"PoP challenge cid data hex : {cid_data_hex}")
 
         payload = '{ "PoPChallenge": { "cid": "' + cid + '", "encoding": "hex", "data": "' + cid_data_hex + '"} }'
-        topic = "stat/" + self.pop_context.challengee + "/POPCHALLENGERESULT"
+        topic = "stat/" + pop_context.challengee + "/POPCHALLENGERESULT"
         msg = Message(
             topic,
             payload,
@@ -150,7 +165,7 @@ class RDDLAgent:
         )
         self.client.publish(msg)
         insert_mqtt_activity("PoPChallengeResult", "send", payload)
-        self.pop_context = PoPContext()
+        await self.setContext(pop_context)
         return
 
     @log
@@ -164,7 +179,10 @@ class RDDLAgent:
             return
 
         random_cid = random.choice(cids)
-        self.pop_context.cid = random_cid
+        pop_context = await self.getContext()
+        pop_context.cid = random_cid
+        await self.setContext(pop_context)
+        insert_mqtt_activity("PoPChallenge", "send", "CID challenged " + random_cid)
         self.client.subscribe("stat/" + challengee + "/POPCHALLENGERESULT")
         topic = "cmnd/" + challengee + "/PoPChallenge"
         msg = Message(
@@ -176,23 +194,24 @@ class RDDLAgent:
             user_property=("time", str(datetime.now())),
         )
         self.client.publish(msg)
-        insert_mqtt_activity("PoPChallenge", "send", "CID challenged " + random_cid)
+
         return
 
     @log
     async def challenger_2_consume_pop_challenge_response(self, data):
+        pop_context = await self.getContext()
         logger.info("PoP challenge result: " + data)
-        self.client.unsubscribe("stat/" + self.pop_context.challengee + "/POPCHALLENGERESULT")
+        self.client.unsubscribe("stat/" + pop_context.challengee + "/POPCHALLENGERESULT")
         try:
             jsonObj = json.loads(data)
             if not jsonObj["PoPChallenge"]:
                 logger.error('RDDL MQTT PoP Result: wrong JSON object. expected "PoPChallenge" got ' + data)
                 insert_mqtt_activity("PoPChallengeResult", "bad JSON object", "result: " + data)
                 await asyncio.create_task(self.challenger_3_sendPoPResult(False))
-            elif self.pop_context.cid != jsonObj["PoPChallenge"]["cid"]:
+            elif pop_context.cid != jsonObj["PoPChallenge"]["cid"]:
                 logger.error(
                     "RDDL MQTT PoP Result: wrong cid. expected "
-                    + self.pop_context.cid
+                    + pop_context.cid
                     + " got "
                     + jsonObj["PoPChallenge"]["cid"]
                 )
@@ -206,7 +225,7 @@ class RDDLAgent:
                 cid_data_encoded = jsonObj["PoPChallenge"]["data"]
                 cid_data = utils.fromHexString(cid_data_encoded)
                 computed_cid = compute_cid(cid_data)
-                if computed_cid == self.pop_context.cid:
+                if computed_cid == pop_context.cid:
                     insert_mqtt_activity("PoPChallengeResult", "success", "result: " + data)
                     await asyncio.create_task(self.challenger_3_sendPoPResult(True))
                 else:
@@ -219,7 +238,8 @@ class RDDLAgent:
 
     @log
     async def challenger_3_sendPoPResult(self, success: bool):
-        if not self.pop_context.isActive:
+        pop_context = await self.getContext()
+        if not pop_context.isActive:
             return
 
         keys = trust_wallet_instance.get_planetmint_keys()
@@ -227,9 +247,9 @@ class RDDLAgent:
         if status != "":
             logger.error(f"error: {status}, message: {status}")
         txMsg = getPoPResultTx(
-            self.pop_context.challengee,
-            self.pop_context.initiator,
-            self.pop_context.pop_height,
+            pop_context.challengee,
+            pop_context.initiator,
+            pop_context.pop_height,
             success,
             config.rddl.chain_id,
             accountID,
@@ -239,7 +259,7 @@ class RDDLAgent:
         insert_tx_activity_by_response(response, "PoP result")
         if response.status_code != 200:
             logger.error(f"error: {response.reason,}, message: {response.text}")
-        self.pop_context = PoPContext()
+            await self.setContext(PoPContext())
 
     @log
     async def run(self):
@@ -262,7 +282,6 @@ class RDDLAgent:
             logger.info("RDDL MQTT stop run.")
             await self.disconnect_from_mqtt()
 
-    @log
     async def postStatus(self, address: str):
         logger.info("RDDL MQTT publish status.")
         topic = "tele/" + address + "/STATE"
