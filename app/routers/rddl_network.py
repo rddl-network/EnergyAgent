@@ -10,7 +10,7 @@ from app.db.tx_store import insert_tx
 from app.db.activity_store import insert_tx_activity_by_response, get_all_activities
 from app.RddlInteraction.cid_tool import store_cid
 from app.dependencies import trust_wallet_instance, config
-from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
+from app.helpers.osc_message_sender import is_not_connected
 from app.RddlInteraction.rddl_network_config import get_rddl_network_settings
 from app.RddlInteraction.api_queries import (
     createAccountOnNetwork,
@@ -37,10 +37,10 @@ router = APIRouter(
 
 @router.get("/createaccount")
 async def createAccount():
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
-        machine_id = trust_wallet_instance.get_public_key_from_se050(pre_attest_slot)
+        machine_id = trust_wallet_instance.get_machine_id(pre_attest_slot)
         address = trust_wallet_instance.get_planetmint_keys().planetmint_address
         signature = computeMachineIDSignature(machine_id)
 
@@ -56,7 +56,7 @@ async def createAccount():
 
 @router.get("/account")
 async def getAccount():
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
@@ -72,7 +72,7 @@ async def getAccount():
 
 @router.get("/machine")
 async def getMachineAttestation():
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
@@ -87,11 +87,11 @@ async def getMachineAttestation():
 
 @router.get("/attestmachine")
 async def getAttestMachine(name: str, additional_info: str):
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
-        machine_id = trust_wallet_instance.get_public_key_from_se050(pre_attest_slot)
+        machine_id = trust_wallet_instance.get_machine_id(pre_attest_slot)
         accountID, sequence, status = getAccountInfo(config.rddl.planetmint_api, keys.planetmint_address)
         additionalCID = ""
         machineIDSig = computeMachineIDSignature(machine_id)
@@ -146,7 +146,7 @@ def fetch_gps_data():
 
 @router.get("/notarize")
 async def notarize():
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()
@@ -167,7 +167,7 @@ async def notarize():
 
 @router.get("/redeemclaims/{beneficiary}")
 async def redeemClaims(beneficiary: str):
-    if is_not_connected(config.trust_wallet_port):
+    if is_not_connected(config.trust_wallet_port, config.trust_wallet_type):
         raise HTTPException(status_code=400, detail="wallet not connected")
     try:
         keys = trust_wallet_instance.get_planetmint_keys()

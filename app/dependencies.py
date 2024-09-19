@@ -1,4 +1,7 @@
 import os
+
+from app.RddlInteraction.TrustWallet.ITrustWalletConnector import ITrustWalletConnector
+from app.RddlInteraction.TrustWallet.TrustWalletConnectorATECC608 import TrustWalletConnectorATECC608
 from app.db import init_tables, create_connection
 from app.energy_agent.data_buffer import DataBuffer
 
@@ -15,6 +18,9 @@ FILE_SMART_METER_MQTT_CONFIG = "smart_meter_mqtt_config.json"
 @log
 class Config:
     def __init__(self):
+        # secure element config
+        self.trust_wallet_type = os.environ.get("TRUST_WALLET_TYPE") or "ATECC608"
+
         # general config
         self.config_base_path = os.environ.get("CONFIG_PATH") or "/tmp"
         self.smd_topic = os.environ.get("SMD_TOPIC") or "rddl/SMD/#"
@@ -50,5 +56,12 @@ setup_logging(
     log_file_path=config.log_file_path,
 )
 
-trust_wallet_instance = TrustWalletConnector(config.trust_wallet_port)
+trust_wallet_instance: ITrustWalletConnector = None
+if config.trust_wallet_type == "ATECC608":
+    trust_wallet_instance = TrustWalletConnectorATECC608()
+elif config.trust_wallet_type == "TRUSTWALLET":
+    trust_wallet_instance = TrustWalletConnector(config.trust_wallet_port)
+else:
+    raise ValueError(f"Unknown Trust Wallet type: {config.trust_wallet_type}")
+
 data_buffer = DataBuffer()

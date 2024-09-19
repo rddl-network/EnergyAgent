@@ -3,6 +3,7 @@ import os
 from time import sleep
 
 from osc4py3.oscbuildparse import encode_packet
+
 from app.helpers.models import OSCResponse
 
 
@@ -93,5 +94,7 @@ def extract_information(response_bytes):
         return OSCResponse(data=[f"Error decoding the response: {str(e)}"])
 
 
-def is_not_connected(wallet_port):
+def is_not_connected(wallet_port, wallet_type):
+    if wallet_type == "ATECC608":
+        return False
     return not os.path.exists(wallet_port)

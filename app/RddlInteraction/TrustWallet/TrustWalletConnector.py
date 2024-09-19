@@ -4,14 +4,15 @@ import platform
 import threading
 from osc4py3.oscbuildparse import OSCMessage
 
-from app.RddlInteraction.TrustWallet.osc_message_sender import OSCMessageSender
+from app.RddlInteraction.TrustWallet.ITrustWalletConnector import ITrustWalletConnector
+from app.helpers.osc_message_sender import OSCMessageSender
 from app.helpers.models import PlanetMintKeys
 from app.helpers.logs import logger, log
 
 PREFIX_IHW = "/IHW"
 
 
-class TrustWalletConnector(object):
+class TrustWalletConnector(ITrustWalletConnector):
     _instance = None
     occ_message_sender = None
     _lock = threading.Lock()
@@ -43,41 +44,16 @@ class TrustWalletConnector(object):
         self.plmnt_keys = None
 
     @log
-    def valise_get(self) -> str:
-        with self._lock:
-            """
-            @brief: Gets the seed
-            @return: return seed
-            """
-            msg = OSCMessage(f"{PREFIX_IHW}/getSeed", ",", [])
-            occ_message = self.occ_message_sender.send_message(msg)
-            return occ_message.data[1]
-
-    # mnemonicToSeed
-
-    @log
     def create_mnemonic(self):
         with self._lock:
             """
             @brief: Derives the private key from the mnemonic seed
             """
-            self.plmnt_keys is None
             msg = OSCMessage(f"{PREFIX_IHW}/mnemonicToSeed", ",i", [1])
             occ_message = self.occ_message_sender.send_message(msg)
             print(occ_message)
             self.plmnt_keys = None
             return occ_message.data[1]
-
-    @log
-    def inject_planetmintkey_to_se050(self, slot: int):
-        with self._lock:
-            msg = OSCMessage(f"{PREFIX_IHW}/se050InjectSECPKeys", ",i", [slot])
-            occ_message = self.occ_message_sender.send_message(msg)
-            if occ_message.data[1] == "0":
-                return True
-            else:
-                logger.error(f"Inject PlanetMintKey failed with errorcode {occ_message.data[1]}")
-                return False
 
     @log
     def recover_from_mnemonic(self, mnemonic: str) -> str:
@@ -110,13 +86,6 @@ class TrustWalletConnector(object):
                 self.plmnt_keys.extended_planetmint_pubkey = occ_message.data[3]
                 self.plmnt_keys.raw_planetmint_pubkey = occ_message.data[4]
             return self.plmnt_keys
-
-    @log
-    def get_seed_se050(self):
-        with self._lock:
-            msg = OSCMessage(f"{PREFIX_IHW}/se050GetSeed", ",", [])
-            occ_message = self.occ_message_sender.send_message(msg)
-            return occ_message
 
     @log
     def sign_hash_with_planetmint(self, data_to_sign: str) -> str:
@@ -192,7 +161,7 @@ class TrustWalletConnector(object):
             return occ_message.data[1]
 
     @log
-    def create_se050_keypair_nist(self, ctx: int) -> str:
+    def create_keypair_nist(self, ctx: int) -> str:
         with self._lock:
             """
             @brief: Signs the hash with the planetmint private key
@@ -205,7 +174,7 @@ class TrustWalletConnector(object):
             return pubkey
 
     @log
-    def get_public_key_from_se050(self, ctx: int) -> str:
+    def get_machine_id(self, ctx: int) -> str:
         with self._lock:
             """
             @brief: Get the public key from the slot
@@ -221,7 +190,7 @@ class TrustWalletConnector(object):
             return pubKey
 
     @log
-    def sign_with_se050(self, data_to_sign: str, ctx: int) -> str:
+    def sign_with_nist(self, data_to_sign: str, ctx: int) -> str:
         with self._lock:
             """
             @brief: Signs the hash with the planetmint private key
@@ -237,7 +206,7 @@ class TrustWalletConnector(object):
             return signature
 
     @log
-    def verify_se050_signature(self, data_to_sign: str, signature: str, ctx: int) -> bool:
+    def verify_nist_signature(self, data_to_sign: str, signature: str, ctx: int) -> bool:
         with self._lock:
             """
             @brief: Verifies the signature using the SE050 Security Chip
