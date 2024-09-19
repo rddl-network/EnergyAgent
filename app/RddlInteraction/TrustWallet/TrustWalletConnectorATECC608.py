@@ -71,9 +71,9 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
         self.atecc608_lib.atecc_handler_sign.restype = c_int
         self.atecc608_lib.atecc_handler_verify.argtypes = [c_int, POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
         self.atecc608_lib.atecc_handler_verify.restype = c_int
-        self.atecc608_lib.atecc_handler_write_data.argtypes = [c_int, POINTER(c_uint8)]
+        self.atecc608_lib.atecc_handler_write_data.argtypes = [c_int, POINTER(c_uint8), c_size_t]
         self.atecc608_lib.atecc_handler_write_data.restype = c_int
-        self.atecc608_lib.atecc_handler_read_data.argtypes = [c_int, POINTER(c_uint8)]
+        self.atecc608_lib.atecc_handler_read_data.argtypes = [c_int, POINTER(c_uint8), c_size_t]
         self.atecc608_lib.atecc_handler_read_data.restype = c_int
 
         # Initialize the ATECC608
@@ -110,7 +110,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             status = self.atecc608_lib.atecc_handler_genkey(ctx, pub_key)
             if status:
                 raise RuntimeError(f"Failed to generate key: {status}")
-            return print_hex_buffer(pub_key)
+            return to_hex(pub_key)
 
     @log
     def get_machine_id(self, ctx: int) -> str:
@@ -119,7 +119,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             status = self.atecc608_lib.atecc_handler_get_public_key(ctx, pub_key)
             if status:
                 raise RuntimeError(f"Failed to get public key: {status}")
-            return print_hex_buffer(pub_key)
+            return to_hex(pub_key)
 
     @log
     def sign_with_nist(self, data_to_sign: str, ctx: int) -> str:
@@ -129,7 +129,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             status = self.atecc608_lib.atecc_handler_sign(ctx, msg, signature)
             if status:
                 raise RuntimeError(f"Failed to sign data: {status}")
-            return print_hex_buffer(signature)
+            return to_hex(signature)
 
     @log
     def verify_nist_signature(self, data_to_sign: str, signature: str, ctx: int) -> bool:
@@ -150,7 +150,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             mnemonic = mnemo.generate(strength=256)  # 24 words
             seed = Bip39SeedGenerator(mnemonic).Generate()
             seed_to_store = (c_uint8 * 64)(*seed)
-            status = self.atecc608_lib.atecc_handler_write_data(PLANETMINT_SLOT, seed_to_store)
+            status = self.atecc608_lib.atecc_handler_write_data(PLANETMINT_SLOT, seed_to_store, 64)
             if status:
                 raise RuntimeError(f"Failed to store seed: {status}")
             return mnemonic, seed
@@ -160,7 +160,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
         with self._lock:
             seed = Bip39SeedGenerator(mnemonic).Generate()
             seed_to_store = (c_uint8 * 64)(*seed)
-            status = self.atecc608_lib.atecc_handler_write_data(PLANETMINT_SLOT, seed_to_store)
+            status = self.atecc608_lib.atecc_handler_write_data(PLANETMINT_SLOT, seed_to_store, 64)
             if status:
                 raise RuntimeError(f"Failed to store seed: {status}")
             return seed.hex()
@@ -169,7 +169,7 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
     def get_planetmint_keys(self) -> PlanetMintKeys:
         with self._lock:
             seed = (c_uint8 * 64)()
-            status = self.atecc608_lib.atecc_handler_read_data(PLANETMINT_SLOT, seed)
+            status = self.atecc608_lib.atecc_handler_read_data(PLANETMINT_SLOT, seed, 64)
             if status:
                 raise RuntimeError(f"Failed to get public key: {status}")
             planet_mint_keys = PlanetMintKeys()
@@ -209,5 +209,5 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             return bytes(signature).hex()
 
 
-def print_hex_buffer(input):
+def to_hex(input):
     return "".join([f"{x:02x}" for x in input])
