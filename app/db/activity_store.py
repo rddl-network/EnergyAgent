@@ -58,7 +58,7 @@ def get_all_activities(order="DESC"):
     try:
         cursor = config.db_connection.cursor()
         cursor.execute(
-            f"SELECT type, txhash, command, result, context, timestamp FROM activities ORDER by timestamp {order}"
+            f"SELECT type, txhash, command, result, context, timestamp FROM activities ORDER by id {order}"
         )
         result = cursor.fetchall()
         return result  # Returns a list of tuples where each tuple is (type, txhash, command, result, context )
