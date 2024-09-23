@@ -261,7 +261,7 @@ class RDDLAgent:
         insert_tx_activity_by_response(response, "PoP result")
         if response.status_code != 200:
             logger.error(f"error: {response.reason,}, message: {response.text}")
-            await self.setContext(PoPContext())
+        await self.setContext(PoPContext())
 
     @log
     async def run(self):
