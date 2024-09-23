@@ -24,7 +24,7 @@ from app.helpers.models import PlanetMintKeys
 from app.helpers.logs import log
 
 I2C_ADDR = 0xC0
-PLANETMINT_SLOT = 6
+PLANETMINT_SLOT = 8
 PRE_ATTEST_SLOT = 2
 
 
@@ -92,9 +92,9 @@ class TrustWalletConnectorATECC608(ITrustWalletConnector, ABC):
             if status:
                 raise RuntimeError(f"Failed to write configuration: {status}")
 
-            status = self.atecc608_lib.atecc_handler_lock_zone(0)
-            if status:
-                raise RuntimeError(f"Failed to lock zone: {status}")
+            # status = self.atecc608_lib.atecc_handler_lock_zone(0)
+            # if status:
+            #     raise RuntimeError(f"Failed to lock zone: {status}")
 
     @log
     def inject_priv_key(self, priv_key: bytes):
