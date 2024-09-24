@@ -35,7 +35,7 @@ EOF
 echo "Establishing cron jobs for automated ugprades and reconnectivity."
 
 #  Install cronjob to look for updates in randomly once between 0-25 min randomly selected
-CRONJOB_UPGRADE = "*/30 * * * *   cd ~/energy-agent && sleep \$(shuf -i 0-1500 -n 1) && docker system prune -f && docker compose up -d"
+CRONJOB_UPGRADE="*/30 * * * *   cd ~/energy-agent && sleep \$(shuf -i 0-1500 -n 1) && docker system prune -f && docker compose up -d"
 (crontab -l 2>/dev/null; echo "$CRONJOB_UPGRADE") | crontab -
 
 
@@ -43,5 +43,5 @@ wget https://github.com/rddl-network/EnergyAgent/raw/main/internet_check_restart
 sudo mv internet_check_restart.sh /usr/local/bin/
 sudo chmod +x /usr/local/bin/internet_check_restart.sh
 
-CRONJOB_RECONNECT = "*/15 * * * * /usr/bin/systemd-cat -t internet-check /usr/bin/sudo /usr/local/bin/internet_check_restart.sh"
+CRONJOB_RECONNECT="*/15 * * * * /usr/bin/systemd-cat -t internet-check /usr/bin/sudo /usr/local/bin/internet_check_restart.sh"
 (crontab -l 2>/dev/null; echo "$CRONJOB_RECONNECT") | crontab -
