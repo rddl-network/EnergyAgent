@@ -35,7 +35,7 @@ EOF
 echo "Establishing cron jobs for automated ugprades and reconnectivity."
 
 #  Install cronjob to look for updates in randomly once between 0-25 min randomly selected
-CRONJOB_UPGRADE = "*/30 * * * *   cd ~/energy-agent && sleep \$(( $RANDOM % 1500 )) && docker system prune -f && docker compose up -d"
+CRONJOB_UPGRADE = "*/30 * * * *   cd ~/energy-agent && sleep \$(shuf -i 0-1500 -n 1) && docker system prune -f && docker compose up -d"
 (crontab -l 2>/dev/null; echo "$CRONJOB_UPGRADE") | crontab -
 
 
