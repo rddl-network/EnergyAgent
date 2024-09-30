@@ -3,6 +3,8 @@ import os
 from time import sleep
 
 from osc4py3.oscbuildparse import encode_packet
+
+from app.RddlInteraction.utils import NoValidDataFoundError, retry_on_no_valid_data
 from app.helpers.models import OSCResponse
 
 
@@ -16,6 +18,7 @@ def load_occ_library(lib_path):
         ctypes.c_size_t,
         ctypes.POINTER(ctypes.c_ubyte),
         ctypes.c_size_t,
+        ctypes.c_size_t,
     ]
     lib_occ.occ_do.restype = ctypes.c_size_t
     return lib_occ
@@ -28,11 +31,12 @@ def prepare_port(port_name):
 
 
 class OSCMessageSender:
-    def __init__(self, lib_path, port_name, buffer_size=1024, buffer_delay_ms=200):
+    def __init__(self, lib_path, port_name, buffer_size=1024, buffer_delay_ms=200, timeout=100000):
         self.lib_occ = load_occ_library(lib_path)
         self.buffer_size = buffer_size
         self.buffer_delay_ms = buffer_delay_ms
         self.port_name_ptr = prepare_port(port_name)
+        self.timeout = timeout
 
     def prepare_buffer(self, encoded_packet):
         input_ptr = (ctypes.c_ubyte * len(encoded_packet))(*encoded_packet)
@@ -48,8 +52,10 @@ class OSCMessageSender:
             self.buffer_delay_ms,
             self.port_name_ptr,
             len(self.port_name_ptr),
+            self.timeout,
         )
 
+    @retry_on_no_valid_data(retries=3, delay=5)
     def send_message(self, message) -> OSCResponse:
         sleep(1)  # before sending the message, wait for the port to be ready
         encoded_data = encode_packet(message)
@@ -86,7 +92,7 @@ def extract_information(response_bytes):
 
             return OSCResponse(command=command.strip(), data=[data.strip() for data in data_parts])
         else:
-            return OSCResponse(data=["No valid data found."])
+            raise NoValidDataFoundError("No valid data found.")
 
     except UnicodeDecodeError as e:
         # Return an empty OSCResponse with an error in data field if there is a decoding error.

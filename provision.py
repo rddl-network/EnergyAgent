@@ -5,7 +5,7 @@ import binascii
 
 
 # trust_wallet = TrustWalletConnector("/dev/tty.usbmodem1101")
-trust_wallet = TrustWalletConnector("/dev/ttyACM0")
+trust_wallet = TrustWalletConnector(port_name="/dev/ttyACM0", timeout=600000)
 
 
 slot = 2
