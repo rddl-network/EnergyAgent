@@ -92,7 +92,7 @@ def extract_information(response_bytes):
 
             return OSCResponse(command=command.strip(), data=[data.strip() for data in data_parts])
         else:
-           raise NoValidDataFoundError("No valid data found.")
+            raise NoValidDataFoundError("No valid data found.")
 
     except UnicodeDecodeError as e:
         # Return an empty OSCResponse with an error in data field if there is a decoding error.
