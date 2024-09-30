@@ -50,5 +50,5 @@ setup_logging(
     log_file_path=config.log_file_path,
 )
 
-trust_wallet_instance = TrustWalletConnector(config.trust_wallet_port)
+trust_wallet_instance = TrustWalletConnector(config.trust_wallet_port, timeout=600000)
 data_buffer = DataBuffer()
