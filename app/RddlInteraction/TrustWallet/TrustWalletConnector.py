@@ -23,7 +23,7 @@ class TrustWalletConnector(object):
             cls._instance.__init__(*args, **kwargs)  # Call __init__ manually
         return cls._instance
 
-    def __init__(self, port_name):
+    def __init__(self, port_name, timeout=100000):
         # system pick and optimistic architecture selection
         if platform.system() == "Linux":
             if platform.processor() == "x86_64":
@@ -39,7 +39,7 @@ class TrustWalletConnector(object):
 
         if self.occ_message_sender is None and len(port_name) > 0:
             print("New OSC Message Connector: " + port_name)
-            self.occ_message_sender = OSCMessageSender(lib_path, port_name)
+            self.occ_message_sender = OSCMessageSender(lib_path, port_name, timeout=timeout)
         self.plmnt_keys = None
 
     @log
@@ -214,6 +214,7 @@ class TrustWalletConnector(object):
             """
             msg = OSCMessage(f"{PREFIX_IHW}/se050GetPublicKey", ",i", [ctx])
             occ_message = self.occ_message_sender.send_message(msg)
+            print(occ_message)
             wrapped_pubkey = occ_message.data[1]
             (valid, pubKey) = self.unwrapPublicKey(wrapped_pubkey)
             if not valid:
