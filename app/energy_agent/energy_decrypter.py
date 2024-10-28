@@ -5,13 +5,13 @@ from typing import Type, Any
 
 from Crypto.Cipher import AES
 
-from app.dependencies import config
+from app.dependencies import trust_wallet_instance
 from binascii import unhexlify
 from gurux_dlms.GXDLMSTranslator import GXDLMSTranslator
 import xml.etree.ElementTree as ET
 
 from app.helpers.logs import log, logger
-from app.helpers.models import LANDIS_GYR, SAGEMCOM
+from app.helpers.models import LANDIS_GYR, SAGEMCOM, SmartMeterConfig
 
 # CRC-STUFF BEGIN
 CRC_INIT = 0xFFFF
@@ -107,26 +107,32 @@ def parse_root_items(root) -> list:
 
 
 @log
-def decrypt_device(data_hex):
-    if config.device_type == LANDIS_GYR:
+def decrypt_device(data_hex, smart_meter_config: SmartMeterConfig):
+    keys = trust_wallet_instance.get_planetmint_keys()
+    planetmint_address = keys.planetmint_address
+    if smart_meter_config.smart_meter_type == LANDIS_GYR:
         dec = decrypt_aes_gcm_landis_and_gyr(
-            data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
+            data_hex,
+            bytes.fromhex(smart_meter_config.encryption_key),
+            bytes.fromhex(smart_meter_config.authentication_key),
         )
-        return transform_to_metrics(dec, config.pubkey)
-    elif config.device_type == SAGEMCOM:
+        return transform_to_metrics(dec, planetmint_address)
+    elif smart_meter_config.smart_meter_type == SAGEMCOM:
         dec = decrypt_sagemcom(
-            data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
+            data_hex,
+            bytes.fromhex(smart_meter_config.encryption_key),
+            bytes.fromhex(smart_meter_config.authentication_key),
         )
-        return transform_to_metrics(dec, config.pubkey)
-    elif config.device == "EVN":
-        dec = decrypt_evn_data(data_hex)
-        return transform_to_metrics(dec, config.pubkey)
+        return transform_to_metrics(dec, planetmint_address)
+    elif smart_meter_config.smart_meter_type == "EVN":
+        dec = decrypt_evn_data(data_hex, smart_meter_config.encryption_key)
+        return transform_to_metrics(dec, planetmint_address)
     else:
-        logger.error(f"Unknown device: {config.device_type}")
+        logger.error(f"Unknown device: {smart_meter_config.smart_meter_type}")
 
 
 @log
-def decrypt_evn_data(data: str):
+def decrypt_evn_data(data: str, evn_key: str):
     mbus_start = data[MBUS_START_SLICE]
     frame_len = int(data[FRAME_LEN_SLICE], 16)
     system_title = data[SYSTEM_TITLE_SLICE]
@@ -138,7 +144,7 @@ def decrypt_evn_data(data: str):
         else "wrong M-Bus Start, restarting"
     )
 
-    apdu = evn_decrypt(frame, system_title, frame_counter)
+    apdu = evn_decrypt(frame, system_title, frame_counter, evn_key)
     print("apdu: ", apdu)
     if apdu[0:4] != "0f80":
         raise ValueError("wrong apdu start")
@@ -148,9 +154,9 @@ def decrypt_evn_data(data: str):
 
 
 @log
-def evn_decrypt(frame, system_title, frame_counter):
+def evn_decrypt(frame, system_title, frame_counter, evn_key):
     frame = unhexlify(frame)
-    encryption_key = unhexlify(config.evn_key)
+    encryption_key = unhexlify(evn_key)
     init_vector = unhexlify(system_title + frame_counter)
     cipher = AES.new(encryption_key, AES.MODE_GCM, nonce=init_vector)
     return cipher.decrypt(frame).hex()
