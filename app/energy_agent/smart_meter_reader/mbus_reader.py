@@ -60,4 +60,4 @@ class MbusReader:
             while time.time() - start_time < 15:
                 chunk = self.ser.read(2000)
                 if chunk:
-                    return self.extract_valid_frame(chunk.hex().toLowerCase())
+                    return self.extract_valid_frame(chunk.hex().lower())
