@@ -118,11 +118,10 @@ class SmartMeterManager:
             try:
                 self.mqtt_client = MQTTClient(
                     client_id=self.planetmint_address,
-                    username=self.mqtt_config.username,
-                    password=self.mqtt_config.password,
                 )
+                self.mqtt_client.set_auth_credentials(self.mqtt_config.username, self.mqtt_config.password)
                 await self.mqtt_client.connect(
-                    host=self.mqtt_config.host,
+                        host=self.mqtt_config.host,
                     port=self.mqtt_config.port,
                     version=MQTTv311,
                     keepalive=60,
