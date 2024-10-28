@@ -54,7 +54,9 @@ class SmartMeterReader:
         with self.reader as reader:
             frame = reader.read_frame()
             if frame:
-                return decrypt_device(frame)
+                data = decrypt_device(frame, self.smart_meter_config)
+                logger.debug(f"Successfully decrypted data: {json.dumps(data)}")
+                return data
             else:
                 logger.error("Failed to read frame from Landis&Gyr meter")
                 return {}
@@ -75,8 +77,13 @@ class SmartMeterReader:
     @log
     def _check_if_valid_incremental_data(self, data: Dict[str, Any]) -> bool:
         is_prev_data_none = self.previous_data is None
-        if is_prev_data_none and data:
+        is_data_none = data is None
+        if is_prev_data_none and not is_data_none:
+            logger.debug("Previous data is None and data is not None")
             return True
+        if is_prev_data_none or is_data_none:
+            logger.debug("No previous data or data is None")
+            return False
         has_valid_increment_in = self.previous_data.get("absolute_energy_in") < data.get("absolute_energy_in")
         has_valid_increment_out = self.previous_data.get("absolute_energy_out") <= data.get("absolute_energy_out")
 

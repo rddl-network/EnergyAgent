@@ -11,7 +11,7 @@ from gurux_dlms.GXDLMSTranslator import GXDLMSTranslator
 import xml.etree.ElementTree as ET
 
 from app.helpers.logs import log, logger
-from app.helpers.models import LANDIS_GYR, SAGEMCOM, SmartMeterConfig
+from app.helpers.models import LANDIS_GYR, SAGEMCOM
 
 # CRC-STUFF BEGIN
 CRC_INIT = 0xFFFF
@@ -107,28 +107,28 @@ def parse_root_items(root) -> list:
 
 
 @log
-def decrypt_device(data_hex, smart_meter_config: SmartMeterConfig):
+def decrypt_device(data_hex, smart_meter_config: dict[str, Any]):
     keys = trust_wallet_instance.get_planetmint_keys()
     planetmint_address = keys.planetmint_address
-    if smart_meter_config.smart_meter_type == LANDIS_GYR:
+    if smart_meter_config.get("smart_meter_type").upper() == LANDIS_GYR:
         dec = decrypt_aes_gcm_landis_and_gyr(
             data_hex,
-            bytes.fromhex(smart_meter_config.encryption_key),
-            bytes.fromhex(smart_meter_config.authentication_key),
+            bytes.fromhex(smart_meter_config.get("encryption_key")),
+            bytes.fromhex(smart_meter_config.get("authentication_key")),
         )
         return transform_to_metrics(dec, planetmint_address)
-    elif smart_meter_config.smart_meter_type == SAGEMCOM:
+    elif smart_meter_config.get("smart_meter_type").upper() == SAGEMCOM:
         dec = decrypt_sagemcom(
             data_hex,
-            bytes.fromhex(smart_meter_config.encryption_key),
-            bytes.fromhex(smart_meter_config.authentication_key),
+            bytes.fromhex(smart_meter_config.get("encryption_key")),
+            bytes.fromhex(smart_meter_config.get("authentication_key")),
         )
         return transform_to_metrics(dec, planetmint_address)
-    elif smart_meter_config.smart_meter_type == "EVN":
-        dec = decrypt_evn_data(data_hex, smart_meter_config.encryption_key)
+    elif smart_meter_config.get("smart_meter_type").upper() == "EVN":
+        dec = decrypt_evn_data(data_hex, smart_meter_config.get("encryption_key"))
         return transform_to_metrics(dec, planetmint_address)
     else:
-        logger.error(f"Unknown device: {smart_meter_config.smart_meter_type}")
+        logger.error(f"Unknown device: {smart_meter_config.get('smart_meter_type')}")
 
 
 @log
