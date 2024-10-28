@@ -12,7 +12,6 @@ from app.RddlInteraction.TrustWallet.osc_message_sender import is_not_connected
 from app.dependencies import config, trust_wallet_instance, data_buffer
 from app.helpers.models import MQTTConfig
 
-METADATA_CONFIG_PATH = f"{config.config_base_path}/smart_meter_metadata.json"
 DEFAULT_READ_INTERVAL = 900  # 15 minutes in seconds
 DEFAULT_RECONNECT_INTERVAL = 60  # 1 minute in seconds
 DEFAULT_MAX_RECONNECT_ATTEMPTS = 5
@@ -46,7 +45,7 @@ class SmartMeterManager:
         self.task: Optional[asyncio.Task] = None
         self.running: bool = False
         self.read_interval: int = smart_meter_config.get("smart_meter_reading_interval", DEFAULT_READ_INTERVAL)
-        self.status: str = load_config(METADATA_CONFIG_PATH).get("status", "stopped")
+        self.status: str = load_config(config.METADATA_CONFIG_PATH).get("status", "stopped")
         self.reconnect_interval: int = smart_meter_config.get("reconnect_interval", DEFAULT_RECONNECT_INTERVAL)
         self.max_reconnect_attempts: int = smart_meter_config.get(
             "max_reconnect_attempts", DEFAULT_MAX_RECONNECT_ATTEMPTS
@@ -220,7 +219,7 @@ class SmartMeterManager:
         """Update and persist the manager's status."""
         self.status = new_status
         try:
-            save_config(METADATA_CONFIG_PATH, {"status": self.status})
+            save_config(config.METADATA_CONFIG_PATH, {"status": self.status})
         except Exception as e:
             logger.error(f"Failed to save status to config file: {str(e)}")
 
@@ -238,10 +237,9 @@ class SmartMeterManager:
 _manager_instance: Optional[SmartMeterManager] = None
 
 
-def get_smart_meter_manager(
-    smart_meter_config: Dict[str, Any] = Depends(lambda: config.smart_meter_config)
-) -> SmartMeterManager:
+def get_smart_meter_manager() -> SmartMeterManager:
     """Get or create singleton instance of SmartMeterManager."""
+    smart_meter_config = load_config(config.path_to_smart_meter_config)
     global _manager_instance
     if _manager_instance is None:
         _manager_instance = SmartMeterManager(smart_meter_config)
