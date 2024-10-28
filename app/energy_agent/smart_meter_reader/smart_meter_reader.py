@@ -75,9 +75,11 @@ class SmartMeterReader:
     @log
     def _check_if_valid_incremental_data(self, data: Dict[str, Any]) -> bool:
         is_prev_data_none = self.previous_data is None
+        if is_prev_data_none and data:
+            return True
         has_valid_increment_in = self.previous_data.get("absolute_energy_in") < data.get("absolute_energy_in")
         has_valid_increment_out = self.previous_data.get("absolute_energy_out") <= data.get("absolute_energy_out")
 
-        if is_prev_data_none or (has_valid_increment_in and has_valid_increment_out):
+        if has_valid_increment_in or has_valid_increment_out:
             return True
         return False
