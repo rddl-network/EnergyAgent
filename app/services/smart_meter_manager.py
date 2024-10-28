@@ -126,7 +126,7 @@ class SmartMeterManager:
                     host=self.mqtt_config.host,
                     port=self.mqtt_config.port,
                     version=MQTTv311,
-                    keepalive=60,  # Add keepalive parameter
+                    keepalive=60,
                 )
                 logger.info("Successfully connected to MQTT broker")
                 return
@@ -238,10 +238,9 @@ class SmartMeterManager:
 _manager_instance: Optional[SmartMeterManager] = None
 
 
-def get_smart_meter_manager(
-    smart_meter_config: Dict[str, Any] = Depends(lambda: config.smart_meter_config)
-) -> SmartMeterManager:
+def get_smart_meter_manager() -> SmartMeterManager:
     """Get or create singleton instance of SmartMeterManager."""
+    smart_meter_config = load_config(config.path_to_smart_meter_config)
     global _manager_instance
     if _manager_instance is None:
         _manager_instance = SmartMeterManager(smart_meter_config)
