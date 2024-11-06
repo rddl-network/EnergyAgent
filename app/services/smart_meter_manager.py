@@ -146,9 +146,9 @@ class SmartMeterManager:
     @log
     async def check_and_restart(self) -> None:
         """Check manager status and restart if necessary."""
-        if self.status == "running" and not self.is_running and not self._stopping:
+        if self.status == "running" and not self.is_running:
             logger.warning("Smart Meter Manager should be running but isn't. Attempting to restart...")
-            await self.restart()
+            await self.start()
 
     @log
     async def _connect_mqtt(self) -> None:
