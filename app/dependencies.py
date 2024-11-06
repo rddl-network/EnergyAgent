@@ -22,7 +22,7 @@ class Config:
         self.path_to_mqtt_config = build_config_path(self.config_base_path, FILE_MQTT_CONFIG)
         self.path_to_smart_meter_config = build_config_path(self.config_base_path, FILE_SMART_METER_CONFIG)
         self.path_to_smart_meter_mqtt_config = build_config_path(self.config_base_path, FILE_SMART_METER_MQTT_CONFIG)
-        self.METADATA_CONFIG_PATH = build_config_path(self.config_base_path, METADATA_CONFIG_PATH)
+        self.metadata_config_path = build_config_path(self.config_base_path, METADATA_CONFIG_PATH)
         self.trust_wallet_port = os.environ.get("TRUST_WALLET_PORT") or "/dev/ttyACM0"
         self.notarize_interval = int(os.environ.get("NOTARIZE_INTERVAL") or 60)
         self.rddl_network_mode = os.environ.get("RDDL_NETWORK_MODE") or "mainnet"

@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
     energy_manager = get_energy_agent_manager()
     await energy_manager.check_and_restart()
 
-    was_smart_meter_running = load_config(config.METADATA_CONFIG_PATH).get("status", "stopped") == "running"
+    was_smart_meter_running = load_config(config.metadata_config_path).get("status", "stopped") == "running"
     if was_smart_meter_running:
         sm_manager = get_smart_meter_manager()
         await sm_manager.check_and_restart()

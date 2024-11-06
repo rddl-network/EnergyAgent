@@ -47,7 +47,7 @@ class SmartMeterManager:
         self._stopping: bool = False
         self.running: bool = False
         self.read_interval: int = smart_meter_config.get("smart_meter_reading_interval", DEFAULT_READ_INTERVAL)
-        self.status: str = load_config(config.METADATA_CONFIG_PATH).get("status", "stopped")
+        self.status: str = load_config(config.metadata_config_path).get("status", "stopped")
         self.reconnect_interval: int = smart_meter_config.get("reconnect_interval", DEFAULT_RECONNECT_INTERVAL)
         self.max_reconnect_attempts: int = smart_meter_config.get(
             "max_reconnect_attempts", DEFAULT_MAX_RECONNECT_ATTEMPTS
@@ -261,7 +261,7 @@ class SmartMeterManager:
         """Update and persist the manager's status."""
         self.status = new_status
         try:
-            save_config(config.METADATA_CONFIG_PATH, {"status": self.status})
+            save_config(config.metadata_config_path, {"status": self.status})
         except Exception as e:
             logger.error(f"Failed to save status to config file: {str(e)}")
 
