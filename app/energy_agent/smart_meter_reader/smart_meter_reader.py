@@ -47,7 +47,7 @@ class SmartMeterReader:
         if not _check_if_valid_incremental_data:
             return None
         self.previous_data = data
-        self.data_buffer.add_data({smart_meter_type: json.dumps(data)})
+        self.data_buffer.add_data({smart_meter_type: data})
         return data
 
     @log
@@ -56,7 +56,7 @@ class SmartMeterReader:
             frame = reader.read_frame()
             if frame:
                 data = decrypt_device(frame, self.smart_meter_config)
-                logger.debug(f"Successfully decrypted data: {json.dumps(data)}")
+                logger.debug(f"Successfully decrypted data: {data}")
                 return data
             else:
                 logger.error("Failed to read frame from Landis&Gyr meter")
