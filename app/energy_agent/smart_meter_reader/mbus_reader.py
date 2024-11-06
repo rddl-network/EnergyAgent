@@ -72,4 +72,3 @@ class MbusReader:
         # If all attempts fail, raise an exception or return None
         logger.error("Failed to read valid frame after maximum attempts.")
         return None
-
