@@ -334,7 +334,7 @@ def transform_to_metrics(data_list, public_key) -> dict:
     now = datetime.now(timezone.utc)
     metric_data = {
         "public_key": public_key,
-        "time_stamp": now,
+        "time_stamp": now.isoformat(),
         "type": "absolute_energy",
         "unit": "kWh",
         "absolute_energy_in": 0,
