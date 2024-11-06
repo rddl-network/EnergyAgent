@@ -234,7 +234,7 @@ class SmartMeterManager:
             raise MQTTConnectionError("MQTT client is not connected")
 
         try:
-            topic = f"{self.topic_prefix}/{self.planetmint_address}"
+            topic = f"{self.topic_prefix}"
             payload = json.dumps(data)
             self.mqtt_client.publish(topic, payload, qos=1, retain=True)
             logger.info(f"[X] Sent data to MQTT topic: {topic}, payload: {payload}")
