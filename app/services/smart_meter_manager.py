@@ -15,6 +15,7 @@ from app.helpers.models import MQTTConfig
 DEFAULT_READ_INTERVAL = 900  # 15 minutes in seconds
 DEFAULT_RECONNECT_INTERVAL = 60  # 1 minute in seconds
 DEFAULT_MAX_RECONNECT_ATTEMPTS = 5
+STOP_TIMEOUT = 10  # seconds to wait for graceful shutdown
 
 
 class SmartMeterError(Exception):
@@ -43,6 +44,7 @@ class SmartMeterManager:
         self.topic_prefix: str = ""
         self.planetmint_address: str = ""
         self.task: Optional[asyncio.Task] = None
+        self._stopping: bool = False
         self.running: bool = False
         self.read_interval: int = smart_meter_config.get("smart_meter_reading_interval", DEFAULT_READ_INTERVAL)
         self.status: str = load_config(config.METADATA_CONFIG_PATH).get("status", "stopped")
@@ -51,43 +53,87 @@ class SmartMeterManager:
             "max_reconnect_attempts", DEFAULT_MAX_RECONNECT_ATTEMPTS
         )
         self.mqtt_config: Optional[MQTTConfig] = None
-        self._lock = asyncio.Lock()  # Add lock for thread safety
+        self._lock = asyncio.Lock()
+        self._reconnect_task: Optional[asyncio.Task] = None
 
     @property
     def is_running(self) -> bool:
         """Check if the manager is currently running."""
-        return self.running and self.task is not None and not self.task.done()
+        return self.running and self.task is not None and not self.task.done() and not self._stopping
 
     @log
     async def start(self) -> None:
         """Start the Smart Meter Manager."""
         async with self._lock:
-            if self.is_running:
-                logger.warning("Smart Meter Manager is already running")
+            if self.is_running or self._stopping:
+                logger.warning("Smart Meter Manager is already running or stopping")
                 return
 
             try:
+                self._stopping = False
                 self.running = True
                 await self._connect_mqtt()
                 self.task = asyncio.create_task(self._read_and_send_loop())
+                self.task.add_done_callback(self._handle_task_done)
                 self._update_status("running")
                 logger.info("Smart meter manager started successfully")
             except Exception as e:
+                await self._cleanup()
                 self._handle_startup_error(str(e))
 
     @log
     async def stop(self) -> None:
         """Stop the Smart Meter Manager."""
         async with self._lock:
-            if not self.is_running:
+            if not self.is_running and not self._stopping:
                 logger.warning("Smart Meter Manager is not running")
                 return
 
-            self.running = False
-            await self._disconnect_mqtt()
-            await self._cancel_task()
-            self._update_status("stopped")
-            logger.info("Smart meter manager stopped successfully")
+            try:
+                self._stopping = True
+                self.running = False
+
+                # Cancel reconnection task if it exists
+                if self._reconnect_task and not self._reconnect_task.done():
+                    self._reconnect_task.cancel()
+
+                # Wait for main task to complete with timeout
+                if self.task:
+                    try:
+                        await asyncio.wait_for(self.task, timeout=STOP_TIMEOUT)
+                    except asyncio.TimeoutError:
+                        logger.warning("Timeout waiting for task to stop, forcing shutdown")
+                        self.task.cancel()
+                        try:
+                            await self.task
+                        except asyncio.CancelledError:
+                            pass
+
+                await self._cleanup()
+                self._update_status("stopped")
+                logger.info("Smart meter manager stopped successfully")
+            except Exception as e:
+                logger.error(f"Error during shutdown: {str(e)}")
+                raise
+            finally:
+                self._stopping = False
+
+    async def _cleanup(self) -> None:
+        """Clean up resources."""
+        await self._disconnect_mqtt()
+        self.task = None
+        self._reconnect_task = None
+        self.running = False
+
+    def _handle_task_done(self, future: asyncio.Future) -> None:
+        """Handle completion of the main task."""
+        try:
+            future.result()
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            logger.error(f"Task ended with error: {str(e)}")
+            self._update_status("error")
 
     @log
     async def restart(self) -> None:
@@ -100,7 +146,7 @@ class SmartMeterManager:
     @log
     async def check_and_restart(self) -> None:
         """Check manager status and restart if necessary."""
-        if self.status == "running" and not self.is_running:
+        if self.status == "running" and not self.is_running and not self._stopping:
             logger.warning("Smart Meter Manager should be running but isn't. Attempting to restart...")
             await self.restart()
 
@@ -115,10 +161,11 @@ class SmartMeterManager:
         self.topic_prefix = self.mqtt_config.topic_prefix
 
         for attempt in range(self.max_reconnect_attempts):
+            if self._stopping:
+                raise MQTTConnectionError("Stopping requested during connection attempt")
+
             try:
-                self.mqtt_client = MQTTClient(
-                    client_id=self.planetmint_address,
-                )
+                self.mqtt_client = MQTTClient(client_id=self.planetmint_address)
                 self.mqtt_client.set_auth_credentials(self.mqtt_config.username, self.mqtt_config.password)
                 await self.mqtt_client.connect(
                     host=self.mqtt_config.host,
@@ -130,7 +177,7 @@ class SmartMeterManager:
                 return
             except Exception as e:
                 logger.error(f"MQTT connection attempt {attempt + 1} failed: {str(e)}")
-                if attempt < self.max_reconnect_attempts - 1:
+                if attempt < self.max_reconnect_attempts - 1 and not self._stopping:
                     await asyncio.sleep(self.reconnect_interval)
                 else:
                     raise MQTTConnectionError(
@@ -149,21 +196,9 @@ class SmartMeterManager:
                 self.mqtt_client = None
 
     @log
-    async def _cancel_task(self) -> None:
-        """Cancel the running task."""
-        if self.task:
-            self.task.cancel()
-            try:
-                await self.task
-            except asyncio.CancelledError:
-                pass
-            finally:
-                self.task = None
-
-    @log
     async def _read_and_send_loop(self) -> None:
         """Main loop for reading and sending data."""
-        while self.running:
+        while self.running and not self._stopping:
             try:
                 await self._read_and_send_data()
                 await asyncio.sleep(self.read_interval)
@@ -172,12 +207,15 @@ class SmartMeterManager:
                 break
             except SmartMeterReadError as e:
                 logger.error(f"Error reading smart meter data: {str(e)}")
-                await asyncio.sleep(self.reconnect_interval)
+                if not self._stopping:
+                    await asyncio.sleep(self.reconnect_interval)
             except MQTTConnectionError:
-                await self._handle_mqtt_connection_error()
+                if not self._stopping:
+                    await self._handle_mqtt_connection_error()
             except Exception as e:
                 logger.error(f"Unexpected error in read and send loop: {str(e)}")
-                await asyncio.sleep(self.reconnect_interval)
+                if not self._stopping:
+                    await asyncio.sleep(self.reconnect_interval)
 
     @log
     async def _read_and_send_data(self) -> None:
@@ -198,7 +236,7 @@ class SmartMeterManager:
         try:
             topic = f"{self.topic_prefix}/{self.planetmint_address}"
             payload = json.dumps(data)
-            self.mqtt_client.publish(topic, payload, qos=1, retain=True)  # Added retain flag
+            self.mqtt_client.publish(topic, payload, qos=1, retain=True)
             logger.info(f"Successfully sent data to MQTT topic: {topic}")
         except Exception as e:
             raise MQTTConnectionError(f"Failed to send data via MQTT: {str(e)}")
@@ -206,13 +244,18 @@ class SmartMeterManager:
     @log
     async def _handle_mqtt_connection_error(self) -> None:
         """Handle MQTT connection errors with reconnection logic."""
+        if self._stopping:
+            return
+
         logger.error("Lost connection to MQTT broker. Attempting to reconnect...")
         try:
-            await self._disconnect_mqtt()  # Ensure clean disconnect
-            await self._connect_mqtt()
+            await self._disconnect_mqtt()
+            self._reconnect_task = asyncio.create_task(self._connect_mqtt())
+            await self._reconnect_task
         except MQTTConnectionError as e:
             logger.error(f"Failed to reconnect to MQTT broker: {str(e)}")
-            await asyncio.sleep(self.reconnect_interval)
+            if not self._stopping:
+                await asyncio.sleep(self.reconnect_interval)
 
     def _update_status(self, new_status: str) -> None:
         """Update and persist the manager's status."""

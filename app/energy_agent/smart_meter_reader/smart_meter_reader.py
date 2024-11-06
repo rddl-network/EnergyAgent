@@ -22,6 +22,7 @@ class SmartMeterReader:
     def _get_reader(self):
         smart_meter_type = self.smart_meter_config.get("smart_meter_type").upper()
         if smart_meter_type == LANDIS_GYR:
+            logger.info("Using MbusReader for Landis&Gyr meter")
             return MbusReader(
                 serial_port=self.smart_meter_config.get("smart_meter_serial_port", "/dev/ttyUSB0"),
                 baud_rate=self.smart_meter_config.get("smart_meter_baud_rate", 2400),

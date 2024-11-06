@@ -64,6 +64,7 @@ class MbusReader:
                     if chunk:
                         frame = self.extract_valid_frame(chunk.hex().lower())
                         if frame:
+                            logger.debug(f"Valid frame found: {frame}")
                             return frame
                 logger.debug(f"No valid frame found in attempt {attempt}")
             except Exception as e:
