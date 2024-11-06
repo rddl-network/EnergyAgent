@@ -237,7 +237,7 @@ class SmartMeterManager:
             topic = f"{self.topic_prefix}/{self.planetmint_address}"
             payload = json.dumps(data)
             self.mqtt_client.publish(topic, payload, qos=1, retain=True)
-            logger.info(f"Successfully sent data to MQTT topic: {topic}")
+            logger.info(f"[X] Sent data to MQTT topic: {topic}, payload: {payload}")
         except Exception as e:
             raise MQTTConnectionError(f"Failed to send data via MQTT: {str(e)}")
 
