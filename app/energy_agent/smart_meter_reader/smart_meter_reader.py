@@ -94,7 +94,7 @@ class SmartMeterReader:
         previous_energy_out = self.previous_data.get("absolute_energy_out", -1)
         current_energy_out = data.get("absolute_energy_out", -1)
 
-        has_valid_increment_in = previous_energy_in < current_energy_in
+        has_valid_increment_in = previous_energy_in <= current_energy_in
         has_valid_increment_out = previous_energy_out <= current_energy_out
 
         if has_valid_increment_in or has_valid_increment_out:
