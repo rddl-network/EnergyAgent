@@ -49,15 +49,27 @@ class MbusReader:
 
     def read_frame(self, max_attempts=10):
         attempt = 0
-
         while attempt < max_attempts:
-            attempt += 1
-            logger.debug(f"\nAttempt {attempt} of {max_attempts}")
+            try:
+                attempt += 1
+                logger.debug(f"\nAttempt {attempt} of {max_attempts}")
+                if not self.ser:
+                    self.open_connection()
 
-            meterbus.send_request_frame(self.ser, self.address)
-            time.sleep(1)
-            start_time = time.time()
-            while time.time() - start_time < 15:
-                chunk = self.ser.read(2000)
-                if chunk:
-                    return self.extract_valid_frame(chunk.hex().toLowerCase())
+                meterbus.send_request_frame(self.ser, self.address)
+                time.sleep(1)
+                start_time = time.time()
+                while time.time() - start_time < 15:
+                    chunk = self.ser.read(2000)
+                    if chunk:
+                        frame = self.extract_valid_frame(chunk.hex().lower())
+                        if frame:
+                            logger.debug(f"Valid frame found: {frame}")
+                            return frame
+                logger.debug(f"No valid frame found in attempt {attempt}")
+            except Exception as e:
+                logger.error(f"Error in read_frame attempt {attempt}: {e}")
+
+        # If all attempts fail, raise an exception or return None
+        logger.error("Failed to read valid frame after maximum attempts.")
+        return None

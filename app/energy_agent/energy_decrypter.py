@@ -5,7 +5,7 @@ from typing import Type, Any
 
 from Crypto.Cipher import AES
 
-from app.dependencies import config
+from app.dependencies import trust_wallet_instance
 from binascii import unhexlify
 from gurux_dlms.GXDLMSTranslator import GXDLMSTranslator
 import xml.etree.ElementTree as ET
@@ -107,26 +107,32 @@ def parse_root_items(root) -> list:
 
 
 @log
-def decrypt_device(data_hex):
-    if config.device_type == LANDIS_GYR:
+def decrypt_device(data_hex, smart_meter_config: dict[str, Any]):
+    keys = trust_wallet_instance.get_planetmint_keys()
+    planetmint_address = keys.planetmint_address
+    if smart_meter_config.get("smart_meter_type").upper() == LANDIS_GYR:
         dec = decrypt_aes_gcm_landis_and_gyr(
-            data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
+            data_hex,
+            bytes.fromhex(smart_meter_config.get("encryption_key")),
+            bytes.fromhex(smart_meter_config.get("authentication_key")),
         )
-        return transform_to_metrics(dec, config.pubkey)
-    elif config.device_type == SAGEMCOM:
+        return transform_to_metrics(dec, planetmint_address)
+    elif smart_meter_config.get("smart_meter_type").upper() == SAGEMCOM:
         dec = decrypt_sagemcom(
-            data_hex, bytes.fromhex(config.encryption_key), bytes.fromhex(config.authentication_key)
+            data_hex,
+            bytes.fromhex(smart_meter_config.get("encryption_key")),
+            bytes.fromhex(smart_meter_config.get("authentication_key")),
         )
-        return transform_to_metrics(dec, config.pubkey)
-    elif config.device == "EVN":
-        dec = decrypt_evn_data(data_hex)
-        return transform_to_metrics(dec, config.pubkey)
+        return transform_to_metrics(dec, planetmint_address)
+    elif smart_meter_config.get("smart_meter_type").upper() == "EVN":
+        dec = decrypt_evn_data(data_hex, smart_meter_config.get("encryption_key"))
+        return transform_to_metrics(dec, planetmint_address)
     else:
-        logger.error(f"Unknown device: {config.device_type}")
+        logger.error(f"Unknown device: {smart_meter_config.get('smart_meter_type')}")
 
 
 @log
-def decrypt_evn_data(data: str):
+def decrypt_evn_data(data: str, evn_key: str):
     mbus_start = data[MBUS_START_SLICE]
     frame_len = int(data[FRAME_LEN_SLICE], 16)
     system_title = data[SYSTEM_TITLE_SLICE]
@@ -138,7 +144,7 @@ def decrypt_evn_data(data: str):
         else "wrong M-Bus Start, restarting"
     )
 
-    apdu = evn_decrypt(frame, system_title, frame_counter)
+    apdu = evn_decrypt(frame, system_title, frame_counter, evn_key)
     print("apdu: ", apdu)
     if apdu[0:4] != "0f80":
         raise ValueError("wrong apdu start")
@@ -148,9 +154,9 @@ def decrypt_evn_data(data: str):
 
 
 @log
-def evn_decrypt(frame, system_title, frame_counter):
+def evn_decrypt(frame, system_title, frame_counter, evn_key):
     frame = unhexlify(frame)
-    encryption_key = unhexlify(config.evn_key)
+    encryption_key = unhexlify(evn_key)
     init_vector = unhexlify(system_title + frame_counter)
     cipher = AES.new(encryption_key, AES.MODE_GCM, nonce=init_vector)
     return cipher.decrypt(frame).hex()
@@ -328,18 +334,19 @@ def transform_to_metrics(data_list, public_key) -> dict:
     now = datetime.now(timezone.utc)
     metric_data = {
         "public_key": public_key,
-        "time_stamp": now,
+        "time_stamp": now.isoformat(),
         "type": "absolute_energy",
         "unit": "kWh",
-        "absolute_energy_in": 0,
-        "absolute_energy_out": 0,
+        "absolute_energy_in": 0.0,
+        "absolute_energy_out": 0.0,
+        "cid": None,
     }
 
     for data in data_list:
-        value = Decimal(data.get("value"))
+        value = float(data.get("value"))
         if data.get("key") == "WirkenergieP":
             metric_data["absolute_energy_in"] = convert_to_kwh(value)
         elif data.get("key") == "WirkenergieN":
             metric_data["absolute_energy_out"] = convert_to_kwh(value)
 
-    return metric_data
+    return metric_data  # Return the metric data
