@@ -20,7 +20,10 @@ class SmartMeterReader:
 
     @log
     def _get_reader(self):
-        smart_meter_type = self.smart_meter_config.get("smart_meter_type").upper()
+        smart_meter_type = self.smart_meter_config.get("smart_meter_type")
+        if not smart_meter_type:
+            return None
+        smart_meter_type = smart_meter_type.upper()
         if smart_meter_type == LANDIS_GYR:
             logger.info("Using MbusReader for Landis&Gyr meter")
             return MbusReader(
