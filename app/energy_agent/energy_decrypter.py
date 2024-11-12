@@ -110,25 +110,29 @@ def parse_root_items(root) -> list:
 def decrypt_device(data_hex, smart_meter_config: dict[str, Any]):
     keys = trust_wallet_instance.get_planetmint_keys()
     planetmint_address = keys.planetmint_address
-    if smart_meter_config.get("smart_meter_type").upper() == LANDIS_GYR:
+    smart_meter_type = smart_meter_config.get("smart_meter_type")
+    if not smart_meter_type:
+        return None
+    smart_meter_type = smart_meter_type.upper()
+    if smart_meter_type == LANDIS_GYR:
         dec = decrypt_aes_gcm_landis_and_gyr(
             data_hex,
             bytes.fromhex(smart_meter_config.get("encryption_key")),
             bytes.fromhex(smart_meter_config.get("authentication_key")),
         )
         return transform_to_metrics(dec, planetmint_address)
-    elif smart_meter_config.get("smart_meter_type").upper() == SAGEMCOM:
+    elif smart_meter_type == SAGEMCOM:
         dec = decrypt_sagemcom(
             data_hex,
             bytes.fromhex(smart_meter_config.get("encryption_key")),
             bytes.fromhex(smart_meter_config.get("authentication_key")),
         )
         return transform_to_metrics(dec, planetmint_address)
-    elif smart_meter_config.get("smart_meter_type").upper() == "EVN":
+    elif smart_meter_type == "EVN":
         dec = decrypt_evn_data(data_hex, smart_meter_config.get("encryption_key"))
         return transform_to_metrics(dec, planetmint_address)
     else:
-        logger.error(f"Unknown device: {smart_meter_config.get('smart_meter_type')}")
+        logger.error(f"Unknown device: {smart_meter_type}")
 
 
 @log
