@@ -43,10 +43,11 @@ class RDDLAgent:
             raise
 
     @log
-    def on_connect(self):
+    def on_connect(self, client, userdata, flags, rc):
         logger.info("MQTT RDDL on connect: subscribe")
-        self.client.subscribe("cmnd/" + self.keys.planetmint_address + "/PoPChallenge")
-        self.client.subscribe("cmnd/" + self.keys.planetmint_address + "/PoPInit")
+        keys = trust_wallet_instance.get_planetmint_keys()
+        self.client.subscribe("cmnd/" + keys.planetmint_address + "/PoPChallenge")
+        self.client.subscribe("cmnd/" + keys.planetmint_address + "/PoPInit")
 
     @log
     async def connect_to_mqtt(self):
