@@ -16,6 +16,7 @@ from app.RddlInteraction.cid_tool import compute_cid
 from app.RddlInteraction.api_queries import queryPoPInfo, getAccountInfo, queryNotatizedAssets
 from app.RddlInteraction.planetmint_interaction import broadcastTX, getPoPResultTx
 from app.helpers.logs import log, logger
+from app.helpers.models import PlanetMintKeys
 
 
 class RDDLAgent:
@@ -35,17 +36,26 @@ class RDDLAgent:
             keys = trust_wallet_instance.get_planetmint_keys()
             self.client = MQTTClient(client_id=keys.planetmint_address)
             self.client.on_message = self.on_message
+            self.client.on_connect = self.on_connect
             self.client.set_auth_credentials(config.rddl.mqtt.username, config.rddl.mqtt.password)
         except Exception as e:
             logger.error(f"MQTT RDDL Setup error: {e}")
             raise
 
     @log
+    def on_connect(self, client, userdata, flags, rc):
+        logger.info("MQTT RDDL on connect: subscribe")
+        keys = trust_wallet_instance.get_planetmint_keys()
+        self.client.subscribe("cmnd/" + keys.planetmint_address + "/PoPChallenge")
+        self.client.subscribe("cmnd/" + keys.planetmint_address + "/PoPInit")
+
+    @log
     async def connect_to_mqtt(self):
         try:
             logger.info("MQTT RDDL connect")
+
             await self.client.connect(
-                config.rddl.mqtt.host, config.rddl.mqtt.port, keepalive=60, version=MQTTv311, ssl=True
+                config.rddl.mqtt.host, config.rddl.mqtt.port, keepalive=120, version=MQTTv311, ssl=True
             )
         except Exception as e:
             logger.error(f"MQTT RDDL connection error: {e}")
@@ -99,7 +109,7 @@ class RDDLAgent:
         if pop_height != pop_context.pop_height:
             return
         if not pop_context.isActive:
-            await self.setContext(PoPContext)
+            await self.setContext(PoPContext())
             return
 
         logger.info("PoP Watchdog is terminating the current PoP: " + str(pop_context.pop_height))
@@ -107,7 +117,7 @@ class RDDLAgent:
         if isChallenger:
             await self.challenger_3_sendPoPResult(False, pop_height)
         else:
-            await self.setContext(PoPContext)
+            await self.setContext(PoPContext())
 
     @log
     async def pop_init(self, data):
@@ -267,14 +277,11 @@ class RDDLAgent:
     async def run(self):
         logger.info("RDDL MQTT run.")
         try:
-            await self.connect_to_mqtt()
             keys = trust_wallet_instance.get_planetmint_keys()
-
-            self.client.subscribe("cmnd/" + keys.planetmint_address + "/PoPChallenge")
-            self.client.subscribe("cmnd/" + keys.planetmint_address + "/PoPInit")
+            await self.connect_to_mqtt()
 
             while not self.stopped:
-                logger.info("RDDL MQTT enter wait loop.")
+                logger.debug("RDDL MQTT enter wait loop.")
                 asyncio.create_task(self.postStatus(keys.planetmint_address))
                 await asyncio.sleep(60)
 
@@ -285,7 +292,7 @@ class RDDLAgent:
             await self.disconnect_from_mqtt()
 
     async def postStatus(self, address: str):
-        logger.info("RDDL MQTT publish status.")
+        logger.debug("RDDL MQTT publish status.")
         topic = "tele/" + address + "/STATE"
         payload = '{"Time": "' + str(datetime.now()) + '" }'
         msg = Message(
