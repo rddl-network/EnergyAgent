@@ -47,7 +47,7 @@ class RDDLAgent:
         logger.info("MQTT RDDL on connect: subscribe")
         self.client.subscribe("cmnd/" + self.keys.planetmint_address + "/PoPChallenge")
         self.client.subscribe("cmnd/" + self.keys.planetmint_address + "/PoPInit")
-        
+
     @log
     async def connect_to_mqtt(self):
         try:
@@ -278,7 +278,7 @@ class RDDLAgent:
         try:
             keys = trust_wallet_instance.get_planetmint_keys()
             await self.connect_to_mqtt()
-            
+
             while not self.stopped:
                 logger.debug("RDDL MQTT enter wait loop.")
                 asyncio.create_task(self.postStatus(keys.planetmint_address))
