@@ -75,7 +75,7 @@ class SmartMeterReader:
             stopbits=self.smart_meter_config.get("stopbits", 1),
             timeout=self.smart_meter_config.get("timeout", 90),
         )
-        hex_data = self.reader.serial_read_smartmeter()
+        hex_data = self.reader.read_frame()
         if hex_data:
             return decrypt_device(hex_data)
         else:
