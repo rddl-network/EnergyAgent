@@ -347,10 +347,9 @@ def transform_to_metrics(data_list, public_key) -> dict:
     }
 
     for data in data_list:
-        value = float(data.get("value"))
         if data.get("key") == "WirkenergieP":
-            metric_data["absolute_energy_in"] = convert_to_kwh(value)
+            metric_data["absolute_energy_in"] = convert_to_kwh(float(data.get("value")))
         elif data.get("key") == "WirkenergieN":
-            metric_data["absolute_energy_out"] = convert_to_kwh(value)
+            metric_data["absolute_energy_out"] = convert_to_kwh(float(data.get("value")))
 
     return metric_data  # Return the metric data
