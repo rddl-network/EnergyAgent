@@ -69,11 +69,11 @@ class SmartMeterReader:
     def _read_sagemcom(self) -> Dict:
         self.reader.client = self.reader.get_client(
             serial_port=self.smart_meter_config.get("smart_meter_serial_port", "/dev/ttyUSB0"),
-            baudrate=config.smart_meter_config.get("smart_meter_baudrate", 2400),
-            bytesize=config.smart_meter_config.get("byte_size", 8),
-            parity=config.smart_meter_config.get("parity", "N"),
-            stopbits=config.smart_meter_config.get("stopbits", 1),
-            timeout=config.smart_meter_config.get("timeout", 90),
+            baudrate=self.smart_meter_config.get("smart_meter_baudrate", 2400),
+            bytesize=self.smart_meter_config.get("byte_size", 8),
+            parity=self.smart_meter_config.get("parity", "N"),
+            stopbits=self.smart_meter_config.get("stopbits", 1),
+            timeout=self.smart_meter_config.get("timeout", 90),
         )
         hex_data = self.reader.serial_read_smartmeter()
         if hex_data:
