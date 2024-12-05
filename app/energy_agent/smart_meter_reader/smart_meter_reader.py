@@ -77,7 +77,7 @@ class SmartMeterReader:
         )
         hex_data = self.reader.read_frame()
         if hex_data:
-            return decrypt_device(hex_data)
+            return decrypt_device(hex_data, self.smart_meter_config)
         else:
             logger.error("Failed to read data from Sagemcom meter")
             return {}
