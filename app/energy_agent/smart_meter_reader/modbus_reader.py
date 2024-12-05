@@ -59,7 +59,7 @@ class ModbusReader:
         logger.debug("Extracting dataframes")
 
         # Pattern to match: starts with 5e4e, followed by any number of hex characters, ends with 5e4e
-        pattern = f"{self.start_index}[0-9a-f]+{self.start_index}"
+        pattern = f"db0853414[a-f0-9]+"
         match = re.search(pattern, hex_data)
 
         if match:
