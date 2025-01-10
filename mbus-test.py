@@ -60,29 +60,27 @@ class LandisGyrE450Reader:
         while attempt < max_attempts:
             attempt += 1
             print(f"\nAttempt {attempt} of {max_attempts}")
-            #if self.send_ping():
-                #print("Ping successful, sending request frame")
-                #self.send_request_frame()
-                #time.sleep(1)
             start_time = time.time()
             buffer = bytearray()
+            frame = False
             while time.time() - start_time < 10:  # 10 seconds timeout
-                chunk = self.ser.read(1000)
-                if chunk:
-                    buffer.extend(chunk)
-                    print(f"Received chunk: {chunk.hex()}")
-                    print(f"Received buffer: {buffer.hex()}")
-                    print(f"chunk: {hex(chunk[0])} {hex(chunk[-1])}")
-                    print(f"buffer: {hex(buffer[0])} {hex(buffer[-1])}")
-                    if buffer.startswith(b'\x7e') and buffer.endswith(b'\x7e'):
-                        print(f"Complete frame received: {buffer.hex()}")
-                        return buffer
-                    if chunk.startswith(b'\x7e') and chunk.endswith(b'\x7e'):
-                        print(f"Complete frame received: {buffer.hex()}")
-                        return chunk 
-                print("Timeout reached without receiving a complete frame")
-            #else:
-            #    print("Ping failed, retrying...")
+                mbusbytes = self.ser.read(1000)
+                print(f"mbusbytes: {mbusbytes.hex()}")
+                for byte in mbusbytes:
+                    #print(f"{hex(byte)}")
+                    if byte == 126:
+                        buffer.extend([byte])
+                        if not frame:
+                            #print(f"HIT")
+                            frame = True
+                        else:
+                            #print(f"Frame: {buffer.hex()}")
+                            return buffer
+                    elif frame:
+                        buffer.extend([byte])
+                        #print(f"Frame byte: {hex(byte)}")
+                    #else:
+                        #print(f"NO FRAME: {hex(byte)}")
         print("Max attempts reached without receiving a valid frame")
         return None
 
