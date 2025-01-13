@@ -1,9 +1,12 @@
 import serial
 import time
 import binascii
+from energy_decrypter import decrypt_aes_gcm_landis_and_gyr
+import re
+
 
 class LandisGyrE450Reader:
-    def __init__(self, serial_port='/dev/ttyUSB0', baud_rate=2400, address=1):
+    def __init__(self, serial_port="/dev/ttyUSB0", baud_rate=2400, address=1):
         self.serial_port = serial_port
         self.baud_rate = baud_rate
         self.address = address
@@ -19,12 +22,7 @@ class LandisGyrE450Reader:
     def open_connection(self):
         try:
             self.ser = serial.Serial(
-                port=self.serial_port,
-                baudrate=self.baud_rate,
-                bytesize=8,
-                parity='E',
-                stopbits=1,
-                timeout=1
+                port=self.serial_port, baudrate=self.baud_rate, bytesize=8, parity="E", stopbits=1, timeout=1
             )
             print(f"Serial port opened: {self.ser.name}")
         except serial.SerialException as e:
@@ -55,6 +53,46 @@ class LandisGyrE450Reader:
         self.ser.write(request_frame)
         print(f"Request frame sent: {request_frame.hex()}")
 
+    def extract_valid_frame(self, hex_data):
+        valid_frame_pattern = r"db08.*?7e7ea08bceff0313ee"
+        if valid_frame_pattern == "":
+            return hex_data
+        match = re.search(valid_frame_pattern, hex_data)
+        return match.group(0) if match else None
+
+    def read_frame2(self, max_attempts=10):
+        attempt = 0
+        while attempt < max_attempts:
+            try:
+                attempt += 1
+                print(f"\nAttempt {attempt} of {max_attempts}")
+                if not self.ser:
+                    self.open_connection()
+
+                # meterbus.send_request_frame(self.ser, self.address)
+                # time.sleep(1)
+                start_time = time.time()
+                bytesarray = bytearray()
+                while time.time() - start_time < 15:
+                    chunk = self.ser.read(2000)
+                    print(f"chunk: {chunk.hex()}")
+                    if chunk:
+                        bytesarray.extend(chunk)
+                        frame = self.extract_valid_frame(bytesarray.hex().lower())
+                        if frame:
+                            # logger.debug(f"Valid frame found: {frame}")
+                            return frame
+                    else:
+                        bytesarray = bytearray()
+
+                print(f"No valid frame found in attempt {attempt}")
+            except Exception as e:
+                print(f"Error in read_frame attempt {attempt}: {e}")
+
+        # If all attempts fail, raise an exception or return None
+        print("Failed to read valid frame after maximum attempts.")
+        return None
+
     def read_frame(self, max_attempts=10):
         attempt = 0
         while attempt < max_attempts:
@@ -67,20 +105,20 @@ class LandisGyrE450Reader:
                 mbusbytes = self.ser.read(1000)
                 print(f"mbusbytes: {mbusbytes.hex()}")
                 for byte in mbusbytes:
-                    #print(f"{hex(byte)}")
+                    # print(f"{hex(byte)}")
                     if byte == 126:
                         buffer.extend([byte])
                         if not frame:
-                            #print(f"HIT")
+                            # print(f"HIT")
                             frame = True
                         else:
-                            #print(f"Frame: {buffer.hex()}")
+                            # print(f"Frame: {buffer.hex()}")
                             return buffer
                     elif frame:
                         buffer.extend([byte])
-                        #print(f"Frame byte: {hex(byte)}")
-                    #else:
-                        #print(f"NO FRAME: {hex(byte)}")
+                        # print(f"Frame byte: {hex(byte)}")
+                    # else:
+                    # print(f"NO FRAME: {hex(byte)}")
         print("Max attempts reached without receiving a valid frame")
         return None
 
@@ -98,38 +136,38 @@ class LandisGyrE450Reader:
         control = frame_hex[4:6]
         address = frame_hex[6:8]
         ci_field = frame_hex[8:10]
-        
+
         # Identification
-        identification = bytes.fromhex(frame_hex[10:36]).decode('ascii', errors='replace')
-        
+        identification = bytes.fromhex(frame_hex[10:36]).decode("ascii", errors="replace")
+
         # Access number and status
         access_number = frame_hex[36:38]
         status = frame_hex[38:40]
-        
+
         # Configuration word
         config_word = frame_hex[40:44]
-        
+
         # Parse data records
         data_start = 44
         data_records = []
         while data_start < len(frame_hex) - 4:  # -4 to account for checksum and stop byte
-            dif = frame_hex[data_start:data_start+2]
+            dif = frame_hex[data_start : data_start + 2]
             data_start += 2
-            vif = frame_hex[data_start:data_start+2]
+            vif = frame_hex[data_start : data_start + 2]
             data_start += 2
-            
+
             # Determine data length based on DIF
             data_length = 0
-            if dif in ['01', '02', '03', '04']:
+            if dif in ["01", "02", "03", "04"]:
                 data_length = int(dif, 16) * 2
-            elif dif == '05':
+            elif dif == "05":
                 data_length = 8
-            elif dif in ['06', '0D']:
+            elif dif in ["06", "0D"]:
                 data_length = 12
-            
-            data = frame_hex[data_start:data_start+data_length]
+
+            data = frame_hex[data_start : data_start + data_length]
             data_start += data_length
-            
+
             data_records.append(f"DIF: {dif}, VIF: {vif}, Data: {data}")
 
         # Checksum
@@ -155,21 +193,32 @@ Data Records:
 Checksum: {checksum}
 """
 
+
 def main():
     try:
         with LandisGyrE450Reader() as reader:
-            frame = reader.read_frame()
+            frame = reader.read_frame2()
             if frame:
                 print("Successfully received a valid frame.")
                 print(f"frame: {frame}")
-                parsed_frame = reader.parse_frame(frame)
-                print(parsed_frame)
+                # parsed_frame = reader.parse_frame(frame)
+                # print(parsed_frame)
+                print("\nDecrpyt\n")
+
+                dec = decrypt_aes_gcm_landis_and_gyr(
+                    frame,  # frame.hex().lower(),
+                    bytes.fromhex("4B1ED9523B7DA755C3822B2F63E33B37"),
+                    bytes.fromhex("FB7A2527410579A8219E20D2CDEAC212"),
+                )
+                print(dec)
+
             else:
                 print("Failed to receive a valid frame.")
     except serial.SerialException as e:
         print(f"Serial port error: {e}")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+
 
 if __name__ == "__main__":
     main()
