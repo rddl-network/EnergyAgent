@@ -59,13 +59,17 @@ class MbusReader:
                 meterbus.send_request_frame(self.ser, self.address)
                 time.sleep(1)
                 start_time = time.time()
+                bytes_array = bytearray()
                 while time.time() - start_time < 15:
                     chunk = self.ser.read(2000)
                     if chunk:
-                        frame = self.extract_valid_frame(chunk.hex().lower())
+                        bytes_array.extend(chunk)
+                        frame = self.extract_valid_frame(bytes_array.hex().lower())
                         if frame:
                             logger.debug(f"Valid frame found: {frame}")
                             return frame
+                    else:
+                        bytes_array = bytearray()
                 logger.debug(f"No valid frame found in attempt {attempt}")
             except Exception as e:
                 logger.error(f"Error in read_frame attempt {attempt}: {e}")
