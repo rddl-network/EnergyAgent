@@ -142,7 +142,7 @@ nav  a{
   align-items: center;
 }
 
-.btn-secondary {
+.btn-disabled {
   border-radius: 8px;
   border: none;
   box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 118, 255, 0.19) 0px 4px 14px 0px;
