@@ -22,7 +22,7 @@
                 </div>
                 <div class="buttons">
                     <button id="saveButton" class="btn" onclick="saveConfig()" style="display: none;">Save Configuration</button>
-                    <button id="resetButton" class="btn-secondary" onclick="resetConfig()">Reset Configuration</button>
+                    <button id="resetButton" class="btn" onclick="resetConfig()">Reset Configuration</button>
                 </div>
             </div>
         </div>
@@ -52,7 +52,7 @@
                 </div>
                 <div class="buttons">
                     <button type="button" class="btn" onclick="saveMqttConfig()">Save MQTT Configuration</button>
-                    <button type="button" class="btn-secondary" onclick="resetMqttConfig()">Reset MQTT Configuration</button>
+                    <button type="button" class="btn" onclick="resetMqttConfig()">Reset MQTT Configuration</button>
                 </div>
             </form>
         </div>
@@ -63,7 +63,7 @@
                 <p>Current Status: <span id="readerStatus">Unknown</span></p>
                 <div class="buttons">
                     <button id="startReaderBtn" class="btn" onclick="startReader()">Start Reader</button>
-                    <button id="stopReaderBtn" class="btn-secondary" onclick="stopReader()">Stop Reader</button>
+                    <button id="stopReaderBtn" class="btn-disabled" onclick="stopReader()">Stop Reader</button>
                     <button id="restartReaderBtn" class="btn" onclick="restartReader()">Restart Reader</button>
                 </div>
             </div>
@@ -303,19 +303,21 @@
         const startBtn = document.getElementById('startReaderBtn');
         const stopBtn = document.getElementById('stopReaderBtn');
         const restartBtn = document.getElementById('restartReaderBtn');
-
+            startBtn.className = "";
+            stopBtn.className = "";
+            restartBtn.className = "";
         if (status === 'running') {
-            startBtn.disabled = true;
-            stopBtn.disabled = false;
-            restartBtn.disabled = false;
+            startBtn.classList.re('btn-disabled');
+            stopBtn.classList.add('btn');
+            restartBtn.classList.add('btn-disabled');
         } else if (status === 'stopped') {
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            restartBtn.disabled = false;
+            startBtn.classList.add('btn');
+            stopBtn.classList.add('btn-disabled');
+            restartBtn.classList.add('btn');
         } else {
-            startBtn.disabled = false;
-            stopBtn.disabled = false;
-            restartBtn.disabled = false;
+            startBtn.classList.add('btn');
+            stopBtn.classList.add('btn');
+            restartBtn.classList.add('btn');
         }
     }
 
