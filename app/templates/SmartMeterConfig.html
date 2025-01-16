@@ -63,7 +63,7 @@
                 <p>Current Status: <span id="readerStatus">Unknown</span></p>
                 <div class="buttons">
                     <button id="startReaderBtn" class="btn" onclick="startReader()">Start Reader</button>
-                    <button id="stopReaderBtn" class="btn-secondary" onclick="stopReader()">Stop Reader</button>
+                    <button id="stopReaderBtn" class="btn-disabled" onclick="stopReader()">Stop Reader</button>
                     <button id="restartReaderBtn" class="btn" onclick="restartReader()">Restart Reader</button>
                 </div>
             </div>
@@ -307,12 +307,12 @@
             stopBtn.className = "";
             restartBtn.className = "";
         if (status === 'running') {
-            startBtn.classList.re('btn-secondary');
+            startBtn.classList.re('btn-disabled');
             stopBtn.classList.add('btn');
-            restartBtn.classList.add('btn-secondary');
+            restartBtn.classList.add('btn-disabled');
         } else if (status === 'stopped') {
             startBtn.classList.add('btn');
-            stopBtn.classList.add('btn-secondary');
+            stopBtn.classList.add('btn-disabled');
             restartBtn.classList.add('btn');
         } else {
             startBtn.classList.add('btn');
