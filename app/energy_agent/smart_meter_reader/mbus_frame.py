@@ -10,6 +10,59 @@ class DLMSFrame:
         b'\xee\xe1': "Request/Response",
         b'\x84\x63': "Final Block Response"
     }
+    @staticmethod
+    def _calculate_crc16(data: bytearray) -> int:
+        fcs = 0xFFFF
+        for byte in data:
+            fcs ^= (byte << 8)
+            for _ in range(8):
+                if fcs & 0x8000:
+                    fcs = (fcs << 1) ^ 0x1021
+                else:
+                    fcs = fcs << 1
+                fcs &= 0xFFFF
+                
+        return fcs ^ 0xFFFF  # Fina
+    def verify_checksum(self) -> bool:
+        """
+        Verify frame checksum
+        Returns:
+            bool: True if checksum is valid, False otherwise
+        """
+        # Get all data between start flag and checksum
+        data_to_check = self.frame_bytes[1:-3]  # Exclude start flag, checksum and end flag
+        
+        
+        # Calculate CRC
+        calculated_crc = self._calculate_crc16(self.payload)
+        
+        # Get received checksum (need to swap bytes for correct comparison)
+        #received_crc = (self.checksum[1] << 8) | self.checksum[0]
+        received_crc = int.from_bytes(self.checksum, byteorder='big')
+        # Debug print
+        print(f"Data length: {len(self.payload)}")
+        print(f"Calculated CRC: {calculated_crc:04X}")
+        print(f"Received CRC: {received_crc:04X}")
+        print(f"Raw checksum bytes: {self.checksum.hex()}")
+        
+        return calculated_crc == received_crc
+
+
+    def get_checksum_info(self) -> dict:
+        """
+        Get detailed checksum information
+        Returns:
+            dict: Dictionary with checksum details
+        """
+        data_to_check = self.frame_bytes[1:-3]
+        calculated_crc = self._calculate_crc16(data_to_check)
+        received_crc = int.from_bytes(self.checksum, byteorder='big')
+        
+        return {
+            "received_checksum": f"{received_crc:04X}",
+            "calculated_checksum": f"{calculated_crc:04X}",
+            "is_valid": calculated_crc == received_crc
+        }
 
     def __init__(self, frame_data: bytearray):
         """
@@ -158,8 +211,10 @@ class DLMSFrame:
             "is_multi_segment": self.is_multi_segment,
             "is_first_segment": self.is_first_segment,
             "is_final_segment": self.is_final_segment if self.is_multi_segment else False,
-            "payload_length": len(self.payload)
+            "payload_length": len(self.payload),
+            "checksum": self.get_checksum_info()
         }
+        
 
         if self.service_type:
             details["service_type"] = self.service_type_name

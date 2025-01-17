@@ -4,6 +4,7 @@ import time
 import re
 
 from app.helpers.logs import logger, log
+from app.energy_agent.smart_meter_reader.mbus_frame import DLMSFrame
 
 class MbusReader:
     def __init__(
@@ -64,19 +65,9 @@ class MbusReader:
         if len(byte_array) >=length+2:
             return byte_array[:length+2], byte_array[length+2:] 
         return None, None
-        
-    @log
-    @staticmethod
-    def extract_data_from_frame(frame:bytearray):
-        length = len(frame)
-        pointer = 0
-        while pointer +1 < length:
-            if frame[pointer] == 0xdb and frame[pointer+1] == 0x08:
-                return frame[pointer:length-1]
-            pointer = pointer +1
-        return None
 
-    def read_frames(self, max_attempts=10):
+
+    def read_frame(self, max_attempts=10):
         attempt = 0
         while attempt < max_attempts:
             try:
@@ -95,11 +86,14 @@ class MbusReader:
                         bytes_array.extend(chunk)
                         frames = MbusReader.extract_frames(bytes_array)
                         if len(frames) > 0:
+                            payload = bytearray()
                             for frame in frames:
                                 logger.debug(f"found frame: {frame}")
-                            data = MbusReader.extract_data_from_frame(frames[0])
-                            logger.debug(f"Valid frame found: {data}")
-                            return frames
+                                dlms_frame = DLMSFrame(frame)
+                                payload.extend(dlms_frame.get_payload())
+                            payload = dlms_frame.get_payload_hex()
+                            logger.debug(f"Valid frame and payload found: {payload}")
+                            return payload
                     else:
                         bytes_array = bytearray()
                 logger.debug(f"No valid frame found in attempt {attempt}")
