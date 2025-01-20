@@ -4,6 +4,7 @@ import time
 import re
 
 from app.helpers.logs import logger, log
+from app.energy_agent.smart_meter_reader.mbus_frame import DLMSFrame
 
 
 class MbusReader:
@@ -41,11 +42,30 @@ class MbusReader:
             logger.debug("Serial port closed")
 
     @log
-    def extract_valid_frame(self, hex_data):
-        if self.valid_frame_pattern == "":
-            return hex_data
-        match = re.search(self.valid_frame_pattern, hex_data)
-        return match.group(0) if match else None
+    @staticmethod
+    def extract_frames(byte_array: bytearray):
+        frame_list = []
+        tmp_array = byte_array
+        while tmp_array:
+            frame, tmp_array = MbusReader.extract_frame(tmp_array)
+            if frame:
+                frame_list.append(frame)
+        return frame_list
+
+    @staticmethod
+    def extract_frame(byte_array: bytearray):
+        pointer = 0
+        if byte_array[pointer] != 0x7E:
+            return None, None
+        pointer = pointer + 1
+        if byte_array[pointer] != 0xA0:
+            return None, None
+        pointer = pointer + 1
+
+        length = byte_array[pointer]
+        if len(byte_array) >= length + 2:
+            return byte_array[: length + 2], byte_array[length + 2 :]
+        return None, None
 
     def read_frame(self, max_attempts=10):
         attempt = 0
@@ -64,10 +84,16 @@ class MbusReader:
                     chunk = self.ser.read(2000)
                     if chunk:
                         bytes_array.extend(chunk)
-                        frame = self.extract_valid_frame(bytes_array.hex().lower())
-                        if frame:
-                            logger.debug(f"Valid frame found: {frame}")
-                            return frame
+                        frames = MbusReader.extract_frames(bytes_array)
+                        if len(frames) > 0:
+                            payload = bytearray()
+                            for frame in frames:
+                                logger.debug(f"found frame: {frame}")
+                                dlms_frame = DLMSFrame(frame)
+                                payload.extend(dlms_frame.get_payload())
+                            payload = dlms_frame.get_payload_hex()
+                            logger.debug(f"Valid frame and payload found: {payload}")
+                            return payload
                     else:
                         bytes_array = bytearray()
                 logger.debug(f"No valid frame found in attempt {attempt}")

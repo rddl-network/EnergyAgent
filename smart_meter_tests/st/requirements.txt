@@ -1,0 +1,17 @@
+certifi==2024.12.14
+charset-normalizer==3.4.1
+crypto==1.4.1
+future==1.0.0
+gurux_dlms==1.0.166
+idna==3.10
+iso8601==2.1.0
+Naked==0.1.32
+pyaml==25.1.0
+pycryptodome==3.21.0
+pyMeterBus==0.8.4
+pyserial==3.5
+PyYAML==6.0.2
+requests==2.32.3
+shellescape==3.8.1
+simplejson==3.19.3
+urllib3==2.3.0
