@@ -2,18 +2,16 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 import binascii
 
+
 class DLMSNotificationParser:
     def __init__(self):
         self.obis_codes = {
             "0008190900FF": "Configuration Parameter",
             "0000600100FF": "Clock Sync Parameter",
-            "0000010000FF": "Device Identification"
+            "0000010000FF": "Device Identification",
         }
-        
-        self.value_types = {
-            "01": "Normal Reading",
-            "02": "Status Change"
-        }
+
+        self.value_types = {"01": "Normal Reading", "02": "Status Change"}
 
     def parse_datetime(self, hex_datetime):
         """Parse DLMS datetime format from hex string"""
@@ -25,7 +23,7 @@ class DLMSNotificationParser:
             hour = int(hex_datetime[8:10], 16)
             minute = int(hex_datetime[10:12], 16)
             second = int(hex_datetime[12:14], 16)
-            
+
             return datetime(year, month, day, hour, minute, second)
         except ValueError as e:
             return f"Error parsing datetime: {e}"
@@ -34,14 +32,14 @@ class DLMSNotificationParser:
         """Parse complete XML notification"""
         try:
             root = ET.fromstring(xml_string)
-            
+
             # Parse basic notification info
             result = {
                 "invoke_id": root.find("LongInvokeIdAndPriority").get("Value"),
                 "datetime": self.parse_datetime(root.find("DateTime").get("Value")),
-                "structures": []
+                "structures": [],
             }
-            
+
             # Parse data structures
             data_value = root.find("NotificationBody/DataValue")
             if data_value is not None:
@@ -49,7 +47,7 @@ class DLMSNotificationParser:
                     struct_data = self.parse_structure(structure)
                     if struct_data:
                         result["structures"].append(struct_data)
-            
+
             return result
         except Exception as e:
             return f"Error parsing notification: {e}"
@@ -60,16 +58,16 @@ class DLMSNotificationParser:
             elements = structure.findall("*")
             if len(elements) < 4:
                 return None
-                
+
             obis = elements[1].get("Value") if len(elements) > 1 else None
-            
+
             return {
                 "id": elements[0].get("Value"),
                 "obis_code": obis,
                 "obis_meaning": self.obis_codes.get(obis, "Unknown Parameter"),
                 "value_type": elements[2].get("Value") if len(elements) > 2 else None,
                 "value_meaning": self.value_types.get(elements[2].get("Value"), "Unknown Type"),
-                "status": elements[3].get("Value") if len(elements) > 3 else None
+                "status": elements[3].get("Value") if len(elements) > 3 else None,
             }
         except Exception as e:
             return f"Error parsing structure: {e}"
@@ -82,8 +80,8 @@ class DLMSNotificationParser:
         print(f"Timestamp: {parsed_data['datetime']}")
         print("\nStructures:")
         print("-" * 40)
-        
-        for idx, structure in enumerate(parsed_data['structures'], 1):
+
+        for idx, structure in enumerate(parsed_data["structures"], 1):
             print(f"\nStructure {idx}:")
             print(f"  ID: {structure['id']}")
             print(f"  OBIS Code: {structure['obis_code']}")
@@ -91,10 +89,11 @@ class DLMSNotificationParser:
             print(f"  Value Type: {structure['value_type']} ({structure['value_meaning']})")
             print(f"  Status: {structure['status']}")
 
+
 # Example usage
 def parse_example():
     parser = DLMSNotificationParser()
-    
+
     # Example XML string - replace with actual XML
     xml_example = """
     <DataNotification>
@@ -116,9 +115,10 @@ def parse_example():
         </NotificationBody>
     </DataNotification>
     """
-    
+
     result = parser.parse_notification(xml_example)
     parser.print_notification(result)
+
 
 if __name__ == "__main__":
     parse_example()

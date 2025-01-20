@@ -206,6 +206,7 @@ def parse_apdu(apdu_bytes):
 
     return parsed_data
 
+
 def apdu_to_json(apdu_hex):
     """
     Converts an APDU (in hex string format) to a JSON representation.

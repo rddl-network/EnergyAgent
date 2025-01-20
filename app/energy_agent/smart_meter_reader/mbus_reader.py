@@ -6,6 +6,7 @@ import re
 from app.helpers.logs import logger, log
 from app.energy_agent.smart_meter_reader.mbus_frame import DLMSFrame
 
+
 class MbusReader:
     def __init__(
         self, serial_port="/dev/ttyUSB0", baud_rate=2400, address=1, valid_frame_pattern=r"db08.*?7e7ea08bceff0313ee"
@@ -42,7 +43,7 @@ class MbusReader:
 
     @log
     @staticmethod
-    def extract_frames(byte_array:bytearray):
+    def extract_frames(byte_array: bytearray):
         frame_list = []
         tmp_array = byte_array
         while tmp_array:
@@ -52,20 +53,19 @@ class MbusReader:
         return frame_list
 
     @staticmethod
-    def extract_frame(byte_array:bytearray):
+    def extract_frame(byte_array: bytearray):
         pointer = 0
-        if byte_array[pointer] != 0x7e:
+        if byte_array[pointer] != 0x7E:
             return None, None
-        pointer = pointer +1
-        if byte_array[pointer] != 0xa0:
+        pointer = pointer + 1
+        if byte_array[pointer] != 0xA0:
             return None, None
-        pointer = pointer +1
-        
-        length = byte_array[pointer]
-        if len(byte_array) >=length+2:
-            return byte_array[:length+2], byte_array[length+2:] 
-        return None, None
+        pointer = pointer + 1
 
+        length = byte_array[pointer]
+        if len(byte_array) >= length + 2:
+            return byte_array[: length + 2], byte_array[length + 2 :]
+        return None, None
 
     def read_frame(self, max_attempts=10):
         attempt = 0

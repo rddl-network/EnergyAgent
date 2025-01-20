@@ -5,18 +5,17 @@ from typing import Type, Any
 
 from Crypto.Cipher import AES
 
-#from app.dependencies import trust_wallet_instance
+# from app.dependencies import trust_wallet_instance
 from binascii import unhexlify
 from gurux_dlms.GXDLMSTranslator import GXDLMSTranslator
 import xml.etree.ElementTree as ET
 
-#from app.helpers.logs import log, logger
-#from app.helpers.models import LANDIS_GYR, SAGEMCOM
+# from app.helpers.logs import log, logger
+# from app.helpers.models import LANDIS_GYR, SAGEMCOM
 
 # CRC-STUFF BEGIN
 CRC_INIT = 0xFFFF
 POLYNOMIAL = 0x1021
-
 
 
 def byte_mirror(c):
@@ -24,7 +23,6 @@ def byte_mirror(c):
     c = (c & 0xCC) >> 2 | (c & 0x33) << 2
     c = (c & 0xAA) >> 1 | (c & 0x55) << 1
     return c
-
 
 
 def calc_crc16(data):
@@ -42,7 +40,6 @@ def calc_crc16(data):
     return 256 * byte_mirror(crc // 256) + byte_mirror(crc % 256)
 
 
-
 def verify_crc16(input, skip=0, last=2, cut=0):
     lenn = len(input)
     data = input[skip : lenn - last - cut]
@@ -52,7 +49,6 @@ def verify_crc16(input, skip=0, last=2, cut=0):
     elif last == 2:
         return calc_crc16(data) == goal[0] * 256 + goal[1]
     return False
-
 
 
 def bytes_to_int(bytes):
@@ -82,11 +78,10 @@ SYSTEM_TITLE_SLICE = slice(22, 38)
 FRAME_COUNTER_SLICE = slice(44, 52)
 
 
-
 def parse_root_items(root) -> list:
 
     xml_string = ET.tostring(root, encoding="unicode")
-    #logger.debug(f"XML Content:\n{xml_string}")
+    # logger.debug(f"XML Content:\n{xml_string}")
 
     found_lines, momentan = [], []
     iterator = iter(root.iter())
@@ -106,15 +101,14 @@ def parse_root_items(root) -> list:
     return found_lines
 
 
-
 def decrypt_device(data_hex, smart_meter_config: dict[str, Any]):
-    #keys = trust_wallet_instance.get_planetmint_keys()
-    #planetmint_address = keys.planetmint_address
+    # keys = trust_wallet_instance.get_planetmint_keys()
+    # planetmint_address = keys.planetmint_address
     smart_meter_type = smart_meter_config.get("smart_meter_type")
     if not smart_meter_type:
         return None
     smart_meter_type = smart_meter_type.upper()
-    #if True:
+    # if True:
     #    dec = decrypt_aes_gcm_landis_and_gyr(
     #        data_hex,
     #        bytes.fromhex(smart_meter_config.get("encryption_key")),
@@ -122,7 +116,7 @@ def decrypt_device(data_hex, smart_meter_config: dict[str, Any]):
     #    )
     #    return dec
     #    #return transform_to_metrics(dec, planetmint_address)
-    if True: #smart_meter_type == SAGEMCOM:
+    if True:  # smart_meter_type == SAGEMCOM:
         dec = decrypt_sagemcom(
             data_hex,
             bytes.fromhex(smart_meter_config.get("encryption_key")),
@@ -134,8 +128,7 @@ def decrypt_device(data_hex, smart_meter_config: dict[str, Any]):
         return transform_to_metrics(dec, planetmint_address)
     else:
         pass
-        #logger.error(f"Unknown device: {smart_meter_type}")
-
+        # logger.error(f"Unknown device: {smart_meter_type}")
 
 
 def decrypt_evn_data(data: str, evn_key: str):
@@ -159,14 +152,12 @@ def decrypt_evn_data(data: str, evn_key: str):
     return parse_root_items(root)
 
 
-
 def evn_decrypt(frame, system_title, frame_counter, evn_key):
     frame = unhexlify(frame)
     encryption_key = unhexlify(evn_key)
     init_vector = unhexlify(system_title + frame_counter)
     cipher = AES.new(encryption_key, AES.MODE_GCM, nonce=init_vector)
     return cipher.decrypt(frame).hex()
-
 
 
 def decrypt_aes_gcm_landis_and_gyr(data_hex, encryption_key=None, authentication_key=None):
@@ -234,10 +225,9 @@ def apdu_to_json(apdu_hex):
     return apdu_json
 
 
-
 def decrypt_sagemcom(data_hex, encryption_key=None, authentication_key=None):
     apdu = decrypt_gcm(authentication_key, data_hex, encryption_key)
-    print( apdu )
+    print(apdu)
     obis_dict = parse_dsmr_frame(apdu)
 
     data_list = parse_obis(obis_dict)
@@ -291,9 +281,8 @@ def parse_value(value: Any, value_type: Type = int):
         return f"ERROR: Could not convert '{value}' to {value_type.__name__}"
 
 
-
 def decrypt_gcm(authentication_key, cipher_text_str, encryption_key):
-    cipher_text = cipher_text_str #bytes.fromhex(cipher_text_str)
+    cipher_text = cipher_text_str  # bytes.fromhex(cipher_text_str)
     system_title = cipher_text[2 : 2 + 8]
     initialization_vector = system_title + cipher_text[14 : 14 + 4]
     additional_authenticated_data = cipher_text[13 : 13 + 1] + authentication_key
@@ -305,15 +294,14 @@ def decrypt_gcm(authentication_key, cipher_text_str, encryption_key):
     return apdu
 
 
-
 def parse_dsmr_frame(byteframe):
     # Decode the hexadecimal string into its string representation
-    #logger.debug(f"hex_frame: {hex_frame}")
-    #decoded_frame = bytes.fromhex(hex_frame).decode("latin-1")
+    # logger.debug(f"hex_frame: {hex_frame}")
+    # decoded_frame = bytes.fromhex(hex_frame).decode("latin-1")
     decoded_frame = byteframe.decode("latin-1")
     # Split the decoded frame into lines
     lines = decoded_frame.split("\r\n")
-    
+
     # Dictionary to store parsed data
     data = {}
 
@@ -332,10 +320,8 @@ def parse_dsmr_frame(byteframe):
     return data
 
 
-
 def convert_to_kwh(value) -> float:
     return value / 1000
-
 
 
 def transform_to_metrics(data_list, public_key) -> dict:

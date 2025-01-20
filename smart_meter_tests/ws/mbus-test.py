@@ -3,8 +3,9 @@ import time
 import binascii
 from energy_decrypter import decrypt_aes_gcm_landis_and_gyr, decrypt_sagemcom
 
+
 class LandisGyrE450Reader:
-    def __init__(self, serial_port='/dev/ttyUSB0', baud_rate=2400, address=1):
+    def __init__(self, serial_port="/dev/ttyUSB0", baud_rate=2400, address=1):
         self.serial_port = serial_port
         self.baud_rate = baud_rate
         self.address = address
@@ -20,12 +21,7 @@ class LandisGyrE450Reader:
     def open_connection(self):
         try:
             self.ser = serial.Serial(
-                port=self.serial_port,
-                baudrate=self.baud_rate,
-                bytesize=8,
-                parity='E',
-                stopbits=1,
-                timeout=1
+                port=self.serial_port, baudrate=self.baud_rate, bytesize=8, parity="E", stopbits=1, timeout=1
             )
             print(f"Serial port opened: {self.ser.name}")
         except serial.SerialException as e:
@@ -73,7 +69,7 @@ class LandisGyrE450Reader:
                     print(f"mbusbytes: {mbusbytes.hex()}")
                     if mbusbytes[-1] == 126:
                         return buffer
-                #for byte in mbusbytes:
+                # for byte in mbusbytes:
                 #    #print(f"{hex(byte)}")
                 #    if byte == 126:
                 #        buffer.extend([byte])
@@ -97,7 +93,7 @@ class LandisGyrE450Reader:
 
         frame_hex = frame.hex()
         print(f"Raw frame (hex): {frame_hex}")
-        #print(f"Raw frame (ASCII): {frame.decode('ascii', errors='replace')}")
+        # print(f"Raw frame (ASCII): {frame.decode('ascii', errors='replace')}")
 
         # Basic frame structure parsing
         start_end = frame_hex[:2] + frame_hex[-2:]
@@ -105,38 +101,38 @@ class LandisGyrE450Reader:
         control = frame_hex[4:6]
         address = frame_hex[6:8]
         ci_field = frame_hex[8:10]
-        
+
         # Identification
-        identification = "" #bytes.fromhex(frame_hex[10:36]).decode('ascii', errors='replace')
-        
+        identification = ""  # bytes.fromhex(frame_hex[10:36]).decode('ascii', errors='replace')
+
         # Access number and status
         access_number = frame_hex[36:38]
         status = frame_hex[38:40]
-        
+
         # Configuration word
         config_word = frame_hex[40:44]
-        
+
         # Parse data records
         data_start = 44
         data_records = []
         while data_start < len(frame_hex) - 4:  # -4 to account for checksum and stop byte
-            dif = frame_hex[data_start:data_start+2]
+            dif = frame_hex[data_start : data_start + 2]
             data_start += 2
-            vif = frame_hex[data_start:data_start+2]
+            vif = frame_hex[data_start : data_start + 2]
             data_start += 2
-            
+
             # Determine data length based on DIF
             data_length = 0
-            if dif in ['01', '02', '03', '04']:
+            if dif in ["01", "02", "03", "04"]:
                 data_length = int(dif, 16) * 2
-            elif dif == '05':
+            elif dif == "05":
                 data_length = 8
-            elif dif in ['06', '0D']:
+            elif dif in ["06", "0D"]:
                 data_length = 12
-            
-            data = frame_hex[data_start:data_start+data_length]
+
+            data = frame_hex[data_start : data_start + data_length]
             data_start += data_length
-            
+
             data_records.append(f"DIF: {dif}, VIF: {vif}, Data: {data}")
 
         # Checksum
@@ -163,7 +159,6 @@ Checksum: {checksum}
 """
 
 
-
 def main():
     try:
         with LandisGyrE450Reader() as reader:
@@ -171,23 +166,25 @@ def main():
             if frame:
                 print("Successfully received a valid frame.")
                 print(f"frame: {frame.hex()}")
-                #parsed_frame = reader.parse_frame(frame)
-                #print(parsed_frame)
+                # parsed_frame = reader.parse_frame(frame)
+                # print(parsed_frame)
                 print("\nDecrpyt\n")
-                
-#                dec = decrypt_aes_gcm_landis_and_gyr(
+
+                #                dec = decrypt_aes_gcm_landis_and_gyr(
                 dec = decrypt_sagemcom(
                     frame,
                     bytes.fromhex("4475D2230289243A4AE7732E2396C572"),
-                    bytes.fromhex("8FEADE1D7057D94D816A41E09D17CB58"))
+                    bytes.fromhex("8FEADE1D7057D94D816A41E09D17CB58"),
+                )
                 print(dec)
-                
+
             else:
                 print("Failed to receive a valid frame.")
     except serial.SerialException as e:
         print(f"Serial port error: {e}")
-    #except Exception as e:
+    # except Exception as e:
     #    print(f"An unexpected error occurred: {e}")
+
 
 if __name__ == "__main__":
     main()

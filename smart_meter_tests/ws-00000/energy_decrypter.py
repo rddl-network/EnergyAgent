@@ -5,18 +5,17 @@ from typing import Type, Any
 
 from Crypto.Cipher import AES
 
-#from app.dependencies import trust_wallet_instance
+# from app.dependencies import trust_wallet_instance
 from binascii import unhexlify
 from gurux_dlms.GXDLMSTranslator import GXDLMSTranslator
 import xml.etree.ElementTree as ET
 
-#from app.helpers.logs import log, logger
-#from app.helpers.models import LANDIS_GYR, SAGEMCOM
+# from app.helpers.logs import log, logger
+# from app.helpers.models import LANDIS_GYR, SAGEMCOM
 
 # CRC-STUFF BEGIN
 CRC_INIT = 0xFFFF
 POLYNOMIAL = 0x1021
-
 
 
 def byte_mirror(c):
@@ -24,7 +23,6 @@ def byte_mirror(c):
     c = (c & 0xCC) >> 2 | (c & 0x33) << 2
     c = (c & 0xAA) >> 1 | (c & 0x55) << 1
     return c
-
 
 
 def calc_crc16(data):
@@ -42,7 +40,6 @@ def calc_crc16(data):
     return 256 * byte_mirror(crc // 256) + byte_mirror(crc % 256)
 
 
-
 def verify_crc16(input, skip=0, last=2, cut=0):
     lenn = len(input)
     data = input[skip : lenn - last - cut]
@@ -52,7 +49,6 @@ def verify_crc16(input, skip=0, last=2, cut=0):
     elif last == 2:
         return calc_crc16(data) == goal[0] * 256 + goal[1]
     return False
-
 
 
 def bytes_to_int(bytes):
@@ -82,11 +78,10 @@ SYSTEM_TITLE_SLICE = slice(22, 38)
 FRAME_COUNTER_SLICE = slice(44, 52)
 
 
-
 def parse_root_items(root) -> list:
 
     xml_string = ET.tostring(root, encoding="unicode")
-    #logger.debug(f"XML Content:\n{xml_string}")
+    # logger.debug(f"XML Content:\n{xml_string}")
 
     found_lines, momentan = [], []
     iterator = iter(root.iter())
@@ -106,10 +101,9 @@ def parse_root_items(root) -> list:
     return found_lines
 
 
-
 def decrypt_device(data_hex, smart_meter_config: dict[str, Any]):
-    #keys = trust_wallet_instance.get_planetmint_keys()
-    #planetmint_address = keys.planetmint_address
+    # keys = trust_wallet_instance.get_planetmint_keys()
+    # planetmint_address = keys.planetmint_address
     smart_meter_type = smart_meter_config.get("smart_meter_type")
     if not smart_meter_type:
         return None
@@ -121,7 +115,7 @@ def decrypt_device(data_hex, smart_meter_config: dict[str, Any]):
             bytes.fromhex(smart_meter_config.get("authentication_key")),
         )
         return dec
-        #return transform_to_metrics(dec, planetmint_address)
+        # return transform_to_metrics(dec, planetmint_address)
     elif smart_meter_type == SAGEMCOM:
         dec = decrypt_sagemcom(
             data_hex,
@@ -134,8 +128,7 @@ def decrypt_device(data_hex, smart_meter_config: dict[str, Any]):
         return transform_to_metrics(dec, planetmint_address)
     else:
         pass
-        #logger.error(f"Unknown device: {smart_meter_type}")
-
+        # logger.error(f"Unknown device: {smart_meter_type}")
 
 
 def decrypt_evn_data(data: str, evn_key: str):
@@ -159,14 +152,12 @@ def decrypt_evn_data(data: str, evn_key: str):
     return parse_root_items(root)
 
 
-
 def evn_decrypt(frame, system_title, frame_counter, evn_key):
     frame = unhexlify(frame)
     encryption_key = unhexlify(evn_key)
     init_vector = unhexlify(system_title + frame_counter)
     cipher = AES.new(encryption_key, AES.MODE_GCM, nonce=init_vector)
     return cipher.decrypt(frame).hex()
-
 
 
 def decrypt_aes_gcm_landis_and_gyr(data_hex, encryption_key=None, authentication_key=None):
@@ -176,7 +167,7 @@ def decrypt_aes_gcm_landis_and_gyr(data_hex, encryption_key=None, authentication
 
 def unwrap_apdu(apdu):
     print(f"APDU: {apdu}")
-    #pfu = "0f00b1ce270c07e70a0c040e0528ff80000002120112020412002809060008190900ff0f02120000020412002809060008190900ff0f01120000020412000109060000600100ff0f02120000020412000809060000010000ff0f02120000020412000309064c0b7ca80cbb"
+    # pfu = "0f00b1ce270c07e70a0c040e0528ff80000002120112020412002809060008190900ff0f02120000020412002809060008190900ff0f01120000020412000109060000600100ff0f02120000020412000809060000010000ff0f02120000020412000309064c0b7ca80cbb"
     pfu = "0f00b1ce270c07e70a0c040e0528ff80000002120112020412002809060008190900ff0f02120000020412002809060008190900ff0f01120000020412000109060000600100ff0f02120000020412000809060000010000ff0f02120000020412000309064c0b7ca80cbbadc4b1061f912b63ee54b092ba19f428024561235a514f6410e6500c47e4b477f93f4a32b3afaec87c3d5efb79aae0b7b3e125736f124eeb1d8a70eb10c3319916d247f783a1b7cd760399025e057ebd96caa6ac601b56ab15eaf55f560dd4ffa781d94e2d327c2e2682fbbb4bf3ee37e27b2da96be3038f6c1e4e601ca21e7762dfe8bfd845f3578faf98f1f5e669001d9ac77f329465146c55c842e0f06ed0c28614f55141d4f431991ea27622544865e9aaf28424ad506dd6757a538dc655b51d8b922f49b7303f5cc235bf01c06125f29921877a145975e25adf43823afc4daeba6db17518ed8a6d3aca1e07d85c5fbd7e777b9eaa49e7e7a2b6ab7c617f94bcba7d5971d4015eed62b3375eb04f5e7f1d95e7b5ca224a26ea3beb540c3d249928af4d3c0569c1d7498d905808e1fc6aeec8402b92c5d2cccabdc1c483ff5e87fb53109353a9995ea94eef"
     pfu = "0f00b1ce270c07e70a0c040e0528ff80000002120112020412002809060008190900ff0f02120000020412002809060008190900ff0f01120000020412000109060000600100ff0f02120000020412000809060000010000ff0f02120000020412"
     gxdlm = GXDLMSTranslator().pduToXml(pfu)
@@ -240,7 +231,6 @@ def apdu_to_json(apdu_hex):
     return apdu_json
 
 
-
 def decrypt_sagemcom(data_hex, encryption_key=None, authentication_key=None):
     apdu = decrypt_gcm(authentication_key, data_hex, encryption_key)
     obis_dict = parse_dsmr_frame(apdu)
@@ -296,7 +286,6 @@ def parse_value(value: Any, value_type: Type = int):
         return f"ERROR: Could not convert '{value}' to {value_type.__name__}"
 
 
-
 def decrypt_gcm(authentication_key, cipher_text_str, encryption_key):
     cipher_text = bytes.fromhex(cipher_text_str)
     system_title = cipher_text[2 : 2 + 8]
@@ -309,10 +298,9 @@ def decrypt_gcm(authentication_key, cipher_text_str, encryption_key):
     return apdu
 
 
-
 def parse_dsmr_frame(hex_frame):
     # Decode the hexadecimal string into its string representation
-    #logger.debug(f"hex_frame: {hex_frame}")
+    # logger.debug(f"hex_frame: {hex_frame}")
     decoded_frame = bytes.fromhex(hex_frame).decode("latin-1")
 
     # Split the decoded frame into lines
@@ -336,10 +324,8 @@ def parse_dsmr_frame(hex_frame):
     return data
 
 
-
 def convert_to_kwh(value) -> float:
     return value / 1000
-
 
 
 def transform_to_metrics(data_list, public_key) -> dict:
