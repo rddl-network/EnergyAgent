@@ -84,17 +84,21 @@ class MbusReader:
                     chunk = self.ser.read(2000)
                     if chunk:
                         bytes_array.extend(chunk)
-                        frames = MbusReader.extract_frames(bytes_array)
-                        if len(frames) > 0:
-                            payload = bytearray()
-                            for frame in frames:
-                                logger.debug(f"found frame: {frame}")
-                                dlms_frame = DLMSFrame(frame)
-                                payload.extend(dlms_frame.get_payload())
-                            payload = dlms_frame.get_payload_hex()
-                            logger.debug(f"Valid frame and payload found: {payload}")
-                            return payload
                     else:
+                        if len(bytes_array) > 0:
+                            # process the previously composed frame chunks
+                            # before waiting for another frame set
+                            frames = MbusReader.extract_frames(bytes_array)
+                            if len(frames) > 0:
+                                payload = bytearray()
+                                for frame in frames:
+                                    logger.debug(f"found frame: {frame}")
+                                    dlms_frame = DLMSFrame(frame)
+                                    payload.extend(dlms_frame.get_payload())
+                                payload = payload.hex()
+                                logger.debug(f"Valid frame and payload found: {payload}")
+                                return payload
+                        # reset the bytes array in any case
                         bytes_array = bytearray()
                 logger.debug(f"No valid frame found in attempt {attempt}")
             except Exception as e:
