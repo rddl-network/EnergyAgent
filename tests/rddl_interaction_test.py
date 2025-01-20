@@ -1,7 +1,12 @@
+import pytest
 import binascii
 from app.RddlInteraction.api_queries import createAccountOnNetwork, getAccountInfo
 from app.RddlInteraction.planetmint_interaction import getAttestMachineTx, getNotarizeAssetTx
 from app.RddlInteraction.TrustWallet.TrustWalletConnector import TrustWalletConnector
+
+pytestmark = pytest.mark.skip(
+    "Skipping this entire file due to incomplete modelling of the rddl test environment for this cases."
+)
 
 
 def test_createMnemonic():
