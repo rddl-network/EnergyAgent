@@ -1,8 +1,10 @@
 import pytest
-import re
 from app.energy_agent.smart_meter_reader.mbus_reader import MbusReader
 from app.energy_agent.smart_meter_reader.mbus_frame import DLMSFrame
-from app.energy_agent.energy_decrypter import decrypt_aes_gcm_landis_and_gyr, decrypt_gcm, unwrap_apdu
+from app.energy_agent.smart_meter_reader.dlms_parser import DSMRParser
+
+
+from app.energy_agent.energy_decrypter import decrypt_aes_gcm_landis_and_gyr, decrypt_gcm, unwrap_apdu, decrypt_evn_data
 frames = [
     "7ea067ceff031338bde6e700db084c475a6773745ddd4f2000e8c3f44d3b65fcf023f403e19036a1c9f5e6eabdf04c40a4800b1509a2252881267d0b90e585eef07f57c90ad75192893725ae5f06bacee5a422d33f1705a1919765812e06910abfdb2beb901270657e",
     "7ea067ceff031338bde6e700db084c475a6773745ddd4f2000e8cacbb3176bfb6d62b4340d8f1faed60d316317766f277899e0f285282779d1acf4b02960dd76d66210a77bddfb19338ce2ca4f41a083737cefc2d0134b3a5194c2656cc2647be83a21acaf1c17287e",
@@ -242,12 +244,22 @@ def test_multi_frame():
         print( f"total payload: {total_payload.hex()}")
         assert multi_frame["payload"] == total_payload.hex()
         
-        apdu = decrypt_gcm(auth_key_bytes[0], total_payload, dec_key_bytes[0])
+        apdu = decrypt_gcm(auth_key_bytes[0], total_payload.hex(), dec_key_bytes[0])
         print(f"apdu: {apdu}")
         assert multi_frame["apdu"] == apdu
         # unwrapped = unwrap_apdu(apdu)
         # print(unwrapped)
         # assert multi_frame["unwrapped_apdu"] == unwrapped
+
+@pytest.mark.skip(reason="unable to parse this payload workshop meter")
+def test_decrypt_payload():
+    dec_key_bytes =  bytes.fromhex("4475D2230289243A4AE7732E2396C572")
+    auth_key_bytes = bytes.fromhex("8FEADE1D7057D94D816A41E09D17CB58")
+    
+    payload = "db084c475a6773745ddd4f2000e98779aba887d3fbd6d2227dec5bd8f2c8e144071505032adb39a939db833bc5d34d5e2987af79c95f3adfcd9efacfde55c3ce74b1d66f1d03519d12e524b4db61db2d0894a154dfb310712d4f"
+    payload = "db084c475a6773745ddd4f2000e98dfa5b3752103b634363c4ed54f3d21f13c6174c786adbaaf3c763d9a7f09e8d5c9461854bf50a8417f5dd779104c3ae7f1cb43f8408036e32ef34afe27eb1ac03f2cdb3de617811baeb7302"
+    
+    assert False
 
 @pytest.mark.skip(reason="CRC computation does not work right now")
 def test_parse_frames():
