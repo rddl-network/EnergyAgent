@@ -1,11 +1,8 @@
 import json
-from decimal import Decimal
-from datetime import datetime, timezone
 from typing import Type, Any
 
 from Crypto.Cipher import AES
 
-from app.dependencies import trust_wallet_instance
 from binascii import unhexlify
 from gurux_dlms.GXDLMSTranslator import GXDLMSTranslator
 import xml.etree.ElementTree as ET
@@ -108,8 +105,7 @@ def parse_root_items(root) -> list:
 
 @log
 def decrypt_device(data_hex, smart_meter_config: dict[str, Any]):
-    keys = trust_wallet_instance.get_planetmint_keys()
-    planetmint_address = keys.planetmint_address
+
     smart_meter_type = smart_meter_config.get("smart_meter_type")
     if not smart_meter_type:
         return None
@@ -120,19 +116,20 @@ def decrypt_device(data_hex, smart_meter_config: dict[str, Any]):
             bytes.fromhex(smart_meter_config.get("encryption_key")),
             bytes.fromhex(smart_meter_config.get("authentication_key")),
         )
-        return transform_to_metrics(dec, planetmint_address)
+        return dec
     elif smart_meter_type == SAGEMCOM:
         dec = decrypt_sagemcom(
             data_hex,
             bytes.fromhex(smart_meter_config.get("encryption_key")),
             bytes.fromhex(smart_meter_config.get("authentication_key")),
         )
-        return transform_to_metrics(dec, planetmint_address)
+        return dec
     elif smart_meter_type == "EVN":
         dec = decrypt_evn_data(data_hex, smart_meter_config.get("encryption_key"))
-        return transform_to_metrics(dec, planetmint_address)
+        return dec
     else:
         logger.error(f"Unknown device: {smart_meter_type}")
+        return None
 
 
 @log
@@ -326,30 +323,3 @@ def parse_dsmr_frame(hex_frame):
             data[obis_code] = value
 
     return data
-
-
-@log
-def convert_to_kwh(value) -> float:
-    return value / 1000
-
-
-@log
-def transform_to_metrics(data_list, public_key) -> dict:
-    now = datetime.now(timezone.utc)
-    metric_data = {
-        "public_key": public_key,
-        "time_stamp": now.isoformat(),
-        "type": "absolute_energy",
-        "unit": "kWh",
-        "absolute_energy_in": 0.0,
-        "absolute_energy_out": 0.0,
-        "cid": None,
-    }
-
-    for data in data_list:
-        if data.get("key") == "WirkenergieP":
-            metric_data["absolute_energy_in"] = convert_to_kwh(float(data.get("value")))
-        elif data.get("key") == "WirkenergieN":
-            metric_data["absolute_energy_out"] = convert_to_kwh(float(data.get("value")))
-
-    return metric_data  # Return the metric data
