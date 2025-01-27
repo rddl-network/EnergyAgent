@@ -99,6 +99,11 @@ async def stats_page(request: Request):
     return templates.TemplateResponse("EnergyAgentStats.html", {"request": request})
 
 
-@router.get("/smartmeter-config")
+@router.get("/grid")
 async def smartmeter_config_page(request: Request):
     return templates.TemplateResponse("SmartMeterConfig.html", {"request": request})
+
+
+@router.get("/reporting")
+async def reporting_page(request: Request):
+    return templates.TemplateResponse("Reporting.html", {"request": request})

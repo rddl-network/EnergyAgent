@@ -64,7 +64,7 @@ body {
 }
 
 h1 {
-  background: linear-gradient(to right, rgba(8, 133, 223, 1) 0%, rgba(91, 231, 100, 1) 50%, rgba(8, 133, 223, 1) 100%);
+  background: white;
   -webkit-background-clip: text;
   -moz-background-clip: text;
   background-clip: text;
@@ -123,8 +123,8 @@ nav {
   justify-content: space-between;
   width: 100%;
 }
-nav  a{
-  color: #9b9ca7;
+nav a{
+  color:white;
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -163,24 +163,33 @@ nav  a{
   gap: 16px;
 }
 .btn {
-  background-image: linear-gradient(to right, rgb(34, 71, 127), rgb(8, 133, 223));
+  background-color:  rgb(85, 153, 202);
   border-radius: 8px;
   border: none;
   box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 118, 255, 0.19) 0px 4px 14px 0px;
-  color: white;
+  color: black;
   cursor: pointer;
   font-size: 16px;
   font-weight: bold;
   padding: 12px 30px;
   text-transform: uppercase;
   transition: all 0.3s ease-in-out;
+  flex-direction: row;
+  align-items: center;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 14px;
 }
 
 .btn-small {
   display: flex;
   align-items: center;
-  color: #9b9ca7;
-  background-image: linear-gradient(to right, rgb(34, 71, 127), rgb(8, 133, 223));
+  color: black;
+  font-weight: bold;
+  background-color: rgb(85, 153, 202);
   border: none;
   padding: 6px 12px;
   border-radius: 4px;
@@ -190,23 +199,23 @@ nav  a{
 
 .btn-big {
   background: transparent;
-  border-radius: 1rem;
-  border: 1px solid rgb(89, 92, 111);
+  #border-radius: 1rem;
+  #border: 1px solid rgb(89, 92, 111);
   color: white;
   font-size: 16px;
   font-weight: bold;
   padding: 10px;
   text-align: center;
-  transition: all 0.3s ease-in-out;
+  #transition: all 0.3s ease-in-out;
   cursor: pointer;
   margin: 0 auto;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
+  justify-content: flex-start;
   align-items: center;
   width: 100%;
   gap: 14px;
-  
+  border: none; 
 }
 
 .radio-buttons {
@@ -326,7 +335,7 @@ nav  a{
   margin-left: 10px;
 }
 .section-title {
-  color: #9b9ca7;
+  color:white;
   font-size: 18px;
   font-weight: bold;
   text-align: center;
@@ -335,7 +344,7 @@ nav  a{
 
 code {
   background-color: #1D1E22;
-  color: #676d81;
+  color: white;
   border-radius: 0.3rem;
   padding: 10px;
   border: 1px solid rgba(89, 92, 111, 0.4);
@@ -428,7 +437,7 @@ code {
   color: rgba(255, 255, 255, 0.7)
 }
 .desc {
-  color: rgba(255, 255, 255, 0.4);
+  color:  white;
   margin: 0;
 }
 
@@ -437,7 +446,8 @@ code {
   flex-shrink: 0;
 }
 .warning {
-  color: #FF8854;
+  color:red;
+  font-weight: bold;
 }
 
 table {

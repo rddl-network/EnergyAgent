@@ -14,41 +14,64 @@
     <div class="left-side">
         <a href="/trust-wallet">
             <button class="btn-big" type="button">
-                <img class="device" src="{{ url_for('static', path='img/trust-wallet.png') }}" width="135"
-                     alt="Trust Wallet"/>
-                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots"/>
-                Trust Wallet
+                <img class="device" src="{{ url_for('static', path='img/trust_wallet.svg') }}" width="135"
+                     alt="Wallet"/>
+                Wallet
             </button>
-            <img class="arrow" src="{{ url_for('static', path='img/arrow-down.png') }}"/>
         </a>
         <a href="/rddl-page">
             <button class="btn-big" type="button">
-                <img class="device" src="{{ url_for('static', path='img/attestation.png') }}" alt="RDDL Network"/>
-                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots"/>
-                RDDL Network
+                <img class="device" src="{{ url_for('static', path='img/rddl_network.svg') }}" alt="Network"/>
+                Network
             </button>
-            <img class="arrow" src="{{ url_for('static', path='img/arrow-down.png') }}"/>
         </a>
         <a href="/mqtt-page">
             <button class="btn-big" type="button">
-                <img class="device" src="{{ url_for('static', path='img/mqtt.png') }}" alt="MQTT config"/>
-                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots"/>
-                MQTT Config
+                <img class="device" src="{{ url_for('static', path='img/mqtt_config.svg') }}" alt="Add Devices"/>
+                Add Devices
             </button>
-            <img class="arrow" src="{{ url_for('static', path='img/arrow-down.png') }}"/>
         </a>
-        <a href="/stats-page">
+        <a href="/smd-entries">
             <button class="btn-big" type="button">
-                <img class="device" src="{{ url_for('static', path='img/nodata.svg') }}" alt="additional_options"/>
-                <img src="{{ url_for('static', path='img/dots.svg') }}" alt="Dots"/>
-                Additional Options
+                <img class="device" src="{{ url_for('static', path='img/smart_meter_devices.svg') }}" alt="List Devices"/>
+                List Devices
+            </button>
+        </a>
+        <a href="/activities-page">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img/activities.svg') }}" alt="Activities"/>
+                Activities
+            </button>
+        </a>
+        <a href="/logs-page">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img/logs.svg') }}" alt="Logs"/>
+                <span>Logs</span>
+            </button>
+        </a>
+        <a href="/cid-page">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img/cid_resolver.svg') }}" alt="CID Resolver"/>
+                <span>CID Resolver</span>
+            </button>
+        </a>
+        <a href="/grid">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img/smart_meter_config.svg') }}" alt="Grid"/>
+                <span>Grid</span>
+            </button>
+        </a>
+        <a href="/reporting">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img/reporting.svg') }}" alt="Reporting"/>
+                <span>Reporting</span>
             </button>
         </a>
     </div>
     <div class="main-container">
         <header class="header-top">
             <nav>
-                <a href="/">Home</a>
+                <a href="/"><b>Home</b></a>
                 <div class="buttons">
                     <button class="btn-small" id="startButton" onclick="startAgent()">Start Agent</button>
                     <button class="btn-small" id="stopButton" onclick="stopAgent()">Stop Agent</button>
