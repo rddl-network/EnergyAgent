@@ -27,20 +27,20 @@
         </a>
         <a href="/mqtt-page">
             <button class="btn-big" type="button">
-                <img class="device" src="{{ url_for('static', path='img-new/mqtt_config.svg') }}" alt="Devices"/>
-                Devices
+                <img class="device" src="{{ url_for('static', path='img-new/mqtt_config.svg') }}" alt="Add Devices"/>
+                Add Devices
             </button>
         </a>
         <a href="/smd-entries">
             <button class="btn-big" type="button">
-                <img class="device" src="{{ url_for('static', path='img-new/smart_meter_devices.svg') }}" alt="Smart Metering Devices"/>
-                <span>Smart Metering Devices</span>
+                <img class="device" src="{{ url_for('static', path='img-new/smart_meter_devices.svg') }}" alt="List Devices"/>
+                List Devices
             </button>
         </a>
         <a href="/activities-page">
             <button class="btn-big" type="button">
                 <img class="device" src="{{ url_for('static', path='img-new/activities.svg') }}" alt="Activities"/>
-                <span>Activities</span>
+                Activities
             </button>
         </a>
         <a href="/logs-page">
@@ -55,17 +55,23 @@
                 <span>CID Resolver</span>
             </button>
         </a>
-        <a href="/smartmeter-config">
+        <a href="/grid">
             <button class="btn-big" type="button">
-                <img class="device" src="{{ url_for('static', path='img-new/smart_meter_config.svg') }}" alt="Smart Meter Configuration"/>
-                <span>Smart Meter Configuration</span>
+                <img class="device" src="{{ url_for('static', path='img-new/smart_meter_config.svg') }}" alt="Grid"/>
+                <span>Grid</span>
+            </button>
+        </a>
+        <a href="/reporting">
+            <button class="btn-big" type="button">
+                <img class="device" src="{{ url_for('static', path='img-new/reporting.svg') }}" alt="Reporting"/>
+                <span>Reporting</span>
             </button>
         </a>
     </div>
     <div class="main-container">
         <header class="header-top">
             <nav>
-                <a href="/">Home</a>
+                <a href="/"><b>Home</b></a>
                 <div class="buttons">
                     <button class="btn-small" id="startButton" onclick="startAgent()">Start Agent</button>
                     <button class="btn-small" id="stopButton" onclick="stopAgent()">Stop Agent</button>
