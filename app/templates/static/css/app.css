@@ -163,7 +163,7 @@ nav a{
   gap: 16px;
 }
 .btn {
-  background-image:  rgb(85, 153, 202);
+  background-color:  rgb(85, 153, 202);
   border-radius: 8px;
   border: none;
   box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 118, 255, 0.19) 0px 4px 14px 0px;
@@ -189,7 +189,7 @@ nav a{
   align-items: center;
   color: black;
   font-weight: bold;
-  background-image: rgb(85, 153, 202);
+  background-color: rgb(85, 153, 202);
   border: none;
   padding: 6px 12px;
   border-radius: 4px;
