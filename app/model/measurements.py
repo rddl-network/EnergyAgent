@@ -6,7 +6,7 @@ from asyncio import Lock as AsyncLock
 from app.helpers.logs import log
 
 
-class Measurement:
+class Measurements:
     def __init__(self) -> None:
         self.async_mutex = AsyncLock()
         self.production = 0.0
@@ -53,6 +53,6 @@ class Measurement:
     def set_sm_data(self, data_list):
         for data in data_list:
             if data.get("key") == "WirkenergieP":
-                self.from_grid = Measurement.convert_to_kwh(float(data.get("value")))
+                self.from_grid = Measurements.convert_to_kwh(float(data.get("value")))
             elif data.get("key") == "WirkenergieN":
-                self.to_grid = Measurement.convert_to_kwh(float(data.get("value")))
+                self.to_grid = Measurements.convert_to_kwh(float(data.get("value")))

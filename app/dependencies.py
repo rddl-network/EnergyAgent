@@ -6,7 +6,7 @@ from app.helpers.config_helper import build_config_path
 from app.RddlInteraction.TrustWallet.TrustWalletConnector import TrustWalletConnector
 from app.RddlInteraction.rddl_network_config import get_rddl_network_settings
 from app.helpers.logs import log, setup_logging
-from app.model.measurements import Measurement
+from app.model.measurements import Measurements
 
 FILE_SMART_METER_CONFIG = "smart_meter_config.json"
 FILE_MQTT_CONFIG = "mqtt_config.json"
@@ -62,4 +62,4 @@ setup_logging(
 
 trust_wallet_instance = TrustWalletConnector(port_name=config.trust_wallet_port, timeout=600000)
 data_buffer = DataBuffer()
-measurement_instance = Measurement()
+measurement_instance = Measurements()

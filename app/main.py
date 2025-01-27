@@ -24,7 +24,6 @@ from app.services.scheduler import scheduler
 from app.services.energy_agent_manager import get_energy_agent_manager
 from app.routers.html import templates, trust_wallet_templates
 from app.RddlInteraction.rddl_client import RDDLAgent
-from app.services.smart_meter_manager import get_smart_meter_manager
 
 
 async def startup_event():
@@ -88,7 +87,6 @@ app.include_router(templates.router)
 app.include_router(trust_wallet_templates.router)
 app.include_router(smd_entry.router)
 app.include_router(energy_agent_logs.router)
-app.include_router(smart_meter_manager.router)
 
 
 if __name__ == "__main__":

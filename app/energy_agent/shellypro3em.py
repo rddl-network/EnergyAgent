@@ -1,7 +1,7 @@
 import json
 
 from app.helpers.api_helper import fetch_xml
-from app.model.measurements import Measurement
+from app.model.measurements import Measurements
 
 
 def get_production_value_in_wh(data: str) -> float:
@@ -12,7 +12,7 @@ def get_production_value_in_wh(data: str) -> float:
 
 def get_production_value_in_kwh(data: str) -> float:
     wh_production = get_production_value_in_wh(data)
-    kwh_production = Measurement.convert_to_kwh(wh_production)
+    kwh_production = Measurements.convert_to_kwh(wh_production)
     return kwh_production
 
 

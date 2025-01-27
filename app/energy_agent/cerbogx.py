@@ -1,6 +1,6 @@
 import re
 from app.dependencies import PRODUCTION_READOUT_MODE_CERBOGX, config, measurement_instance
-from app.model.measurements import Measurement
+from app.model.measurements import Measurements
 
 
 def process_production_readout(topic: str, data: str):
@@ -8,5 +8,5 @@ def process_production_readout(topic: str, data: str):
         return
     if re.match(r"^N/[^/]+/system/0/Dc/Pv/Power$", topic):
         wh_production = float(data)
-        kwh_production = Measurement.convert_to_kwh(wh_production)
+        kwh_production = Measurements.convert_to_kwh(wh_production)
         measurement_instance.set_abs_production_value(kwh_production)
