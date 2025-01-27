@@ -53,6 +53,23 @@
             <button class="btn" onclick="notarize()" id="notarizeButton" type="button">Notarize</button>
             <button class="btn" onclick="window.location.href='/claim-rewards'" type="button">Claim Rewards</button>
         </div>
+        <div>
+            <button class="btn-big" onclick="toggleAdvanced()" class="advanced-toggle">
+                 Advanced Settings >>
+            </button>
+            <div id="advancedSection" style="display: none;">
+                <!-- Your advanced content goes here -->
+                <div class="switch-network">
+                    <p class="section-title">Switch Network</p>
+                    <div class="card">
+                        <div>
+                            <button class="btn" id="switchNetworkButton" onclick=switchNetwork()>Switch Network</button>
+                            <p>Current Network: <span id="currentNetwork">Loading...</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="spinner-overlay" id="spinner-overlay">
         <div class="spinner"></div>
@@ -176,6 +193,59 @@
                 });
         }
 
+        function toggleAdvanced() {
+            const section = document.getElementById('advancedSection');
+            const button = document.querySelector('.advanced-toggle');
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                button.textContent = 'Hide Advanced Settings';
+            } else {
+                section.style.display = 'none';
+                button.textContent = 'Show Advanced Settings';
+            }
+        }
+        const ERROR_LOADING = 'Failed to load'
+
+        const CURRENT_NETWORK_ELEMENT = 'currentNetwork'
+
+        const MAINNET = 'mainnet';
+        const TESTNET = 'testnet';
+
+        function getCurrentNetwork() {
+            fetch('/rddl/configuration')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById(CURRENT_NETWORK_ELEMENT).textContent = data.configuration.name;
+                })
+                .catch(error => {
+                    console.error('Failed to fetch network config: ', error);
+                    document.getElementById(CURRENT_NETWORK_ELEMENT).textContent = ERROR_LOADING;
+                })
+        }
+
+        function switchNetwork() {
+            let currentNetwork = document.getElementById(CURRENT_NETWORK_ELEMENT).textContent;
+            let networkToSet;
+            if (currentNetwork === TESTNET) {
+                networkToSet = MAINNET;
+            } else {
+                networkToSet = TESTNET
+            }
+
+            fetch('/rddl/configuration/' + networkToSet, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }).then(response => response.json())
+                .then(data => {
+                    document.getElementById(CURRENT_NETWORK_ELEMENT).textContent = data.configuration.name;
+                }).catch(error => {
+                console.error('Failed to set network: ', error);
+                document.getElementById(CURRENT_NETWORK_ELEMENT).textContent = ERROR_LOADING;
+            })
+        }
+        getCurrentNetwork()
         // Update button state initially (optional)
         attestationValue.addEventListener("DOMContentLoaded", updateButtonState); // For initial load
         attestationValue.addEventListener("change", updateButtonState); // For any future changes

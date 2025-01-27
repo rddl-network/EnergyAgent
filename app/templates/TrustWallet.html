@@ -51,15 +51,7 @@
 
             </div>
         </div>
-        <div class="switch-network">
-            <p class="section-title">Switch Network</p>
-            <div class="card">
-                <div>
-                    <button class="btn" id="switchNetworkButton" onclick=switchNetwork()>Switch Network</button>
-                    <p>Current Network: <span id="currentNetwork">Loading...</span></p>
-                </div>
-            </div>
-        </div>
+        
     </div>
 {% endblock %}
 
@@ -91,7 +83,6 @@
                 document.getElementById('rddlPubKey').textContent = ERROR_LOADING;
             });
         getMachineId()
-        getCurrentNetwork()
 
         function getMachineId() {
             fetch('/twi/get-machine-id')
@@ -107,40 +98,4 @@
                     document.getElementById('machineId').textContent = ERROR_LOADING;
                 });
         }
-
-        function getCurrentNetwork() {
-            fetch('/rddl/configuration')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById(CURRENT_NETWORK_ELEMENT).textContent = data.configuration.name;
-                })
-                .catch(error => {
-                    console.error('Failed to fetch network config: ', error);
-                    document.getElementById(CURRENT_NETWORK_ELEMENT).textContent = ERROR_LOADING;
-                })
-        }
-
-        function switchNetwork() {
-            let currentNetwork = document.getElementById(CURRENT_NETWORK_ELEMENT).textContent;
-            let networkToSet;
-            if (currentNetwork === TESTNET) {
-                networkToSet = MAINNET;
-            } else {
-                networkToSet = TESTNET
-            }
-
-            fetch('/rddl/configuration/' + networkToSet, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }).then(response => response.json())
-                .then(data => {
-                    document.getElementById(CURRENT_NETWORK_ELEMENT).textContent = data.configuration.name;
-                }).catch(error => {
-                console.error('Failed to set network: ', error);
-                document.getElementById(CURRENT_NETWORK_ELEMENT).textContent = ERROR_LOADING;
-            })
-        }
-
     </script>{% endblock %}
