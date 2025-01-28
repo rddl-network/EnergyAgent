@@ -1,5 +1,10 @@
 import json
 
+from app.dependencies import (
+    config,
+    measurement_instance,
+    PRODUCTION_READOUT_MODE_SHELLYPRO3EM,
+)
 from app.helpers.api_helper import fetch_xml
 from app.helpers.logs import logger
 from app.model.measurements import Measurements
@@ -28,3 +33,12 @@ def get_shelly_pro_3em_energy_production(ip: str) -> float:
     produced_energy = get_production_value_in_kwh(json_content)
     logger.debug(f"Production value: {produced_energy} ")
     return produced_energy
+
+
+def read_shelly_pro_3em_values():
+    if config.production_readout_mode != PRODUCTION_READOUT_MODE_SHELLYPRO3EM:
+        return
+    if config.production_readout_ip == "":
+        return
+    energy_production = get_shelly_pro_3em_energy_production(config.production_readout_ip)
+    measurement_instance.set_abs_production_value(energy_production)

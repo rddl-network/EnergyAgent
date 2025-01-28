@@ -1,3 +1,5 @@
+from xml.etree.ElementTree import ParseError
+
 from app.energy_agent.data_buffer import DataBuffer
 from app.energy_agent.smart_meter_reader.mbus_reader import MbusReader
 from app.energy_agent.smart_meter_reader.modbus_reader import ModbusReader
@@ -5,7 +7,9 @@ from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.logs import logger, log
 from typing import Dict, Any
 
+from app.helpers.config_helper import load_config
 from app.helpers.models import LANDIS_GYR, SAGEMCOM
+from app.dependencies import config, measurement_instance, data_buffer
 
 
 class SmartMeterReader:
@@ -109,3 +113,16 @@ class SmartMeterReader:
             return True
 
         return False
+
+
+def read_smart_meter():
+    smart_meter_config = load_config(config.path_to_smart_meter_config)
+    smart_meter = SmartMeterReader(smart_meter_config=smart_meter_config, data_buffer=data_buffer)
+    try:
+        data = smart_meter.read_meter_data()
+        if data:
+            measurement_instance.set_sm_data(data)
+    except ParseError as e:
+        logger.error(f"Failed to parse extracted data {str(e)}")
+    except Exception as e:
+        logger.error(f"Failed to read or send meter data: {str(e)}")

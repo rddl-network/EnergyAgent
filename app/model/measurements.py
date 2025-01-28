@@ -22,7 +22,7 @@ class Measurements:
     def get_state(self, planetmint_address, cid: None) -> dict:
         state = {}
         with self.mutex:
-            now = datetime.now(timezone.utc)
+            now = datetime.datetime.now(timezone.utc)
             state = {
                 "public_key": planetmint_address,
                 "time_stamp": now.isoformat(),

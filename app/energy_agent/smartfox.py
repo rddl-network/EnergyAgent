@@ -1,6 +1,10 @@
 import re
 import xml.etree.ElementTree as ET
-
+from app.dependencies import (
+    config,
+    measurement_instance,
+    PRODUCTION_READOUT_MODE_SMARTFOX,
+)
 from app.helpers.api_helper import fetch_xml
 from app.helpers.logs import logger
 
@@ -43,3 +47,12 @@ def get_smartfox_energy_production(ip: str) -> float:
     produced_energy = get_produced_energy(xml_content)
     logger.debug(f"Production value: {produced_energy} ")
     return produced_energy
+
+
+def read_smart_fox_values():
+    if config.production_readout_mode != PRODUCTION_READOUT_MODE_SMARTFOX:
+        return
+    if config.production_readout_ip == "":
+        return
+    energy_production = get_smartfox_energy_production(config.production_readout_ip)
+    measurement_instance.set_abs_production_value(energy_production)
