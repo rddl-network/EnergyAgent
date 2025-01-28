@@ -29,6 +29,7 @@ services:
       - 2138:2138
     privileged: true
     volumes:
+      - ./app:/app
       - ./energy-agent-data:/data
     restart: always
     network_mode: "host"
