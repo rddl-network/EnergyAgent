@@ -11,7 +11,7 @@ from app.services.mqtt_reporter import broadcast_status
 def init_scheduler(scheduler: BackgroundScheduler):
     scheduler.add_job(
         read_smart_meter,
-        trigger=CronTrigger(minute="*/1"),
+        trigger=CronTrigger(minute="*/2"),
         id="read_smart_meter",
         name="Read Smart Meter",
         replace_existing=True,
@@ -19,7 +19,7 @@ def init_scheduler(scheduler: BackgroundScheduler):
 
     scheduler.add_job(
         broadcast_status,
-        trigger=CronTrigger(minute="*/1"),
+        trigger=CronTrigger(minute="*/15"),
         id="mqtt_reporter",
         name="Report State",
         replace_existing=True,
@@ -27,7 +27,7 @@ def init_scheduler(scheduler: BackgroundScheduler):
 
     scheduler.add_job(
         read_smart_fox_values,
-        trigger=CronTrigger(minute="*/1"),
+        trigger=CronTrigger(minute="*/2"),
         id="read_smart_fox",
         name="Read from smartfox",
         replace_existing=True,
@@ -35,7 +35,7 @@ def init_scheduler(scheduler: BackgroundScheduler):
 
     scheduler.add_job(
         read_shelly_pro_3em_values,
-        trigger=CronTrigger(minute="*/1"),
+        trigger=CronTrigger(minute="*/2"),
         id="read_shellypro3em",
         name="Read Shelly Pro 3 EM",
         replace_existing=True,
