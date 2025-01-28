@@ -36,12 +36,16 @@ class SmartMeterReader:
 
     @log
     def read_meter_data(self) -> dict | None:
-        smart_meter_type = self.smart_meter_config.get("smart_meter_type").upper()
         data = None
+        if not self.smart_meter_config or not self.smart_meter_config.get("smart_meter_type"):
+            return data
+
+        smart_meter_type = self.smart_meter_config.get("smart_meter_type").upper()
         if smart_meter_type == LANDIS_GYR:
             data = self._read_landis_gyr()
         elif smart_meter_type == SAGEMCOM:
             data = self._read_sagemcom()
+
         _check_if_valid_incremental_data = self._check_if_valid_incremental_data(data)
 
         if not _check_if_valid_incremental_data:

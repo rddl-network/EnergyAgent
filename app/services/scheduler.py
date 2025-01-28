@@ -35,7 +35,8 @@ def read_smart_meter():
     smart_meter = SmartMeterReader(smart_meter_config=smart_meter_config, data_buffer=data_buffer)
     try:
         data = smart_meter.read_meter_data()
-        measurement_instance.set_sm_data(data)
+        if data:
+            measurement_instance.set_sm_data(data)
     except ParseError as e:
         logger.error(f"Failed to parse extracted data {str(e)}")
     except Exception as e:
