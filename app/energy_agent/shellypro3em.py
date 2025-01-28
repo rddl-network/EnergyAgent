@@ -23,6 +23,6 @@ def fetch_shelly_pro_3em_values(ip: str, path="rpc/EMData.GetStatus?id=0", proto
 
 
 def get_shelly_pro_3em_energy_production(ip: str) -> float:
-    json_content = await fetch_shelly_pro_3em_values(ip)
+    json_content = fetch_shelly_pro_3em_values(ip)
     produced_energy = get_production_value_in_kwh(json_content)
     return produced_energy

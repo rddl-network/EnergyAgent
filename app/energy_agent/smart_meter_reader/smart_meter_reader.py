@@ -1,11 +1,9 @@
-from app.dependencies import config
 from app.energy_agent.data_buffer import DataBuffer
 from app.energy_agent.smart_meter_reader.mbus_reader import MbusReader
 from app.energy_agent.smart_meter_reader.modbus_reader import ModbusReader
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.logs import logger, log
 from typing import Dict, Any
-import json
 
 from app.helpers.models import LANDIS_GYR, SAGEMCOM
 
@@ -30,7 +28,6 @@ class SmartMeterReader:
                 serial_port=self.smart_meter_config.get("smart_meter_serial_port", "/dev/ttyUSB0"),
                 baud_rate=self.smart_meter_config.get("smart_meter_baud_rate", 2400),
                 address=self.smart_meter_config.get("smart_meter_address", 1),
-                valid_frame_pattern=r"db08.*?7e7ea08bceff0313ee",
             )
         elif smart_meter_type == SAGEMCOM:
             return ModbusReader(start_index=self.smart_meter_config.get("start_index", "5e4e"))
