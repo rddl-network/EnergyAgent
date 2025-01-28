@@ -2,10 +2,9 @@ import datetime
 from datetime import timezone
 
 
-# from asyncio import Lock as AsyncLock
 from threading import Lock
 
-from app.helpers.logs import log
+from app.helpers.logs import log, logger
 
 
 class Measurements:
@@ -16,7 +15,6 @@ class Measurements:
         self.to_grid = 0.0
         self.from_grid = 0.0
 
-    @log
     @staticmethod
     def convert_to_kwh(value: float) -> float:
         return value / 1000
@@ -40,20 +38,22 @@ class Measurements:
 
     def set_abs_production_value(self, production: float):
         with self.mutex:
+            logger.debug(f"Measurements: write production {production}")
             self.production = production
 
     def set_abs_to_grid(self, to_grid):
         with self.mutex:
+            logger.debug(f"Measurements: write to grid {to_grid}")
             self.to_grid = to_grid
 
     def set_abs_from_grid(self, from_grid):
         with self.mutex:
+            logger.debug(f"Measurements: write from grid {from_grid}")
             self.from_grid = from_grid
 
     def set_sm_data(self, data_list):
-        with self.mutex:
-            for data in data_list:
-                if data.get("key") == "WirkenergieP":
-                    self.from_grid = Measurements.convert_to_kwh(float(data.get("value")))
-                elif data.get("key") == "WirkenergieN":
-                    self.to_grid = Measurements.convert_to_kwh(float(data.get("value")))
+        for data in data_list:
+            if data.get("key") == "WirkenergieP":
+                self.set_abs_from_grid(Measurements.convert_to_kwh(float(data.get("value"))))
+            elif data.get("key") == "WirkenergieN":
+                self.set_abs_to_grid(Measurements.convert_to_kwh(float(data.get("value"))))

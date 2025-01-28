@@ -2,6 +2,7 @@ import re
 import xml.etree.ElementTree as ET
 
 from app.helpers.api_helper import fetch_xml
+from app.helpers.logs import logger
 
 
 def extract_wr_energy_values(xml_content: str) -> dict:
@@ -40,4 +41,5 @@ def fetch_smartfox_values(ip: str, path="values.xml", protocol="http"):
 def get_smartfox_energy_production(ip: str) -> float:
     xml_content = fetch_smartfox_values(ip)
     produced_energy = get_produced_energy(xml_content)
+    logger.debug(f"Production value: {produced_energy} ")
     return produced_energy

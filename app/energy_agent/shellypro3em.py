@@ -1,6 +1,7 @@
 import json
 
 from app.helpers.api_helper import fetch_xml
+from app.helpers.logs import logger
 from app.model.measurements import Measurements
 
 
@@ -25,4 +26,5 @@ def fetch_shelly_pro_3em_values(ip: str, path="rpc/EMData.GetStatus?id=0", proto
 def get_shelly_pro_3em_energy_production(ip: str) -> float:
     json_content = fetch_shelly_pro_3em_values(ip)
     produced_energy = get_production_value_in_kwh(json_content)
+    logger.debug(f"Production value: {produced_energy} ")
     return produced_energy
