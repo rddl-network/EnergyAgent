@@ -31,13 +31,13 @@ def get_produced_energy(xml_content: str) -> float:
     return production
 
 
-async def fetch_smartfox_values(ip: str, path="values.xml", protocol="http"):
+def fetch_smartfox_values(ip: str, path="values.xml", protocol="http"):
     url = f"{protocol}://{ip}/{path}"
-    xml_content = await fetch_xml(url)
+    xml_content = fetch_xml(url)
     return xml_content
 
 
-async def get_smartfox_energy_production(ip: str) -> float:
-    xml_content = await fetch_smartfox_values(ip)
-    produced_energy = await get_produced_energy(xml_content)
+def get_smartfox_energy_production(ip: str) -> float:
+    xml_content = fetch_smartfox_values(ip)
+    produced_energy = get_produced_energy(xml_content)
     return produced_energy

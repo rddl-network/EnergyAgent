@@ -5,8 +5,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 from starlette.staticfiles import StaticFiles
 
-from app.dependencies import config
-from app.helpers.config_helper import load_config
+
 from app.helpers.logs import logger
 
 from app.routers import (
@@ -19,8 +18,11 @@ from app.routers import (
     smd_entry,
     energy_agent_logs,
 )
-from app.services import energy_agent_manager, smart_meter_manager
-from app.services.scheduler import scheduler
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+from app.services import energy_agent_manager
+from app.services.scheduler import init_scheduler
 from app.services.energy_agent_manager import get_energy_agent_manager
 from app.routers.html import templates, trust_wallet_templates
 from app.RddlInteraction.rddl_client import RDDLAgent
@@ -37,6 +39,10 @@ async def startup_event():
 async def lifespan(app: FastAPI):
     print("Starting up...")
     rddl_task = asyncio.create_task(startup_event())
+    loop = asyncio.get_running_loop()
+    # scheduler = AsyncIOScheduler(event_loop=loop)
+    scheduler = BackgroundScheduler()
+    init_scheduler(scheduler)
     scheduler.start()
 
     energy_manager = get_energy_agent_manager()

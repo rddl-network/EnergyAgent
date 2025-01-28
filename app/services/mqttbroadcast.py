@@ -66,8 +66,6 @@ class MQTTBroadcaster:
     async def send_state(self, state) -> None:
         """Send measurements via MQTT."""
         try:
-            # data = self.smart_meter.read_meter_data()
-            # data = Measurements.getState()
             if state:
                 await self._connect_mqtt(self)
                 await self._send_mqtt(state)

@@ -41,7 +41,7 @@ class SmartMeterManager:
         self._reconnect_task: Optional[asyncio.Task] = None
 
     @log
-    async def read_smart_meter(self) -> dict:
+    def read_smart_meter(self) -> dict:
         """Read data from smart meter and send via MQTT."""
         try:
             data = self.smart_meter.read_meter_data()
