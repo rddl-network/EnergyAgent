@@ -8,13 +8,10 @@ from app.energy_agent.smart_meter_reader.mbus_frame import DLMSFrame
 
 
 class MbusReader:
-    def __init__(
-        self, serial_port="/dev/ttyUSB0", baud_rate=2400, address=1, valid_frame_pattern=r"db08.*?7e7ea08bceff0313ee"
-    ):
+    def __init__(self, serial_port="/dev/ttyUSB0", baud_rate=2400, address=1):
         self.serial_port = serial_port
         self.baud_rate = baud_rate
         self.address = address
-        self.valid_frame_pattern = valid_frame_pattern
         self.ser = None
 
     def __enter__(self):

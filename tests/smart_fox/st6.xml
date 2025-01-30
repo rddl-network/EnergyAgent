@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<values>
+<value id="hidWebinterfaceVersion">V0_1_4_00</value>
+<value id="macAddress">682719BE0DCB</value>
+<value id="ipAddress">192.168.178.036</value>
+<value id="version">EM3  00.01.05.02</value>
+<value id="toGridValue">-0.01 kW</value>
+<value id="lang">de</value>
+<value id="dateValue">2025-01-24</value>
+<value id="timeValue">11:57:00 Uhr</value>
+<value id="hidApiKey">6bf4431bc05846ea896e410c27196767</value>
+
+<value id="hidAoutMode">2</value>
+<value id="analogOutDescription">Boiler</value>
+<value id="analogOutPercent">32%</value>
+<value id="analogOutPower">1.62 &lt;span&gt;kW&lt;/span&gt;</value>
+<value id="analogOutTemp">0.0 &#176;C</value>
+<value id="hidAoutActivated">1</value>
+<value id="hidAoutStatus">0</value>
+<value id="hidAoutName">Boiler</value>
+
+
+<value id="hidCcType1">0</value>
+<value id="hidCcMode1">0</value>
+<value id="hidCcSt1">255</value>
+<value id="hidCcType2">0</value>
+<value id="hidCcMode2">0</value>
+<value id="hidCcSt2">255</value>
+<value id="hidCcType3">0</value>
+<value id="hidCcMode3">0</value>
+<value id="hidCcSt3">255</value>
+<value id="hidCcType4">0</value>
+<value id="hidCcMode4">0</value>
+<value id="hidCcSt4">255</value>
+<value id="hidCcType5">0</value>
+<value id="hidCcMode5">0</value>
+<value id="hidCcSt5">255</value>
+
+
+
+<value id="hidCcConnTimeout1">0</value>
+<value id="hidCcConnTimeout2">0</value>
+<value id="hidCcConnTimeout3">0</value>
+<value id="hidCcConnTimeout4">0</value>
+<value id="hidCcConnTimeout5">0</value>
+
+<value id="hidCc1Percent">100</value>
+<value id="hidCc2Percent">100</value>
+<value id="hidCc3Percent">100</value>
+<value id="hidCc4Percent">100</value>
+<value id="hidCc5Percent">100</value>
+
+<value id="hidCc1Rfid"></value>
+<value id="hidCc2Rfid"></value>
+<value id="hidCc3Rfid"></value>
+<value id="hidCc4Rfid"></value>
+<value id="hidCc5Rfid"></value>
+
+<value id="hidCc1Username"></value>
+<value id="hidCc2Username"></value>
+<value id="hidCc3Username"></value>
+<value id="hidCc4Username"></value>
+<value id="hidCc5Username"></value>
+
+<value id="hidCc1Info">0</value>
+<value id="hidCc2Info">0</value>
+<value id="hidCc3Info">0</value>
+<value id="hidCc4Info">0</value>
+<value id="hidCc5Info">0</value>
+<value id="hidCc1Name">CC</value>
+<value id="hidCc2Name">CC</value>
+<value id="hidCc3Name">CC</value>
+<value id="hidCc4Name">CC</value>
+<value id="hidCc5Name">CC</value>
+<value id="hidCc1Phase">1</value>
+<value id="hidCc2Phase">1</value>
+<value id="hidCc3Phase">1</value>
+<value id="hidCc4Phase">1</value>
+<value id="hidCc5Phase">1</value>
+<value id="hidCc1TempTime">0</value>
+<value id="hidCc2TempTime">0</value>
+<value id="hidCc3TempTime">0</value>
+<value id="hidCc4TempTime">0</value>
+<value id="hidCc5TempTime">0</value>
+<value id="hidCc1Temperature">0</value>
+<value id="hidCc2Temperature">0</value>
+<value id="hidCc3Temperature">0</value>
+<value id="hidCc4Temperature">0</value>
+<value id="hidCc5Temperature">0</value>
+<value id="hidCc1VoS">0</value>
+<value id="hidCc2VoS">0</value>
+<value id="hidCc3VoS">0</value>
+<value id="hidCc4VoS">0</value>
+<value id="hidCc5VoS">0</value>
+<value id="hidCcMplusMode">[0,0,0,0,0]</value>
+<value id="hidCcRemTimerEnergy">[0.00,0.00,0.00,0.00,0.00]</value>
+<value id="hidCcRemTimerTime">[0,0,0,0,0]</value>
+<value id="hidCcPhaseCurrent">[[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]</value>
+<value id="hidCcControlCurrent">[0,0,0,0,0]</value>
+<value id="hidCcLimitInfo">[0,0,0,0,0]</value>
+
+<value id="hidCcProd">0</value>
+
+<value id="hidCc1EnergyDay">0.00</value>
+<value id="hidCc2EnergyDay">0.00</value>
+<value id="hidCc3EnergyDay">0.00</value>
+<value id="hidCc4EnergyDay">0.00</value>
+<value id="hidCc5EnergyDay">0.00</value>
+
+<value id="hidCc1CycleCounter">0</value>
+<value id="hidCc2CycleCounter">0</value>
+<value id="hidCc3CycleCounter">0</value>
+<value id="hidCc4CycleCounter">0</value>
+<value id="hidCc5CycleCounter">0</value>
+
+<value id="hidLic">0</value>
+
+<value id="detailsPowerValue">-13 W</value>
+<value id="energyValue">6556.232 kWh</value>
+<value id="eApparentValue">246 VAh</value>
+<value id="eDayValue">12473 Wh</value>
+<value id="eDayUsedValue">2200 Wh</value>
+<value id="pUserValue">1624 W</value>
+<value id="eToGridValue">10610.466 kWh</value>
+<value id="eUsedValue">3810.395 kWh</value>
+<value id="eDayToGridValue">68 Wh</value>
+
+<value id="relayStatusValue1">1</value>
+<value id="relayStatusValue2">0</value>
+<value id="relayStatusValue3">0</value>
+<value id="relayStatusValue4">0</value>
+<value id="relayRemTimeValue1">0 min</value>
+<value id="relayRemTimeValue2">0 min</value>
+<value id="relayRemTimeValue3">0 min</value>
+<value id="relayRemTimeValue4">0 min</value>
+<value id="relayRunTimeValue1">30 min</value>
+<value id="relayRunTimeValue2">0 min</value>
+<value id="relayRunTimeValue3">0 min</value>
+<value id="relayRunTimeValue4">0 min</value>
+
+<value id="heatPumpPower">0.00 &lt;span&gt;kW&lt;/span&gt;</value>
+<value id="wpPowerValueIDM">0.00 kW</value>
+<value id="wpEnergyValueIDM">0.00 kWh</value>
+<value id="wpThermPowerValue">0.00 kW</value>
+<value id="wpTempBufferHotValue">0.0 &#176;C</value>
+<value id="wpTempWarmWaterValue1">0.0 &#176;C</value>
+<value id="wpThermEnergyValue">0.00 kWh</value>
+<value id="wpTempBufferColdValue">0.0 &#176;C</value>
+<value id="hidWpStatus">0</value>
+<value id="hidWpConnTimeout">0</value>
+
+<value id="hidBatteryPower">0.00 kW</value>
+
+<value id="hidBatteryConnTimeout1">0</value>
+<value id="hidBatteryConnTimeout2">0</value>
+<value id="hidBatteryConnTimeout3">0</value>
+
+<value id="currentChargingValue">0 Wh</value>
+
+<value id="ccEnergyValue">0 Wh</value>
+
+<value id="voltageL1Value">221 V</value>
+<value id="voltageL2Value">228 V</value>
+<value id="voltageL3Value">226 V</value>
+<value id="ampereL1Value">4.87 A</value>
+<value id="ampereL2Value">4.81 A</value>
+<value id="ampereL3Value">5.25 A</value>
+<value id="powerL1Value">29 W</value>
+<value id="powerL2Value">-32 W</value>
+<value id="powerL3Value">-10 W</value>
+<value id="wr1PowerValue">4.84 kW</value>
+<value id="wr2PowerValue">0.00 kW</value>
+<value id="wr3PowerValue">0.00 kW</value>
+<value id="wr4PowerValue">0.00 kW</value>
+<value id="wr5PowerValue">0.00 kW</value>
+<value id="wr1CustomerName">SH 10.0</value>
+<value id="wr2CustomerName"></value>
+<value id="wr3CustomerName"></value>
+<value id="wr4CustomerName"></value>
+<value id="wr5CustomerName"></value>
+<value id="wr1EnergyValue">18377.60 kWh</value>
+<value id="wr2EnergyValue">0.00 kWh</value>
+<value id="wr3EnergyValue">0.00 kWh</value>
+<value id="wr4EnergyValue">0.00 kWh</value>
+<value id="wr5EnergyValue">0.00 kWh</value>
+<value id="wpThermEnergyHeatValue">0 kWh</value>
+<value id="wpThermEnergyWaterValue">0 kWh</value>
+<value id="wpTempReturnValue">0.0 &#176;C</value>
+<value id="wpTempWarmWaterValue2">0 &#176;C</value>
+<value id="wpImpTempOutsideValue">0 &#176;C</value>
+<value id="wpThermEnergyPoolValue">0 kWh</value>
+<value id="wpStateValue">Aus</value>
+<value id="wpHeatPumpControlValue">Nicht Aktiv</value>
+<value id="wpIdmTempOutsideValue">0.0 &#176;C</value>
+<value id="hidWpInfo">asdf</value>
+<value id="wpPowerValue">0.00</value>
+<value id="wpEnergyValue"> kWh</value>
+<value id="wpThermPowerValue">0.00 kW</value>
+<value id="wpThermEnergyValue"> kWh</value>
+<value id="wpTempBufferValue">0.0 &#176;C</value>
+<value id="wpTempWarmWaterValue">0.0 &#176;C</value>
+<value id="wpIdmTempOutsideValue">0.0 &#176;C</value>
+
+
+<value id="hidEmProd">0</value>
+
+<value id="hidWrSt1">-1</value>
+<value id="hidWrSt2">-1</value>
+<value id="hidWrSt3">-1</value>
+<value id="hidWrSt4">-1</value>
+<value id="hidWrSt5">-1</value>
+<value id="hidWrConnTimeout1">5</value>
+<value id="hidWrConnTimeout2">0</value>
+<value id="hidWrConnTimeout3">0</value>
+<value id="hidWrConnTimeout4">0</value>
+<value id="hidWrConnTimeout5">0</value>
+
+
+
+<value id="hidWrProd1">30</value>
+<value id="hidWrProd2">0</value>
+<value id="hidWrProd3">0</value>
+<value id="hidWrProd4">0</value>
+<value id="hidWrProd5">0</value>
+<value id="s01Value">0</value>
+<value id="s02Value">0</value>
+<value id="s03Value">0</value>
+<value id="s04Value">0</value>
+<value id="s05Value">0</value>
+<value id="cc1Power">0.00 &lt;span&gt;kW&lt;/span&gt;</value>
+<value id="cc2Power">0.00 &lt;span&gt;kW&lt;/span&gt;</value>
+<value id="cc3Power">0.00 &lt;span&gt;kW&lt;/span&gt;</value>
+<value id="cc4Power">0.00 &lt;span&gt;kW&lt;/span&gt;</value>
+<value id="cc5Power">0.00 &lt;span&gt;kW&lt;/span&gt;</value>
+<value id="cc1LastChargeValue">0.00 kWh</value>
+<value id="cc2LastChargeValue">0.00 kWh</value>
+<value id="cc3LastChargeValue">0.00 kWh</value>
+<value id="cc4LastChargeValue">0.00 kWh</value>
+<value id="cc5LastChargeValue">0.00 kWh</value>
+<value id="hidTempsens">0</value>
+<value id="hidLoginEnabled">0</value>
+<value id="userPassword">1509442</value>
+<value id="installerPassword">-600754586</value>
+
+<value id="hidActPrice">32767</value>
+<value id="hidOnTimeAout">0</value>
+<value id="hidOnTimesCC1">0</value>
+<value id="hidOnTimesCC2">0</value>
+<value id="hidOnTimesCC3">0</value>
+<value id="hidOnTimesCC4">0</value>
+<value id="hidOnTimesCC5">0</value>
+<value id="hidRemAoutTime">0</value>
+<value id="hidSdCardInserted">1</value>
+<value id="hidSD">1</value>
+<value id="hidSdFreeMemory">29220</value>
+<value id="hidAoutPercentage">32</value>
+<value id="hidRemTimeSwitch">0</value>
+<value id="hidAoutRemTimer">0</value>
+<value id="hidR1Status">1</value>
+<value id="hidR2Status">0</value>
+<value id="hidR3Status">0</value>
+<value id="hidR4Status">0</value>
+<value id="hidR1Name">Wärmepumpe</value>
+<value id="hidR2Name">Relais</value>
+<value id="hidR3Name">Relais</value>
+<value id="hidR4Name">Relais</value>
+<value id="hidR1Type">2</value>
+<value id="hidR2Type">2</value>
+<value id="hidR3Type">2</value>
+<value id="hidR4Type">2</value>
+<value id="hidR1Info">6</value>
+<value id="hidR2Info">0</value>
+<value id="hidR3Info">0</value>
+<value id="hidR4Info">0</value>
+<value id="hidR1RemTimeSwitch">0 min</value>
+<value id="hidR2RemTimeSwitch">0 min</value>
+<value id="hidR3RemTimeSwitch">0 min</value>
+<value id="hidR4RemTimeSwitch">0 min</value>
+<value id="hidR1RemTimer">0</value>
+<value id="hidR2RemTimer">0</value>
+<value id="hidR3RemTimer">0</value>
+<value id="hidR4RemTimer">0</value>
+<value id="hidRelay1Activated">1</value>
+<value id="hidRelay2Activated">1</value>
+<value id="hidRelay3Activated">1</value>
+<value id="hidRelay4Activated">1</value>
+<value id="hidR1Mode">1</value>
+<value id="hidR2Mode">0</value>
+<value id="hidR3Mode">0</value>
+<value id="hidR4Mode">0</value>
+<value id="hidR1Icon">device_waermepumpe</value>
+<value id="hidR2Icon">device_relais</value>
+<value id="hidR3Icon">device_relais</value>
+<value id="hidR4Icon">device_relais</value>
+
+
+<value id="hidProduction">4.84 kW</value>
+<value id="hidPower">-13 W</value>
+
+
+<value id="batterySoc">0&#x25;</value>
+<value id="carChargerPower">0.00 kW</value>
+<value id="relais1State">EIN</value>
+<value id="relais2State">AUS</value>
+<value id="relais3State">AUS</value>
+<value id="relais4State">AUS</value>
+<value id="hidBsProd">20</value>
+
+
+<value id="hidToGridEnergyDay">68</value>
+<value id="hidFromGridEnergyDay">12473</value>
+<value id="hidAoutEnergyDay">2200</value>
+<value id="hidWr1EnergyDay">8500</value>
+<value id="hidWr2EnergyDay">0</value>
+<value id="hidWr3EnergyDay">0</value>
+<value id="hidWr4EnergyDay">0</value>
+<value id="hidWr5EnergyDay">0</value>
+
+<value id="hidWpProd">0</value>
+<value id="hidWpElEnergyDay">0</value>
+<value id="hidWpThWaterEnergyDay">0</value>
+<value id="hidWpThHeatEnergyDay">0</value>
+<value id="hidWpThPoolEnergyDay">0</value>
+<value id="hidEm1EnergyFor">0.00</value>
+<value id="hidEm2EnergyFor">0.00</value>
+<value id="hidEm3EnergyFor">0.00</value>
+<value id="hidEm4EnergyFor">0.00</value>
+<value id="hidEm5EnergyFor">0.00</value>
+<value id="hidEm1EnergyRev">0.00</value>
+<value id="hidEm2EnergyRev">0.00</value>
+<value id="hidEm3EnergyRev">0.00</value>
+<value id="hidEm4EnergyRev">0.00</value>
+<value id="hidEm5EnergyRev">0.00</value>
+<value id="hidEm1EnergyDayFor">0.00</value>
+<value id="hidEm2EnergyDayFor">0.00</value>
+<value id="hidEm3EnergyDayFor">0.00</value>
+<value id="hidEm4EnergyDayFor">0.00</value>
+<value id="hidEm5EnergyDayFor">0.00</value>
+<value id="hidEm1EnergyDayRev">0.00</value>
+<value id="hidEm2EnergyDayRev">0.00</value>
+<value id="hidEm3EnergyDayRev">0.00</value>
+<value id="hidEm4EnergyDayRev">0.00</value>
+<value id="hidEm5EnergyDayRev">0.00</value>
+<value id="hidSmartfoxCounter1Setup">0</value>
+<value id="hidSmartfoxCounter2Setup">0</value>
+<value id="hidSmartfoxCounter3Setup">0</value>
+<value id="hidSmartfoxCounter4Setup">0</value>
+<value id="hidSmartfoxCounter5Setup">0</value>
+<value id="hidEmPhaseCurrent">[[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]]</value>
+
+
+<value id="hidEmConnTimeout1">0</value>
+<value id="hidEmConnTimeout2">0</value>
+<value id="hidEmConnTimeout3">0</value>
+<value id="hidEmConnTimeout4">0</value>
+<value id="hidEmConnTimeout5">0</value>
+
+
+<value id="hidSmartfoxCharger1Setup">0</value>
+<value id="hidSmartfoxCharger2Setup">0</value>
+<value id="hidSmartfoxCharger3Setup">0</value>
+<value id="hidSmartfoxCharger4Setup">0</value>
+<value id="hidSmartfoxCharger5Setup">0</value>
+
+<value id="hidExternalMeter1Type">0</value>
+<value id="hidExternalMeter2Type">0</value>
+<value id="hidExternalMeter3Type">0</value>
+<value id="hidExternalMeter4Type">0</value>
+<value id="hidExternalMeter5Type">0</value>
+<value id="hidExternalMeter1SmartfoxRegister">0</value>
+<value id="hidExternalMeter2SmartfoxRegister">0</value>
+<value id="hidExternalMeter3SmartfoxRegister">0</value>
+<value id="hidExternalMeter4SmartfoxRegister">0</value>
+<value id="hidExternalMeter5SmartfoxRegister">0</value>
+<value id="hidExternalMeter1Name">EM</value>
+<value id="hidExternalMeter2Name">EM</value>
+<value id="hidExternalMeter3Name">EM</value>
+<value id="hidExternalMeter4Name">EM</value>
+<value id="hidExternalMeter5Name">EM</value>
+<value id="externalMeter1Power">0.00 kW</value>
+<value id="externalMeter2Power">0.00 kW</value>
+<value id="externalMeter3Power">0.00 kW</value>
+<value id="externalMeter4Power">0.00 kW</value>
+<value id="externalMeter5Power">0.00 kW</value>
+<value id="hidConsumptionController">0</value>
+
+<value id="hidS0InputType">0</value>
+<value id="hidS0InputValue">0.00</value>
+<value id="hidS0InputUnit">kWh</value>
+<value id="hidS0InputDayPulses">nan</value>
+<value id="hidS0InputName">S0 Eingang</value>
+<value id="S0InputTotalPulses">0</value>
+
+<value id="consumptionControl1Percent">0%</value>
+<value id="consumptionControl1Power">0.00 &lt;span&gt;kW&lt;/span&gt;</value>
+<value id="consumptionControl1EnergyDay">0</value>
+<value id="consumptionControl1Temp">0.0°C</value>
+<value id="hidConsumptionControl1Mode">2</value>
+<value id="hidConsumptionControl1Percentage">0</value>
+<value id="hidConsumptionControlConnTimeout1">0</value>
+<value id="hidConsumptionControl1State">0</value>
+<value id="hidConsumptionControl1Info">1</value>
+<value id="hidConsumptionControl1Description">VB</value>
+<value id="hidConsumptionControl1StatusText"></value>
+
+<value id="hidTestLicDaysInverter">359</value>
+<value id="hidTestLicDaysHeatPump">0</value>
+<value id="hidTestLicDaysBattery">359</value>
+<value id="hidTestLicDaysCarCharger">0</value>
+
+<value id="hidEnergyTariffActivated">0</value>
+
+
+<value id="inverter1ConfigPaneIp">192.168.178.033</value>
+<value id="inverter1ConfigPaneModbus">1</value>
+<value id="inverter2ConfigPaneIp">000.000.000.000</value>
+<value id="inverter2ConfigPaneModbus">255</value>
+<value id="inverter3ConfigPaneIp">000.000.000.000</value>
+<value id="inverter3ConfigPaneModbus">255</value>
+<value id="inverter4ConfigPaneIp">000.000.000.000</value>
+<value id="inverter4ConfigPaneModbus">255</value>
+<value id="inverter5ConfigPaneIp">000.000.000.000</value>
+<value id="inverter5ConfigPaneModbus">255</value>
+<value id="consumptionControlConfigPane1Name">VB</value>
+<value id="consumptionControlConfigPane1Ip">192.168.001.185</value>
+<value id="consumptionControlConfigPane1Rtu">40</value>
+<value id="externalMeterConfigPane1Name">EM</value>
+<value id="externalMeterConfigPane1Ip">192.168.000.120</value>
+<value id="externalMeterConfigPane1Modbus">0</value>
+<value id="externalMeterConfigPane2Name">EM</value>
+<value id="externalMeterConfigPane2Ip">192.168.000.120</value>
+<value id="externalMeterConfigPane2Modbus">0</value>
+<value id="externalMeterConfigPane3Name">EM</value>
+<value id="externalMeterConfigPane3Ip">192.168.000.120</value>
+<value id="externalMeterConfigPane3Modbus">0</value>
+<value id="externalMeterConfigPane4Name">EM</value>
+<value id="externalMeterConfigPane4Ip">192.168.000.120</value>
+<value id="externalMeterConfigPane4Modbus">0</value>
+<value id="externalMeterConfigPane5Name">EM</value>
+<value id="externalMeterConfigPane5Ip">192.168.000.120</value>
+<value id="externalMeterConfigPane5Modbus">0</value>
+<value id="battery1ConfigPaneIp">010.000.000.100</value>
+<value id="carCharger1ConfigPaneIp">192.168.001.210</value>
+<value id="carCharger1ConfigPaneSerial">0</value>
+<value id="carCharger2ConfigPaneIp">000.000.000.000</value>
+<value id="carCharger2ConfigPaneSerial">0</value>
+<value id="carCharger3ConfigPaneIp">000.000.000.000</value>
+<value id="carCharger3ConfigPaneSerial">0</value>
+<value id="carCharger4ConfigPaneIp">000.000.000.000</value>
+<value id="carCharger4ConfigPaneSerial">0</value>
+<value id="carCharger5ConfigPaneIp">000.000.000.000</value>
+<value id="carCharger5ConfigPaneSerial">0</value>
+
+<value id="hidTcpConverterList">[]</value>
+
+</values>

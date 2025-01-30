@@ -25,10 +25,13 @@ services:
       PORT: 2138
       LOG_LEVEL: DEBUG
       LOG_FILE_PATH: "/data/log/energy_agent.log"
+      PRODUCTION_READOUT_MODE: "SHELLYPRO3EM"
+      PRODUCTION_READOUT_IP: "192.168.10.250"
     ports:
       - 2138:2138
     privileged: true
     volumes:
+      - ./app:/app
       - ./energy-agent-data:/data
     restart: always
     network_mode: "host"

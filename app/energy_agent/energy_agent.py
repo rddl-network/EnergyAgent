@@ -14,6 +14,7 @@ from app.helpers.config_helper import load_config, extract_client_id
 from app.helpers.models import MQTTConfig
 from app.helpers.smd_entry_helper import process_data_buffer
 from app.helpers.logs import log, logger
+from app.energy_agent.cerbogx import process_production_readout
 
 
 class EnergyAgent:
@@ -69,6 +70,8 @@ class EnergyAgent:
 
     @log
     async def process_message(self, topic: str, data: str):
+        process_production_readout(topic, data)
+
         client_id: str = extract_client_id(topic)
         data_dict = {client_id: data}
         logger.debug(f"Data to be notarized: {data_dict}")
