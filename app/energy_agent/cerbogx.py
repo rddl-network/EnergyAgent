@@ -8,4 +8,4 @@ def process_production_readout(topic: str, data: str):
         return
     if re.match(config.production_readout_pattern, topic):
         kwh_production = float(data)
-        measurement_instance.set_abs_production_value(kwh_production)
+        measurement_instance.set_abs_production_value(kwh_production, topic)

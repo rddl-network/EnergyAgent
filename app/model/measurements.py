@@ -11,7 +11,7 @@ class Measurements:
     def __init__(self) -> None:
         # self.async_mutex = AsyncLock()
         self.mutex = Lock()
-        self.production = 0.0
+        self.production_dict = {}
         self.to_grid = 0.0
         self.from_grid = 0.0
 
@@ -30,16 +30,22 @@ class Measurements:
                 "unit": "kWh",
                 "absolute_energy_in": self.from_grid,
                 "absolute_energy_out": self.to_grid,
-                "absolute_energy_produced": self.production,
+                "absolute_energy_produced": self.get_overall_production(),
                 "cid": cid,
             }
 
         return state
 
-    def set_abs_production_value(self, production: float):
+    def get_overall_production(self) -> float:
+        production = 0.0
+        for key in self.production_dict:
+            production = production + self.production_dict[key]
+        return production
+
+    def set_abs_production_value(self, production: float, key: str = ""):
         with self.mutex:
             logger.debug(f"Measurements: write production {production}")
-            self.production = production
+            self.production_dict.update({key: production})
 
     def set_abs_to_grid(self, to_grid):
         with self.mutex:
