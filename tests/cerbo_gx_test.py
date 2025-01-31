@@ -10,14 +10,14 @@ def test_cerbogx_value_extraction():
     # string
     data = "2450.0"
     process_production_readout(topic, data)
-    assert 2450.0 == measurement_instance.production
+    assert 2450.0 == measurement_instance.get_overall_production()
 
     # float
     data = 2450.0
     process_production_readout(topic, data)
-    assert 2450.0 == measurement_instance.production
+    assert 2450.0 == measurement_instance.get_overall_production()
 
     # int
     data = 2450
     process_production_readout(topic, data)
-    assert 2450.0 == measurement_instance.production
+    assert 2450.0 == measurement_instance.get_overall_production()
