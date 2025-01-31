@@ -7,7 +7,7 @@ from app.helpers.logs import logger
 def process_production_readout(topic: str, data: str):
     if config.production_readout_mode != PRODUCTION_READOUT_MODE_CERBOGX:
         return
-    if re.match(config.production_readout_pattern, topic):        
+    if re.match(config.production_readout_pattern, topic):
         value_object = json.loads(data)
         kwh_production = float(value_object["value"])
         logger.info(f"Notarization: {kwh_production}, {topic}")
