@@ -35,7 +35,9 @@ class Config:
         self.rddl = get_rddl_network_settings(self.rddl_network_mode)
         self.production_readout_mode = os.environ.get("PRODUCTION_READOUT_MODE") or ""
         self.production_readout_ip = os.environ.get("PRODUCTION_READOUT_IP") or ""
-        self.production_readout_pattern = os.environ.get("PRODUCTION_READOUT_PATTERN") or "^N/[^/]+/pvinverter/[^/]+/Ac/Energy/Forward$" #this is used for mqtt topic parsing
+        self.production_readout_pattern = (
+            os.environ.get("PRODUCTION_READOUT_PATTERN") or "^N/[^/]+/pvinverter/[^/]+/Ac/Energy/Forward$"
+        )  # this is used for mqtt topic parsing
 
         # logging config
         self.log_level = os.environ.get("LOG_LEVEL") or "INFO"
