@@ -45,7 +45,7 @@ class Measurements:
     def set_abs_production_value(self, production: float, key: str = ""):
         with self.mutex:
             logger.debug(f"Measurements: write production {production}")
-            self.production_dict.update({ key: production})
+            self.production_dict.update({key: production})
 
     def set_abs_to_grid(self, to_grid):
         with self.mutex:
