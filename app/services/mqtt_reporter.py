@@ -62,6 +62,7 @@ def publish_message(message: str):
 
 
 def broadcast_status():
+    time.sleep(config.broadcast_delay)
     keys = trust_wallet_instance.get_planetmint_keys()
     state = measurement_instance.get_state(keys.planetmint_address, None)
     logger.debug(f"Report state: {state}")
