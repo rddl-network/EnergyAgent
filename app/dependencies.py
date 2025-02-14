@@ -38,7 +38,7 @@ class Config:
         self.production_readout_pattern = (
             os.environ.get("PRODUCTION_READOUT_PATTERN") or "^N/[^/]+/pvinverter/[^/]+/Ac/Energy/Forward$"
         )  # this is used for mqtt topic parsing
-        self.broadcast_delay = float( os.environ.get("BROADCAST_DELAY") or 40 ) 
+        self.broadcast_delay = float(os.environ.get("BROADCAST_DELAY") or 40)
 
         # logging config
         self.log_level = os.environ.get("LOG_LEVEL") or "INFO"
