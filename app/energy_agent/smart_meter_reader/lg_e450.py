@@ -2,7 +2,7 @@
 """
 Specialized Parser for Landis+Gyr E450 Smart Meter Data
 
-This script is tailored to the E450 model's data format, focusing on the 
+This script is tailored to the E450 model's data format, focusing on the
 structures and OBIS codes specific to this meter.
 """
 

@@ -1,4 +1,4 @@
-""" To decorde smart meter data retrieved from the infra red customer interface provided by Wiener Netze. Tested with Iskra AM550 (But should work for all smart meters provided by Wiener Netze) """
+"""To decorde smart meter data retrieved from the infra red customer interface provided by Wiener Netze. Tested with Iskra AM550 (But should work for all smart meters provided by Wiener Netze)"""
 
 # you might need to install pycryptodome
 from datetime import datetime
