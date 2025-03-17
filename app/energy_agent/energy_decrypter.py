@@ -163,8 +163,7 @@ def evn_decrypt(frame, system_title, frame_counter, evn_key):
     return cipher.decrypt(frame).hex()
 
 
-@log
-def decrypt_aes_gcm_landis_and_gyr(data_hex, encryption_key=None, authentication_key=None):
+def decrypt_aes_gcm_landis_and_gyr(data_hex: str, encryption_key: bytes = None, authentication_key: bytes = None):
     apdu = decrypt_gcm(authentication_key, data_hex, encryption_key)
     return unwrap_apdu(apdu)
 
@@ -285,8 +284,7 @@ def parse_value(value: Any, value_type: Type = int):
         return f"ERROR: Could not convert '{value}' to {value_type.__name__}"
 
 
-@log
-def decrypt_gcm(authentication_key, cipher_text_str, encryption_key):
+def decrypt_gcm(authentication_key: bytes, cipher_text_str: str, encryption_key: bytes):
     cipher_text = bytes.fromhex(cipher_text_str)
     system_title = cipher_text[2 : 2 + 8]
     initialization_vector = system_title + cipher_text[14 : 14 + 4]

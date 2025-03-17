@@ -270,3 +270,35 @@ def parse_e450_meter_data(hex_string):
     results["potential_energy_values"] = energy_markers
 
     return results
+
+
+# Example usage
+if __name__ == "__main__":
+    # The raw hexadecimal data from the E450 meter
+    hex_data = "0f00b1ce270c07e70a0c040e0528ff80000002120112020412002809060008190900ff0f02120000020412002809060008190900ff0f01120000020412000109060000600100ff0f02120000020412000809060000010000ff0f02120000020412000309064c0b7ca80cbbadc4b1061f912b63ee54b092ba19f428024561235a514f6410e6500c47e4b477f93f4a32b3afaec87c3d5efb79aae0b7b3e125736f124eeb1d8a70eb10c3319916d247f783a1b7cd760399025e057ebd96caa6ac601b56ab15eaf55f560dd4ffa781d94e2d327c2e2682fbbb4bf3ee37e27b2da96be3038f6c1e4e601ca21e7762dfe8bfd845f3578faf98f1f5e669001d9ac77f329465146c55c842e0f06ed0c28614f55141d4f431991ea27622544865e9aaf28424ad506dd6757a538dc655b51d8b922f49b7303f5cc235bf01c06125f29921877a145975e25adf43823afc4daeba6db17518ed8a6d3aca1e07d85c5fbd7e777b9eaa49e7e7a2b6ab7c617f94bcba7d5971d4015eed62b3375eb04f5e7f1d95e7b5ca224a26ea3beb540c3d249928af4d3c0569c1d7498d905808e1fc6aeec8402b92c5d2cccabdc1c483ff5e87fb53109353a9995ea94eef"
+
+    # Parse the data
+    results = parse_e450_meter_data(hex_data)
+
+    # Print results in a readable format
+    import json
+
+    print(json.dumps(results, indent=2))
+
+    # Provide a summary of key findings
+    print("\n=== E450 Smart Meter Data Summary ===")
+    if "frame_info" in results and "timestamp" in results["frame_info"]:
+        print(f"Timestamp: {results['frame_info']['timestamp']['formatted']}")
+
+    print("\nOBIS Values Found:")
+    for obis, data in results["obis_values"].items():
+        print(f"- {obis}: {data['interpretation']}")
+        if data["extracted_data"]:
+            for key, value in data["extracted_data"].items():
+                print(f"  {key}: {value}")
+
+    print("\nPotential Energy Values:")
+    for idx, marker in enumerate(results["potential_energy_values"]):
+        print(f"- Value {idx+1}: {marker['value']} kWh (position {marker['position']})")
+
+    print("\nNote: For complete decoding, refer to Landis+Gyr E450 documentation")

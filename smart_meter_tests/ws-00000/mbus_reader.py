@@ -66,7 +66,7 @@ class MbusReader:
         while attempt < max_attempts:
             try:
                 attempt += 1
-                print(f"\nReading MBus")
+                print(f"\nAttempt {attempt} of {max_attempts}")
                 if not self.ser:
                     self.open_connection()
 
@@ -90,7 +90,7 @@ class MbusReader:
                                     dlms_frame = DLMSFrame(frame)
                                     payload.extend(dlms_frame.get_payload())
                                 payload = payload.hex()
-                                print(f"Payload: {payload}")
+                                print(f"Valid frame and payload found: {payload}")
                                 return payload
                         # reset the bytes array in any case
                         bytes_array = bytearray()
