@@ -3,12 +3,13 @@ from xml.etree.ElementTree import ParseError
 from app.energy_agent.data_buffer import DataBuffer
 from app.energy_agent.smart_meter_reader.mbus_reader import MbusReader
 from app.energy_agent.smart_meter_reader.modbus_reader import ModbusReader
+from app.energy_agent.smart_meter_reader.tinetzKaifa309m import TinetzKaifa309MReader
 from app.energy_agent.energy_decrypter import decrypt_device
 from app.helpers.logs import logger, log
 from typing import Dict, Any
 
 from app.helpers.config_helper import load_config
-from app.helpers.models import LANDIS_GYR, SAGEMCOM
+from app.helpers.models import LANDIS_GYR, SAGEMCOM, TINETZKAIFA
 from app.dependencies import config, measurement_instance, data_buffer
 
 
@@ -35,6 +36,14 @@ class SmartMeterReader:
             )
         elif smart_meter_type == SAGEMCOM:
             return ModbusReader(start_index=self.smart_meter_config.get("start_index", "5e4e"))
+        elif smart_meter_type == TINETZKAIFA:
+            logger.info("Using TinetzKaifa309MReader for TinetzKaifa meter")
+            return TinetzKaifa309MReader(
+                serial_port=self.smart_meter_config.get("smart_meter_serial_port", "/dev/ttyUSB0"),
+                baud_rate=self.smart_meter_config.get("smart_meter_baud_rate", 2400),
+                address=self.smart_meter_config.get("smart_meter_address", 1),
+                decryption_key=self.smart_meter_config.get("decryption_key", "")
+            )
         else:
             raise ValueError(f"Unsupported meter type: {smart_meter_type}")
 
@@ -49,11 +58,14 @@ class SmartMeterReader:
             data = self._read_landis_gyr()
         elif smart_meter_type == SAGEMCOM:
             data = self._read_sagemcom()
+        elif smart_meter_type == TINETZKAIFA:
+            data = self._read_tinetzkaifa()
 
-        _check_if_valid_incremental_data = self._check_if_valid_incremental_data(data)
+        if smart_meter_type != TINETZKAIFA:
+            _check_if_valid_incremental_data = self._check_if_valid_incremental_data(data)
 
-        if not _check_if_valid_incremental_data:
-            return None
+            if not _check_if_valid_incremental_data:
+                return None
         self.previous_data = data
         self.data_buffer.add_data({smart_meter_type: data})
         return data
@@ -85,6 +97,15 @@ class SmartMeterReader:
             return decrypt_device(hex_data, self.smart_meter_config)
         else:
             logger.error("Failed to read data from Sagemcom meter")
+            return {}
+
+    @log
+    def _read_tinetzkaifa(self) -> Dict:
+        data = self.reader.read_frame()
+        if data:
+            return data
+        else:
+            logger.error("Failed to read frame from TinetzKaifa meter")
             return {}
 
     @log

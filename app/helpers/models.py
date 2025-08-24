@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 LANDIS_GYR = "LANDIS_GYR"
 SAGEMCOM = "SAGEMCOM"
+TINETZKAIFA = "TINETZKAIFA"
 
 
 class SmartMeterConfig(BaseModel):
@@ -29,6 +30,13 @@ class SagemcomConfig(SmartMeterConfig):
     parity: str = "N"
     stopbits: int = 1
     timeout: int = 90
+
+
+class TinetzKaifaConfig(SmartMeterConfig):
+    smart_meter_type: str = TINETZKAIFA
+    address: int = 1
+    smart_meter_baudrate: int = 2400
+    decryption_key: str = ""
 
 
 class MQTTConfig(BaseModel):

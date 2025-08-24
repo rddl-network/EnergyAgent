@@ -2,7 +2,7 @@ from fastapi import APIRouter, Body
 
 from app.dependencies import config
 from app.helpers.config_helper import save_config, load_config, remove_config
-from app.helpers.models import MQTTConfig, LandisGyrConfig, SagemcomConfig, LANDIS_GYR, SAGEMCOM
+from app.helpers.models import MQTTConfig, LandisGyrConfig, SagemcomConfig, TinetzKaifaConfig, LANDIS_GYR, SAGEMCOM, TINETZKAIFA
 
 router = APIRouter(
     prefix="/config",
@@ -34,6 +34,8 @@ async def get_smartmeter_config_type(type: str):
         smart_meter_config = LandisGyrConfig()
     elif type == SAGEMCOM:
         smart_meter_config = SagemcomConfig()
+    elif type == TINETZKAIFA:
+        smart_meter_config = TinetzKaifaConfig()
     else:
         return {"error": "Invalid type"}
 
@@ -50,6 +52,12 @@ async def route_create_landisgyr_config(smartmeter_config: LandisGyrConfig = Bod
 
 @router.post(f"/smartmeter/{SAGEMCOM}")
 async def route_create_sagemcom_config(smartmeter_config: SagemcomConfig = Body(...)):
+    save_config(config.path_to_smart_meter_config, smartmeter_config.__dict__)
+    return {"message": "Updated smartmeter configuration"}
+
+
+@router.post(f"/smartmeter/{TINETZKAIFA}")
+async def route_create_kaifa_config(smartmeter_config: TinetzKaifaConfig = Body(...)):
     save_config(config.path_to_smart_meter_config, smartmeter_config.__dict__)
     return {"message": "Updated smartmeter configuration"}
 
