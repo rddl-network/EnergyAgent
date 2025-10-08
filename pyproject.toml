@@ -38,6 +38,7 @@ pymeterbus = "^0.8.4"
 apscheduler = "^3.11.0"
 aiohttp = "^3.11.11"
 paho-mqtt = "^2.1.0"
+pytest = "^8.4.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"

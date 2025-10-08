@@ -55,6 +55,12 @@ class MbusReader:
         if byte_array[pointer] != 0x7E:
             return None, None
         pointer = pointer + 1
+        # TODO investigate: found this after a while and commit
+        # it due to reflect on it later during debugging 
+        # and further investigations/developments
+        # if byte_array[pointer] != 0xA0 and byte_array[pointer] != 0x3B:
+            # return None, None
+        # pointer = pointer + 1
         if byte_array[pointer] != 0xA0:
             return None, None
         pointer = pointer + 1
