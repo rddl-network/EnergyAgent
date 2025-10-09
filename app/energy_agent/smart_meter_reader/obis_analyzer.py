@@ -26,7 +26,7 @@ class OBISAnalyzer:
     def __init__(self):
         # DLMS/COSEM Initialization Vector according to NIST SP 800-38D 8.2.1
         # and IEC 62056-5-3 Ed.3 - 5.3.3.7.3
-        DECRYPTION_KEY = "A78F4624621DE5EB8A96DA779E08109C"
+        self.DECRYPTION_KEY = "A78F4624621DE5EB8A96DA779E08109C"
         # TODO: Implement AES decryption according to NIST SP 800-38D
         # self.decryptor = AESDecryptor(DECRYPTION_KEY) 
         
@@ -86,6 +86,41 @@ class OBISAnalyzer:
             0x15: {'name': 'enum', 'parser': self._parse_enum},
         }
     
+    def analyze_block(self, block: bytes) -> Dict:
+        """
+        Analyze a single raw block for OBIS codes and energy data
+        
+        Args:
+            block: Raw bytes data from smart meter
+            
+        Returns:
+            Dict containing analysis results for the single block
+        """
+        results = {
+            'block_size': len(block),
+            'obis_codes': self._find_obis_codes(block),
+            'dlms_structures': self._analyze_dlms_structure(block),
+            'energy_values': self._extract_energy_values(block),
+            'timestamps': self._find_timestamps(block),
+            'ascii_strings': self._find_ascii_strings(block),
+            'numeric_patterns': self._analyze_numeric_patterns(block),
+            'hex_analysis': self._analyze_hex_patterns(block),
+            'encryption_info': self._analyze_encryption_status(block),
+            'summary': {}
+        }
+        
+        # Generate summary for this single block
+        results['summary'] = {
+            'obis_codes_found': len(results['obis_codes']),
+            'energy_measurements_found': len(results['energy_values']),
+            'dlms_structures_found': len(results['dlms_structures']),
+            'ascii_strings_found': len(results['ascii_strings']),
+            'is_encrypted': results['encryption_info']['is_encrypted'],
+            'analysis_confidence': self._calculate_confidence(results)
+        }
+        
+        return results
+
     def analyze_blocks(self, blocks_data: List[Dict]) -> Dict:
         """Analyze all extracted blocks for OBIS codes and energy data"""
         results = {
@@ -99,7 +134,7 @@ class OBISAnalyzer:
         }
         
         for block in blocks_data:
-            print(f"\n=== Analyzing Block {block['block_id']} ===")
+            print(f"\n=== Analyzing Block {block} ===")
             print(f"Type: {block['type']}, Size: {block['total_size']} bytes")
             
             # Convert hex back to bytes for analysis
@@ -178,21 +213,31 @@ class OBISAnalyzer:
             if data[i] in [0, 1] and data[i+1] == 0:  # Medium 0 or 1, Channel 0
                 a, b, c, d, e, f = data[i:i+6]
                 
-                # Validate ranges
-                if (a <= 8 and b <= 64 and c <= 128 and d <= 255 and e <= 255 and f <= 255):
+                # Skip all-zero patterns (padding) and improve validation
+                if all(x == 0 for x in [a, b, c, d, e, f]):
+                    continue
+                
+                # Validate ranges with more realistic constraints
+                if (a <= 8 and b <= 64 and c <= 128 and d <= 255 and e <= 255 and f <= 255 and
+                    not (c == 0 and d == 0 and e == 0)):  # Skip trivial patterns
+                    
                     obis_code = f"{a}-{b}:{c}.{d}.{e}"
-                    if f != 255:  # 255 often means "not used"
+                    if f != 255 and f != 0:  # 255 or 0 often means "not used"
                         obis_code += f"*{f}"
                     
-                    obis_info = {
-                        'code': obis_code,
-                        'description': self.known_obis_codes.get(obis_code, 'Unknown OBIS code'),
-                        'encoding': 'binary',
-                        'position': i,
-                        'raw_bytes': data[i:i+6].hex()
-                    }
-                    obis_found.append(obis_info)
-                    print(f"  Found OBIS (Binary): {obis_code} at pos {i} - {obis_info['description']}")
+                    # Only add if it's a known OBIS code or has realistic values
+                    if (obis_code in self.known_obis_codes or 
+                        c in [1, 2, 3, 4, 14, 31, 32, 51, 52, 71, 72, 96]):  # Common OBIS C values
+                        
+                        obis_info = {
+                            'code': obis_code,
+                            'description': self.known_obis_codes.get(obis_code, 'Unknown OBIS code'),
+                            'encoding': 'binary',
+                            'position': i,
+                            'raw_bytes': data[i:i+6].hex()
+                        }
+                        obis_found.append(obis_info)
+                        print(f"  Found OBIS (Binary): {obis_code} at pos {i} - {obis_info['description']}")
         
         return obis_found
     
@@ -639,6 +684,88 @@ class OBISAnalyzer:
         
         return results
     
+    def _analyze_encryption_status(self, data: bytes) -> Dict:
+        """Analyze if the block appears to be encrypted"""
+        encryption_info = {
+            'is_encrypted': False,
+            'encryption_indicators': [],
+            'dlms_aes_gcm': False,
+            'randomness_score': 0.0
+        }
+        
+        if len(data) == 0:
+            return encryption_info
+        
+        # Check for DLMS AES-GCM encryption (MSB = 0x95)
+        if data[0] == 0x95:
+            encryption_info['is_encrypted'] = True
+            encryption_info['dlms_aes_gcm'] = True
+            encryption_info['encryption_indicators'].append("DLMS AES-GCM pattern (MSB=0x95)")
+        
+        # Calculate entropy/randomness
+        byte_counts = [0] * 256
+        for byte in data:
+            byte_counts[byte] += 1
+        
+        # Calculate Shannon entropy
+        import math
+        total_bytes = len(data)
+        entropy = 0.0
+        for count in byte_counts:
+            if count > 0:
+                probability = count / total_bytes
+                entropy -= probability * math.log2(probability)
+        
+        encryption_info['randomness_score'] = entropy / 8.0  # Normalize to 0-1
+        
+        # High entropy suggests encryption
+        if encryption_info['randomness_score'] > 0.85:
+            encryption_info['is_encrypted'] = True
+            encryption_info['encryption_indicators'].append(f"High entropy: {encryption_info['randomness_score']:.3f}")
+        
+        # Check for low ASCII content (encrypted data has little readable text)
+        ascii_count = sum(1 for b in data if 32 <= b <= 126)
+        ascii_ratio = ascii_count / len(data)
+        
+        if ascii_ratio < 0.1:  # Less than 10% printable ASCII
+            encryption_info['encryption_indicators'].append(f"Low ASCII content: {ascii_ratio:.1%}")
+            if ascii_ratio < 0.05:
+                encryption_info['is_encrypted'] = True
+        
+        return encryption_info
+
+    def _calculate_confidence(self, results: Dict) -> str:
+        """Calculate confidence level of the analysis"""
+        confidence_score = 0
+        max_score = 10
+        
+        # Points for finding structured data
+        if results['obis_codes']:
+            confidence_score += 3
+        if results['dlms_structures']:
+            confidence_score += 2
+        if results['energy_values']:
+            confidence_score += 2
+        if results['timestamps']:
+            confidence_score += 1
+        if results['ascii_strings']:
+            confidence_score += 1
+        
+        # Bonus for encryption detection
+        if results['encryption_info']['is_encrypted']:
+            confidence_score += 1
+        
+        confidence_ratio = confidence_score / max_score
+        
+        if confidence_ratio >= 0.8:
+            return "High"
+        elif confidence_ratio >= 0.5:
+            return "Medium"
+        elif confidence_ratio >= 0.2:
+            return "Low"
+        else:
+            return "Very Low"
+
     def _generate_summary(self, results: Dict) -> Dict:
         """Generate a summary of all findings"""
         summary = {
@@ -667,3 +794,149 @@ class OBISAnalyzer:
             summary['recommended_next_steps'].append("No standard OBIS codes found - may need proprietary decoding")
         
         return summary
+    
+    def analyze_encrypted_frame(self, frame_hex: str, decryption_key: str = None) -> Dict:
+        """
+        Analyze an encrypted DLMS frame and provide decryption guidance
+        
+        Args:
+            frame_hex: Hex string of the encrypted frame
+            decryption_key: Optional AES key in hex format
+            
+        Returns:
+            Dict with frame analysis and decryption information
+        """
+        frame_bytes = bytes.fromhex(frame_hex)
+        
+        if len(frame_bytes) < 26:  # Minimum: 1 byte security + 8 system title + 4 frame counter + 12 auth tag
+            return {"error": "Frame too short for encrypted DLMS"}
+        
+        security_control = frame_bytes[0]
+        system_title = frame_bytes[1:9]
+        frame_counter = frame_bytes[9:13]
+        auth_tag = frame_bytes[-12:]
+        encrypted_payload = frame_bytes[13:-12]
+        
+        analysis = {
+            "frame_info": {
+                "total_size": len(frame_bytes),
+                "security_control": f"0x{security_control:02x}",
+                "system_title": system_title.hex(),
+                "frame_counter": frame_counter.hex(),
+                "encrypted_payload_size": len(encrypted_payload),
+                "authentication_tag": auth_tag.hex(),
+                "is_aes_gcm_encrypted": security_control == 0x95
+            },
+            "decryption_info": {
+                "algorithm": "AES-GCM" if security_control == 0x95 else "Unknown",
+                "key_needed": True,
+                "iv_construction": "system_title + frame_counter",
+                "aad_construction": "security_control + system_title + frame_counter",
+                "provided_key": decryption_key[:8] + "..." if decryption_key else None
+            },
+            "next_steps": []
+        }
+        
+        if security_control == 0x95:
+            # Construct IV and AAD as per DLMS specification
+            iv = system_title + frame_counter  # 12 bytes total
+            aad = bytes([security_control]) + system_title + frame_counter  # 13 bytes total
+            
+            analysis["decryption_info"].update({
+                "initialization_vector": iv.hex(),
+                "additional_authenticated_data": aad.hex(),
+                "iv_size": len(iv),
+                "aad_size": len(aad)
+            })
+            
+            analysis["next_steps"] = [
+                "1. Obtain the correct AES-128 key from your energy provider",
+                "2. Use AES-GCM decryption with:",
+                f"   - Key: [your 32-character hex key]",
+                f"   - IV: {iv.hex()}",
+                f"   - AAD: {aad.hex()}",
+                f"   - Ciphertext: {encrypted_payload.hex()[:64]}...",
+                f"   - Auth Tag: {auth_tag.hex()}",
+                "3. After decryption, re-run DLMS structure analysis",
+                "4. Parse OBIS codes for energy measurements"
+            ]
+            
+            # If a key is provided, show how to use it (but don't actually decrypt)
+            if decryption_key:
+                analysis["decryption_ready"] = True
+                analysis["next_steps"].insert(0, "✅ Decryption key provided - ready to decrypt!")
+            else:
+                analysis["decryption_ready"] = False
+                analysis["next_steps"].insert(0, "❌ No decryption key provided")
+        
+        else:
+            analysis["next_steps"] = [
+                f"Unknown security control: 0x{security_control:02x}",
+                "This may not be a standard DLMS AES-GCM encrypted frame"
+            ]
+        
+        return analysis
+    
+    def decrypt_dlms_frame(self, frame_hex: str, key_hex: str) -> Dict:
+        """
+        Attempt to decrypt a DLMS AES-GCM frame (requires pycryptodome)
+        
+        Args:
+            frame_hex: Hex string of encrypted frame
+            key_hex: AES key in hex format
+            
+        Returns:
+            Dict with decryption result and analysis
+        """
+        try:
+            from Crypto.Cipher import AES
+        except ImportError:
+            return {
+                "error": "pycryptodome not installed",
+                "solution": "Install with: pip install pycryptodome",
+                "manual_decryption": self.analyze_encrypted_frame(frame_hex, key_hex)
+            }
+        
+        try:
+            frame_bytes = bytes.fromhex(frame_hex)
+            key_bytes = bytes.fromhex(key_hex)
+            
+            if len(key_bytes) != 16:
+                return {"error": f"Invalid key length: {len(key_bytes)} bytes (expected 16)"}
+            
+            # Extract frame components
+            security_control = frame_bytes[0]
+            system_title = frame_bytes[1:9]
+            frame_counter = frame_bytes[9:13]
+            encrypted_payload = frame_bytes[13:-12]
+            auth_tag = frame_bytes[-12:]
+            
+            # Construct IV and AAD
+            iv = system_title + frame_counter
+            aad = bytes([security_control]) + system_title + frame_counter
+            
+            # Decrypt
+            cipher = AES.new(key_bytes, AES.MODE_GCM, nonce=iv)
+            cipher.update(aad)
+            decrypted_payload = cipher.decrypt_and_verify(encrypted_payload, auth_tag)
+            
+            # Analyze decrypted payload
+            decrypted_analysis = self.analyze_block(decrypted_payload)
+            
+            return {
+                "success": True,
+                "decrypted_payload": decrypted_payload.hex(),
+                "decrypted_size": len(decrypted_payload),
+                "dlms_analysis": decrypted_analysis
+            }
+            
+        except Exception as e:
+            return {
+                "error": f"Decryption failed: {str(e)}",
+                "possible_causes": [
+                    "Incorrect decryption key",
+                    "Corrupted frame data",
+                    "Wrong frame format",
+                    "Authentication tag verification failed"
+                ]
+            }
