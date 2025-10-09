@@ -19,21 +19,41 @@ class OBISAnalyzer:
     D = Measurement type (8=cumulative energy, 7=instantaneous)
     E = Tariff (0=total, 1=tariff 1, 2=tariff 2)
     F = Billing period (typically omitted for current values)
+    
+    Supports DLMS/COSEM according to IEC 62056-5-3 Ed.3
     """
     
     def __init__(self):
+        # DLMS/COSEM Initialization Vector according to NIST SP 800-38D 8.2.1
+        # and IEC 62056-5-3 Ed.3 - 5.3.3.7.3
         DECRYPTION_KEY = "A78F4624621DE5EB8A96DA779E08109C"
-        self.decryptor = AESDecryptor(DECRYPTION_KEY) 
+        # TODO: Implement AES decryption according to NIST SP 800-38D
+        # self.decryptor = AESDecryptor(DECRYPTION_KEY) 
+        
+        # Extended OBIS codes based on DLMS/COSEM specification
         self.known_obis_codes = {
-            # Common electricity meter OBIS codes
-            '1-0:1.8.0': 'Total Active Energy Import (kWh)',
+            # Time and Date
+            '0-0:1.0.0': 'Uhrzeit und Datum',  # Date/Time - OctetString[12]
+            
+            # Active Energy Import/Export (Wirkenergie)
+            '1-0:1.8.0': 'Wirkenergie +A (Total)',      # Unsigned32
+            '1-0:2.8.0': 'Wirkenergie -A (Total)',      # Unsigned32
+            
+            # Reactive Energy Import/Export (Blindenergie)
+            '1-0:3.8.0': 'Blindenergie +R (Total)',     # Unsigned32
+            '1-0:4.8.0': 'Blindenergie -R (Total)',     # Unsigned32
+            
+            # Instantaneous Power Values (Momentanleistung)
+            '1-0:1.7.0': 'Momentanleistung +P (W)',     # Unsigned32
+            '1-0:2.7.0': 'Momentanleistung -P (W)',     # Unsigned32
+            '1-0:3.7.0': 'Momentanleistung +Q (var)',   # Unsigned32
+            '1-0:4.7.0': 'Momentanleistung -Q (var)',   # Unsigned32
+            
+            # Additional common OBIS codes
             '1-0:1.8.1': 'Active Energy Import Tariff 1 (kWh)', 
             '1-0:1.8.2': 'Active Energy Import Tariff 2 (kWh)',
-            '1-0:2.8.0': 'Total Active Energy Export (kWh)',
             '1-0:2.8.1': 'Active Energy Export Tariff 1 (kWh)',
             '1-0:2.8.2': 'Active Energy Export Tariff 2 (kWh)',
-            '1-0:1.7.0': 'Instantaneous Active Power Import (W)',
-            '1-0:2.7.0': 'Instantaneous Active Power Export (W)',
             '1-0:32.7.0': 'Instantaneous Voltage L1 (V)',
             '1-0:52.7.0': 'Instantaneous Voltage L2 (V)', 
             '1-0:72.7.0': 'Instantaneous Voltage L3 (V)',
@@ -41,15 +61,29 @@ class OBISAnalyzer:
             '1-0:51.7.0': 'Instantaneous Current L2 (A)',
             '1-0:71.7.0': 'Instantaneous Current L3 (A)',
             '1-0:14.7.0': 'Supply Frequency (Hz)',
-            '1-0:81.7.1': 'Phase Angle L1-L2 (°)',
-            '1-0:81.7.2': 'Phase Angle L1-L3 (°)',
-            '1-0:81.7.4': 'Phase Angle L2-L3 (°)',
             '0-0:96.1.1': 'Meter Serial Number',
-            '0-0:1.0.0': 'Date and Time',
-            '1-0:0.2.0': 'Version Information',
             '0-0:96.14.0': 'Current Tariff',
-            '1-0:1.6.0': 'Maximum Demand Import (W)',
-            '1-0:2.6.0': 'Maximum Demand Export (W)',
+        }
+        
+        # DLMS data type mapping according to IEC 62056-5-3
+        self.dlms_data_types = {
+            0x00: {'name': 'null-data', 'parser': self._parse_null},
+            0x01: {'name': 'boolean', 'parser': self._parse_boolean},
+            0x02: {'name': 'bit-string', 'parser': self._parse_bit_string},
+            0x03: {'name': 'double-long', 'parser': self._parse_double_long},
+            0x04: {'name': 'double-long-unsigned', 'parser': self._parse_double_long_unsigned},
+            0x05: {'name': 'floating-point', 'parser': self._parse_floating_point},
+            0x06: {'name': 'octet-string', 'parser': self._parse_octet_string},
+            0x09: {'name': 'visible-string', 'parser': self._parse_visible_string},
+            0x0A: {'name': 'utf8-string', 'parser': self._parse_utf8_string},
+            0x0C: {'name': 'date-time', 'parser': self._parse_dlms_datetime_extended},  # OctetString[12]
+            0x0F: {'name': 'long', 'parser': self._parse_long},
+            0x10: {'name': 'unsigned', 'parser': self._parse_unsigned},
+            0x11: {'name': 'long-unsigned', 'parser': self._parse_long_unsigned},
+            0x12: {'name': 'compact-array', 'parser': self._parse_compact_array},
+            0x13: {'name': 'array', 'parser': self._parse_array},
+            0x14: {'name': 'structure', 'parser': self._parse_structure},
+            0x15: {'name': 'enum', 'parser': self._parse_enum},
         }
     
     def analyze_blocks(self, blocks_data: List[Dict]) -> Dict:
@@ -232,56 +266,86 @@ class OBISAnalyzer:
         return structures
     
     def _parse_dlms_value(self, tag: int, data: bytes) -> str:
-        """Parse DLMS value based on its type"""
-        try:
-            if tag == 0x01:  # boolean
-                return 'True' if data[0] else 'False'
-            elif tag == 0x0F:  # long (16-bit signed)
-                if len(data) >= 2:
-                    return str(struct.unpack('>h', data[:2])[0])
-            elif tag == 0x10:  # unsigned (8-bit)
-                return str(data[0])
-            elif tag == 0x11:  # long-unsigned (16-bit unsigned)
-                if len(data) >= 2:
-                    return str(struct.unpack('>H', data[:2])[0])
-            elif tag == 0x03:  # double-long (32-bit signed)
-                if len(data) >= 4:
-                    return str(struct.unpack('>i', data[:4])[0])
-            elif tag == 0x04:  # double-long-unsigned (32-bit unsigned)
-                if len(data) >= 4:
-                    return str(struct.unpack('>I', data[:4])[0])
-            elif tag == 0x05:  # floating-point
-                if len(data) >= 4:
-                    return f"{struct.unpack('>f', data[:4])[0]:.3f}"
-            elif tag in [0x06, 0x09, 0x0A]:  # strings
-                try:
-                    return data.decode('utf-8', errors='ignore')
-                except:
-                    return data.hex()
-            elif tag == 0x0C:  # date-time
-                return self._parse_dlms_datetime(data)
-        except:
-            pass
+        """Enhanced DLMS value parser using the type mapping"""
+        if tag in self.dlms_data_types:
+            parser = self.dlms_data_types[tag]['parser']
+            return parser(data)
         
         return data.hex()
     
-    def _parse_dlms_datetime(self, data: bytes) -> str:
-        """Parse DLMS date-time format"""
-        if len(data) >= 12:
-            try:
-                year = struct.unpack('>H', data[0:2])[0]
-                month = data[2]
-                day = data[3]
-                hour = data[5]
-                minute = data[6]
-                second = data[7]
-                
-                if 2000 <= year <= 2100 and 1 <= month <= 12 and 1 <= day <= 31:
-                    return f"{year:04d}-{month:02d}-{day:02d} {hour:02d}:{minute:02d}:{second:02d}"
-            except:
-                pass
+    def _parse_dlms_datetime_extended(self, data: bytes) -> str:
+        """
+        Parse DLMS date-time format according to IEC 62056-5-3
+        OctetString[12] format for date/time (0-0:1.0.0)
+        """
+        if len(data) < 12:
+            return f"Invalid DateTime length: {len(data)}, expected 12"
         
-        return f"DateTime: {data.hex()}"
+        try:
+            # DLMS DateTime structure (12 bytes):
+            # Bytes 0-1: Year (big endian)
+            # Byte 2: Month (1-12)
+            # Byte 3: Day of Month (1-31)
+            # Byte 4: Day of Week (1=Monday, 7=Sunday, 0xFF=not specified)
+            # Byte 5: Hour (0-23)
+            # Byte 6: Minute (0-59)
+            # Byte 7: Second (0-59)
+            # Byte 8: Hundredths of second (0-99)
+            # Bytes 9-10: Deviation (timezone offset in minutes, big endian, signed)
+            # Byte 11: Clock status
+            
+            year = struct.unpack('>H', data[0:2])[0]
+            month = data[2]
+            day = data[3]
+            day_of_week = data[4]
+            hour = data[5]
+            minute = data[6]
+            second = data[7]
+            hundredths = data[8]
+            deviation = struct.unpack('>h', data[9:11])[0]  # signed 16-bit
+            clock_status = data[11]
+            
+            # Validate date/time values
+            if not (2000 <= year <= 2100 and 1 <= month <= 12 and 1 <= day <= 31 and
+                    0 <= hour <= 23 and 0 <= minute <= 59 and 0 <= second <= 59):
+                return f"Invalid DateTime values: {data.hex()}"
+            
+            # Format the datetime string
+            dt_str = f"{year:04d}-{month:02d}-{day:02d} {hour:02d}:{minute:02d}:{second:02d}"
+            
+            if hundredths != 0xFF:  # 0xFF means not specified
+                dt_str += f".{hundredths:02d}"
+            
+            # Add timezone info if specified
+            if deviation != 0x8000:  # 0x8000 means not specified
+                sign = '+' if deviation >= 0 else '-'
+                tz_hours = abs(deviation) // 60
+                tz_minutes = abs(deviation) % 60
+                dt_str += f" {sign}{tz_hours:02d}:{tz_minutes:02d}"
+            
+            # Add day of week if specified
+            day_names = ["", "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+            if 1 <= day_of_week <= 7:
+                dt_str += f" ({day_names[day_of_week]})"
+            
+            # Add clock status info
+            status_info = []
+            if clock_status & 0x01:
+                status_info.append("invalid")
+            if clock_status & 0x02:
+                status_info.append("doubtful")
+            if clock_status & 0x04:
+                status_info.append("different_base")
+            if clock_status & 0x80:
+                status_info.append("dst")
+            
+            if status_info:
+                dt_str += f" [Status: {', '.join(status_info)}]"
+                
+            return dt_str
+            
+        except Exception as e:
+            return f"DateTime parse error: {e}, raw: {data.hex()}"
     
     def _extract_energy_values(self, data: bytes) -> List[Dict]:
         """Extract potential energy measurement values"""
@@ -435,6 +499,145 @@ class OBISAnalyzer:
                     analysis['repeating_sequences'].append(f"Pattern '{pattern}' repeats {count} times")
         
         return analysis
+
+    # Additional parser methods for DLMS data types
+    def _parse_null(self, data: bytes) -> str:
+        return "null"
+
+    def _parse_boolean(self, data: bytes) -> str:
+        return 'True' if data[0] else 'False' if len(data) > 0 else 'Invalid'
+
+    def _parse_bit_string(self, data: bytes) -> str:
+        return f"BitString: {data.hex()}"
+
+    def _parse_double_long(self, data: bytes) -> str:
+        """Parse signed 32-bit integer"""
+        if len(data) < 4:
+            return f"Invalid Int32 length: {len(data)}"
+        try:
+            value = struct.unpack('>i', data[:4])[0]
+            return str(value)
+        except:
+            return f"Int32 parse error: {data.hex()}"
+
+    def _parse_double_long_unsigned(self, data: bytes) -> str:
+        """Parse Unsigned32 values (for power measurements like 1.7.0, 2.7.0)"""
+        if len(data) < 4:
+            return f"Invalid Unsigned32 length: {len(data)}"
+        
+        try:
+            value = struct.unpack('>I', data[:4])[0]  # Big endian unsigned 32-bit
+            return str(value)
+        except Exception as e:
+            return f"Unsigned32 parse error: {e}"
+
+    def _parse_floating_point(self, data: bytes) -> str:
+        if len(data) < 4:
+            return f"Invalid Float length: {len(data)}"
+        try:
+            value = struct.unpack('>f', data[:4])[0]
+            return f"{value:.6g}"
+        except:
+            return f"Float parse error: {data.hex()}"
+
+    def _parse_octet_string(self, data: bytes) -> str:
+        """Parse octet string - could be datetime or other binary data"""
+        if len(data) == 12:
+            # Try parsing as DLMS datetime first
+            return self._parse_dlms_datetime_extended(data)
+        
+        # For other octet strings, try to decode as text or return hex
+        try:
+            decoded = data.decode('utf-8', errors='ignore')
+            if decoded.isprintable():
+                return f"'{decoded}'"
+        except:
+            pass
+        
+        return data.hex()
+
+    def _parse_visible_string(self, data: bytes) -> str:
+        try:
+            return f"'{data.decode('ascii', errors='ignore')}'"
+        except:
+            return data.hex()
+
+    def _parse_utf8_string(self, data: bytes) -> str:
+        try:
+            return f"'{data.decode('utf-8', errors='ignore')}'"
+        except:
+            return data.hex()
+
+    def _parse_long(self, data: bytes) -> str:
+        if len(data) < 2:
+            return f"Invalid Int16 length: {len(data)}"
+        try:
+            value = struct.unpack('>h', data[:2])[0]
+            return str(value)
+        except:
+            return f"Int16 parse error: {data.hex()}"
+
+    def _parse_unsigned(self, data: bytes) -> str:
+        if len(data) < 1:
+            return "Invalid Uint8 length"
+        return str(data[0])
+
+    def _parse_long_unsigned(self, data: bytes) -> str:
+        if len(data) < 2:
+            return f"Invalid Uint16 length: {len(data)}"
+        try:
+            value = struct.unpack('>H', data[:2])[0]
+            return str(value)
+        except:
+            return f"Uint16 parse error: {data.hex()}"
+
+    def _parse_compact_array(self, data: bytes) -> str:
+        return f"CompactArray: {data.hex()}"
+
+    def _parse_array(self, data: bytes) -> str:
+        return f"Array: {data.hex()}"
+
+    def _parse_structure(self, data: bytes) -> str:
+        return f"Structure: {data.hex()}"
+
+    def _parse_enum(self, data: bytes) -> str:
+        if len(data) > 0:
+            return f"Enum: {data[0]}"
+        return "Invalid Enum"
+
+    def analyze_dlms_customer_interface(self, raw_data: bytes) -> Dict:
+        """
+        Analyze raw data from customer interface according to DLMS/COSEM spec
+        Focus on OctetString[12] for datetime and Unsigned32 for power values
+        """
+        results = {
+            'datetime_entries': [],
+            'power_measurements': [],
+            'obis_mappings': [],
+            'dlms_structures': []
+        }
+        
+        # Look for DLMS structures with focus on customer interface data
+        structures = self._analyze_dlms_structure(raw_data)
+        
+        for struct in structures:
+            if struct['type'] == 'date-time':
+                results['datetime_entries'].append({
+                    'position': struct['position'],
+                    'parsed_value': struct['parsed_value'],
+                    'likely_obis': '0-0:1.0.0'
+                })
+            
+            elif struct['type'] == 'double-long-unsigned':
+                # These are likely power measurements (1.7.0, 2.7.0, etc.)
+                results['power_measurements'].append({
+                    'position': struct['position'],
+                    'value': struct['parsed_value'],
+                    'unit': 'W or var',
+                    'possible_obis': ['1-0:1.7.0', '1-0:2.7.0', '1-0:3.7.0', '1-0:4.7.0']
+                })
+        
+        return results
     
     def _generate_summary(self, results: Dict) -> Dict:
         """Generate a summary of all findings"""
